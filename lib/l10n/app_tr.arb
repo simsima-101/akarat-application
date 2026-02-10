@@ -224,4 +224,76 @@
       "@loginToEditProfile": {
         "description": "Message shown when user tries to edit profile without being logged in"
       }
+    },
+
+
+     "@_home_screen_section": "================= HOME SCREEN =================",
+
+     "homeSearchLocationHint": "Bir mahalle, bölge veya şehir ara",
+     "@homeSearchLocationHint": {
+       "description": "Hint text for the search field on the home screen"
+     },
+
+
+  "homePropertyForRent": "Kiralık Emlak",
+  "@homePropertyForRent": {
+    "description": "Label for property for rent"
+  },
+
+  "homePropertyForSale": "Satılık Emlak",
+  "@homePropertyForSale": {
+    "description": "Label for property for sale"
+  },
+
+  "homeOffPlanProperties": "Planlanan Projeler",
+  "@homeOffPlanProperties": {
+    "description": "Label for off-plan properties"
+  },
+
+  "homeCommercial": "Ticari",
+  "@homeCommercial": {
+    "description": "Label for commercial properties"
+  },
+
+  "homeVilla": "Villalar",
+  "@homeVilla": {
+    "description": "Label for villas"
+  },
+
+  "homeApartment": "Daireler",
+  "@homeApartment": {
+    "description": "Label for apartments"
+  },
+
+  "homeDiscoverUaeRealEstate": "BAE emlak piyasası hakkında daha fazlasını keşfedin",
+  "@homeDiscoverUaeRealEstate": {
+    "description": "Subtitle text shown in the Home screen New Projects section"
+  },
+
+
+    "homeSortNewest": "En Yeniler",
+    "@homeSortNewest": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortFeatured": "Öne Çıkanlar",
+    "@homeSortFeatured": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortPriceLow": "Fiyat (Düşük)",
+    "@homeSortPriceLow": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortPriceHigh": "Fiyat (Yüksek)",
+    "@homeSortPriceHigh": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    }
+
+
+
+
+
+
 }

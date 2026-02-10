@@ -6,6 +6,7 @@ import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../common/widgets/property_card.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/filter/presentation/view/filter.dart' as filter;
@@ -20,14 +21,15 @@ import 'login.dart';
 import 'my_account.dart';
 import 'new_projects.dart';
 
-String _getSortDisplayName(String sortKey) {
-  const displayMap = {
-    'featured': 'Featured',
-    'newest': 'Newest',
-    'price_asc': 'Price (low)',
-    'price_desc': 'Price (high)',
+String _getSortDisplayName(BuildContext context, {required String sortKey}) {
+  final displayMap = {
+    'featured': AppLocalizations.of(context)!.homeSortFeatured,
+    'newest': AppLocalizations.of(context)!.homeSortNewest,
+    'price_asc': AppLocalizations.of(context)!.homeSortPriceLow,
+    'price_desc': AppLocalizations.of(context)!.homeSortPriceHigh,
   };
-  return displayMap[sortKey] ?? 'Newest'; // fallback
+  return displayMap[sortKey] ??
+      AppLocalizations.of(context)!.homeSortNewest; // fallback
 }
 
 class Home extends StatelessWidget {
@@ -155,10 +157,10 @@ class Home extends StatelessWidget {
                                     child: TextField(
                                       focusNode: FocusNode(),
                                       readOnly: true,
-                                      decoration: const InputDecoration(
-                                        hintText:
-                                            "Search for a locality, area or city",
-                                        hintStyle: TextStyle(
+                                      decoration: InputDecoration(
+                                        hintText: AppLocalizations.of(context)!
+                                            .homeSearchLocationHint,
+                                        hintStyle: const TextStyle(
                                             color: Colors.grey, fontSize: 14),
                                         border: InputBorder.none,
                                       ),
@@ -318,11 +320,14 @@ class Home extends StatelessWidget {
                                               Image.asset(
                                                   "assets/images/ak-rent-red.png",
                                                   height: 35),
-                                              const Padding(
-                                                padding: EdgeInsets.all(4),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(4),
                                                 child: Text(
-                                                  "Property For Rent",
-                                                  style: TextStyle(
+                                                  AppLocalizations.of(context)!
+                                                      .homePropertyForRent,
+                                                  // "Property For Rent",
+                                                  style: const TextStyle(
                                                       fontSize: 11,
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -391,10 +396,13 @@ class Home extends StatelessWidget {
                                               Image.asset(
                                                   "assets/images/ak-sale.png",
                                                   height: 35),
-                                              const Padding(
+                                              Padding(
                                                 padding: EdgeInsets.all(4),
                                                 child: Text(
-                                                  "Property For Sale",
+                                                  AppLocalizations.of(context)!
+                                                      .homePropertyForSale,
+
+                                                  // "Property For Sale",
                                                   style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight:
@@ -465,11 +473,14 @@ class Home extends StatelessWidget {
                                               Image.asset(
                                                   "assets/images/ak-off-plan.png",
                                                   height: 35),
-                                              const Padding(
+                                              Padding(
                                                 padding:
                                                     EdgeInsets.only(top: 5),
                                                 child: Text(
-                                                  "Off-Plan-Properties",
+                                                  AppLocalizations.of(context)!
+                                                      .homeOffPlanProperties,
+
+                                                  // "Off-Plan-Properties",
                                                   style: TextStyle(
                                                       fontSize: 10,
                                                       fontWeight:
@@ -549,10 +560,13 @@ class Home extends StatelessWidget {
                                               Image.asset(
                                                   "assets/images/commercial_new.png",
                                                   height: 35),
-                                              const Padding(
+                                              Padding(
                                                 padding: EdgeInsets.all(4),
                                                 child: Text(
-                                                  "Commercial",
+                                                  AppLocalizations.of(context)!
+                                                      .homeCommercial,
+
+                                                  // "Commercial",
                                                   style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight:
@@ -626,10 +640,12 @@ class Home extends StatelessWidget {
                                               Image.asset(
                                                   "assets/images/villa-new.png",
                                                   height: 35),
-                                              const Padding(
+                                              Padding(
                                                 padding: EdgeInsets.all(5),
                                                 child: Text(
-                                                  "Villas",
+                                                  AppLocalizations.of(context)!
+                                                      .homeVilla,
+                                                  // "Villas",
                                                   style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight:
@@ -703,10 +719,12 @@ class Home extends StatelessWidget {
                                               Image.asset(
                                                   "assets/images/apartment.png",
                                                   height: 35),
-                                              const Padding(
+                                              Padding(
                                                 padding: EdgeInsets.all(5),
                                                 child: Text(
-                                                  "Apartment",
+                                                  AppLocalizations.of(context)!
+                                                      .homeApartment,
+                                                  // "Apartment",
                                                   style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight:
@@ -768,7 +786,9 @@ class Home extends StatelessWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  "New Projects",
+                                                  AppLocalizations.of(context)!
+                                                      .newProjectsTitle,
+                                                  // "New Projects",
                                                   style: TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 19,
@@ -777,7 +797,9 @@ class Home extends StatelessWidget {
                                                 ),
                                                 const SizedBox(height: 8),
                                                 Text(
-                                                  "Discover more about the UAE real estate market",
+                                                  AppLocalizations.of(context)!
+                                                      .homeDiscoverUaeRealEstate,
+                                                  // "Discover more about the UAE real estate market",
                                                   style: TextStyle(
                                                       color: Colors.black87,
                                                       fontSize: 14),
@@ -822,7 +844,7 @@ class Home extends StatelessWidget {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 20),
                                       child: Text(
-                                        "${state.totalProperties ?? items.length} Properties",
+                                        "${state.totalProperties ?? items.length} ${AppLocalizations.of(context)!.properties}",
                                         style: const TextStyle(
                                             color: Colors.black, fontSize: 15),
                                       ),
@@ -831,10 +853,14 @@ class Home extends StatelessWidget {
                                       elevation: 0,
                                       onSelected: (value) {
                                         final sortMap = {
-                                          "Featured": "featured",
-                                          "Newest": "newest",
-                                          "Price (low)": "price_asc",
-                                          "Price (high)": "price_desc",
+                                          AppLocalizations.of(context)!
+                                              .homeSortFeatured: "featured",
+                                          AppLocalizations.of(context)!
+                                              .homeSortNewest: "newest",
+                                          AppLocalizations.of(context)!
+                                              .homeSortPriceLow: "price_asc",
+                                          AppLocalizations.of(context)!
+                                              .homeSortPriceHigh: "price_desc",
                                         };
                                         final sortKey = sortMap[value]!;
                                         context.read<PropertiesBloc>().add(
@@ -848,11 +874,15 @@ class Home extends StatelessWidget {
                                       offset: const Offset(0, 35),
                                       color: Colors.white,
                                       itemBuilder: (context) {
-                                        const sortOptions = [
-                                          "Featured",
-                                          "Newest",
-                                          "Price (low)",
-                                          "Price (high)",
+                                        final sortOptions = [
+                                          AppLocalizations.of(context)!
+                                              .homeSortFeatured,
+                                          AppLocalizations.of(context)!
+                                              .homeSortFeatured,
+                                          AppLocalizations.of(context)!
+                                              .homeSortPriceLow,
+                                          AppLocalizations.of(context)!
+                                              .homeSortPriceHigh,
                                         ];
                                         return sortOptions.map((option) {
                                           return PopupMenuItem<String>(
@@ -865,8 +895,8 @@ class Home extends StatelessWidget {
                                           PropertiesState>(
                                         builder: (context, state) {
                                           final displaySort =
-                                              _getSortDisplayName(
-                                                  state.currentSort);
+                                              _getSortDisplayName(context,
+                                                  sortKey: state.currentSort);
                                           return Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 10, vertical: 4),

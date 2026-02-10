@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -148,4 +149,41 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get loginToEditProfile => 'يرجى تسجيل الدخول لتعديل ملفك الشخصي.';
+
+  @override
+  String get homeSearchLocationHint => 'ابحث عن منطقة أو حي أو مدينة';
+
+  @override
+  String get homePropertyForRent => 'عقارات للإيجار';
+
+  @override
+  String get homePropertyForSale => 'عقارات للبيع';
+
+  @override
+  String get homeOffPlanProperties => 'عقارات تحت الإنشاء';
+
+  @override
+  String get homeCommercial => 'تجاري';
+
+  @override
+  String get homeVilla => 'فلل';
+
+  @override
+  String get homeApartment => 'شقق';
+
+  @override
+  String get homeDiscoverUaeRealEstate =>
+      'اكتشف المزيد عن سوق العقارات في الإمارات';
+
+  @override
+  String get homeSortNewest => 'الأحدث';
+
+  @override
+  String get homeSortFeatured => 'مميز';
+
+  @override
+  String get homeSortPriceLow => 'السعر (منخفض)';
+
+  @override
+  String get homeSortPriceHigh => 'السعر (مرتفع)';
 }

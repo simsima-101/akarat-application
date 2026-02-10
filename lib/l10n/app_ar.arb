@@ -220,6 +220,81 @@
     "@deletionFailed": {
       "description": "Prefix for account deletion error messages"
     },
+
+      "@_home_screen_section": "================= HOME SCREEN =================",
+
+      "homeSearchLocationHint": "ابحث عن منطقة أو حي أو مدينة",
+      "@homeSearchLocationHint": {
+        "description": "Hint text for the search field on the home screen"
+      },
+
+
+
+  "homePropertyForRent": "عقارات للإيجار",
+  "@homePropertyForRent": {
+    "description": "Label for property for rent"
+  },
+
+  "homePropertyForSale": "عقارات للبيع",
+  "@homePropertyForSale": {
+    "description": "Label for property for sale"
+  },
+
+  "homeOffPlanProperties": "عقارات تحت الإنشاء",
+  "@homeOffPlanProperties": {
+    "description": "Label for off-plan properties"
+  },
+
+  "homeCommercial": "تجاري",
+  "@homeCommercial": {
+    "description": "Label for commercial properties"
+  },
+
+  "homeVilla": "فلل",
+  "@homeVilla": {
+    "description": "Label for villas"
+  },
+
+  "homeApartment": "شقق",
+  "@homeApartment": {
+    "description": "Label for apartments"
+  },
+
+  "homeDiscoverUaeRealEstate": "اكتشف المزيد عن سوق العقارات في الإمارات",
+  "@homeDiscoverUaeRealEstate": {
+    "description": "Subtitle text shown in the Home screen New Projects section"
+  },
+
+
+    "homeSortNewest": "الأحدث",
+    "@homeSortNewest": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortFeatured": "مميز",
+    "@homeSortFeatured": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortPriceLow": "السعر (منخفض)",
+    "@homeSortPriceLow": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortPriceHigh": "السعر (مرتفع)",
+    "@homeSortPriceHigh": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    }
+
+
+
+
+
+
+
+
+
+    },
       "loginToEditProfile": "يرجى تسجيل الدخول لتعديل ملفك الشخصي.",
       "@loginToEditProfile": {
         "description": "Message shown when user tries to edit profile without being logged in"

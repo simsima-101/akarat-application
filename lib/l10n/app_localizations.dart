@@ -370,6 +370,78 @@ abstract class AppLocalizations {
   /// **'Deletion failed'**
   String get deletionFailed;
 
+  /// Hint text for the search field on the home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a locality, area or city'**
+  String get homeSearchLocationHint;
+
+  /// Label for property for rent
+  ///
+  /// In en, this message translates to:
+  /// **'Property For Rent'**
+  String get homePropertyForRent;
+
+  /// Label for property for sale
+  ///
+  /// In en, this message translates to:
+  /// **'Property For Sale'**
+  String get homePropertyForSale;
+
+  /// Label for off-plan properties
+  ///
+  /// In en, this message translates to:
+  /// **'Off-Plan Properties'**
+  String get homeOffPlanProperties;
+
+  /// Label for commercial properties
+  ///
+  /// In en, this message translates to:
+  /// **'Commercial'**
+  String get homeCommercial;
+
+  /// Label for villas
+  ///
+  /// In en, this message translates to:
+  /// **'Villas'**
+  String get homeVilla;
+
+  /// Label for apartments
+  ///
+  /// In en, this message translates to:
+  /// **'Apartments'**
+  String get homeApartment;
+
+  /// Subtitle text shown in the Home screen New Projects section
+  ///
+  /// In en, this message translates to:
+  /// **'Discover more about the UAE real estate market'**
+  String get homeDiscoverUaeRealEstate;
+
+  /// Dropdown value shown in the Home screen sorting filter
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get homeSortNewest;
+
+  /// Dropdown value shown in the Home screen sorting filter
+  ///
+  /// In en, this message translates to:
+  /// **'Featured'**
+  String get homeSortFeatured;
+
+  /// Dropdown value shown in the Home screen sorting filter
+  ///
+  /// In en, this message translates to:
+  /// **'Price (Low)'**
+  String get homeSortPriceLow;
+
+  /// Dropdown value shown in the Home screen sorting filter
+  ///
+  /// In en, this message translates to:
+  /// **'Price (High)'**
+  String get homeSortPriceHigh;
+
   /// Message shown when user tries to edit profile without being logged in
   ///
   /// In en, this message translates to:

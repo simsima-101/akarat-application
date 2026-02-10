@@ -220,6 +220,79 @@
     "@deletionFailed": {
       "description": "Prefix for account deletion error messages"
     },
+
+  "@_home_screen_section": "================= HOME SCREEN =================",
+
+  "homeSearchLocationHint": "Search for a locality, area or city",
+  "@homeSearchLocationHint": {
+    "description": "Hint text for the search field on the home screen"
+  },
+
+
+
+      "homePropertyForRent": "Property For Rent",
+      "@homePropertyForRent": {
+        "description": "Label for property for rent"
+      },
+
+      "homePropertyForSale": "Property For Sale",
+      "@homePropertyForSale": {
+        "description": "Label for property for sale"
+      },
+
+      "homeOffPlanProperties": "Off-Plan Properties",
+      "@homeOffPlanProperties": {
+        "description": "Label for off-plan properties"
+      },
+
+      "homeCommercial": "Commercial",
+      "@homeCommercial": {
+        "description": "Label for commercial properties"
+      },
+
+      "homeVilla": "Villas",
+      "@homeVilla": {
+        "description": "Label for villas"
+      },
+
+      "homeApartment": "Apartments",
+      "@homeApartment": {
+        "description": "Label for apartments"
+      },
+
+  "homeDiscoverUaeRealEstate": "Discover more about the UAE real estate market",
+  "@homeDiscoverUaeRealEstate": {
+   "description": "Subtitle text shown in the Home screen New Projects section"
+  },
+
+
+
+    "homeSortNewest": "Newest",
+    "@homeSortNewest": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortFeatured": "Featured",
+    "@homeSortFeatured": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortPriceLow": "Price (Low)",
+    "@homeSortPriceLow": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    },
+
+    "homeSortPriceHigh": "Price (High)",
+    "@homeSortPriceHigh": {
+      "description": "Dropdown value shown in the Home screen sorting filter"
+    }
+
+
+
+
+
+
+    },
       "loginToEditProfile": "Please login to edit your profile.",
       "@loginToEditProfile": {
         "description": "Message shown when user tries to edit profile without being logged in"

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -147,4 +148,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginToEditProfile => 'Please login to edit your profile.';
+
+  @override
+  String get homeSearchLocationHint => 'Search for a locality, area or city';
+
+  @override
+  String get homePropertyForRent => 'Property For Rent';
+
+  @override
+  String get homePropertyForSale => 'Property For Sale';
+
+  @override
+  String get homeOffPlanProperties => 'Off-Plan Properties';
+
+  @override
+  String get homeCommercial => 'Commercial';
+
+  @override
+  String get homeVilla => 'Villas';
+
+  @override
+  String get homeApartment => 'Apartments';
+
+  @override
+  String get homeDiscoverUaeRealEstate =>
+      'Discover more about the UAE real estate market';
+
+  @override
+  String get homeSortNewest => 'Newest';
+
+  @override
+  String get homeSortFeatured => 'Featured';
+
+  @override
+  String get homeSortPriceLow => 'Price (Low)';
+
+  @override
+  String get homeSortPriceHigh => 'Price (High)';
 }

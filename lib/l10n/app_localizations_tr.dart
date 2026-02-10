@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -151,4 +152,41 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get loginToEditProfile =>
       'Profilinizi düzenlemek için lütfen giriş yapın.';
+
+  @override
+  String get homeSearchLocationHint => 'Bir mahalle, bölge veya şehir ara';
+
+  @override
+  String get homePropertyForRent => 'Kiralık Emlak';
+
+  @override
+  String get homePropertyForSale => 'Satılık Emlak';
+
+  @override
+  String get homeOffPlanProperties => 'Planlanan Projeler';
+
+  @override
+  String get homeCommercial => 'Ticari';
+
+  @override
+  String get homeVilla => 'Villalar';
+
+  @override
+  String get homeApartment => 'Daireler';
+
+  @override
+  String get homeDiscoverUaeRealEstate =>
+      'BAE emlak piyasası hakkında daha fazlasını keşfedin';
+
+  @override
+  String get homeSortNewest => 'En Yeniler';
+
+  @override
+  String get homeSortFeatured => 'Öne Çıkanlar';
+
+  @override
+  String get homeSortPriceLow => 'Fiyat (Düşük)';
+
+  @override
+  String get homeSortPriceHigh => 'Fiyat (Yüksek)';
 }
