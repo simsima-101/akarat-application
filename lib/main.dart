@@ -197,31 +197,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             );
 
             return MaterialApp(
-              locale: locState.locale,
+              // Use cubit locale, fallback to English if null
+              locale: locState.locale ?? const Locale('en'),
+
               title: 'Akarat',
               debugShowCheckedModeBanner: false,
               navigatorKey: navigatorKey,
               scaffoldMessengerKey: scaffoldMessengerKey,
 
-              // ── Critical: correct delegates & supported locales ──
+              // Critical: generated delegates & supported locales (includes en, ar, tr automatically)
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
 
-              // Alternative explicit version (uncomment if needed):
-              // localizationsDelegates: const [
-              //   AppLocalizations.delegate,
-              //   GlobalMaterialLocalizations.delegate,
-              //   GlobalWidgetsLocalizations.delegate,
-              //   GlobalCupertinoLocalizations.delegate,
-              // ],
-              // supportedLocales: const [
-              //   Locale('en'),
-              //   Locale('ar'),
-              //   Locale('tr'),
-              // ],
-
+              // RTL support for Arabic — very important
               builder: (context, child) {
-                final langCode = BlocProvider.of<LocalizationCubit>(context).currentLocale.languageCode;
+                final langCode = Localizations.localeOf(context).languageCode;
                 return Directionality(
                   textDirection: langCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
                   child: child!,

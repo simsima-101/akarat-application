@@ -12,60 +12,212 @@
     "description": "Title for the My Account screen"
   },
 
+  "@_new_projects_section": "================= NEW PROJECTS =================",
+
+  "newProjectsTitle": "Yeni Projeler",
+  "@newProjectsTitle": {
+    "description": "Title of the New Projects screen / app bar"
+  },
+
   "newProjectsSubtitle": "Dubai'deki yeni inşaat projelerini keşfedin ve BAE emlak piyasasına yatırım yapmak için bilmeniz gereken her şeyi öğrenin",
   "@newProjectsSubtitle": {
     "description": "Subtitle text shown on the New Projects screen"
   },
 
-    "errorLoadingProjects": "Projeler yüklenemedi.",
-    "@errorLoadingProjects": {
-      "description": "Error message when projects fail to load"
+  "latestProjectsTitle": "Dubai'deki En Son Projeler",
+  "@latestProjectsTitle": {
+    "description": "Message shown when latest project in Dubai"
+  },
+
+  "errorLoadingProjects": "Projeler yüklenemedi.",
+  "@errorLoadingProjects": {
+    "description": "Error message when projects fail to load"
+  },
+
+  "noProjectsFound": "Hiç mülk bulunamadı.",
+  "@noProjectsFound": {
+    "description": "Message when no projects are available"
+  },
+
+  "@_property_card_section": "================= PROPERTY CARD =================",
+
+  "agent": "Acenta",
+  "@agent": {
+    "description": "Fallback text when agent name is missing"
+  },
+
+  "priceOnRequest": "Fiyat bilgisi için iletişime geçin",
+  "@priceOnRequest": {
+    "description": "Shown when property price is not available"
+  },
+
+  "locationNotAvailable": "Konum mevcut değil",
+  "@locationNotAvailable": {
+    "description": "Fallback when location is missing"
+  },
+
+  "call": "Ara",
+  "@call": {
+    "description": "Label on the call button in property card"
+  },
+
+  "whatsapp": "WhatsApp",
+  "@whatsapp": {
+    "description": "Label on the WhatsApp button in property card"
+  },
+
+  "agentLabel": "ACENTA",
+  "@agentLabel": {
+    "description": "Small label under agent avatar in property card"
+  },
+
+  "noTitle": "Başlık yok",
+  "@noTitle": {
+    "description": "Fallback when property title is null"
+  },
+
+  "currencyAed": "AED",
+  "@currencyAed": {
+    "description": "Currency suffix for UAE Dirham (kept as code in Turkish)"
+  },
+
+  "@_project_details_section": "================= PROJE DETAYLARI =================",
+
+  "projectInformation": "Proje Bilgileri",
+  "@projectInformation": {
+    "description": "Section title for project details"
+  },
+
+  "projectDetail": "Proje Detayı",
+  "@projectDetail": {
+    "description": "Title for the project detail screen/app bar"
+  },
+
+  "noData": "Veri yok",
+  "@noData": {
+    "description": "Message shown when project data is missing or null"
+  },
+
+  "@_auth_section": "================= GİRİŞ & FAVORİLER =================",
+
+  "loginRequired": "Giriş Yapılması Gerekiyor",
+  "@loginRequired": {
+    "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
+  },
+
+  "loginToAccessFavorites": "Favorilere erişmek için lütfen giriş yapın.",
+  "@loginToAccessFavorites": {
+    "description": "Message explaining why login is needed to view favorites"
+  },
+
+  "cancel": "İptal",
+  "@cancel": {
+    "description": "Button text to close/cancel the login dialog"
+  },
+
+  "login": "Giriş Yap",
+  "@login": {
+    "description": "Button text that takes the user to the login screen"
+  },
+
+  "@_my_account_section": "================= MY ACCOUNT SECTION =================",
+
+  "welcomeLoginSignUp": "Hoş geldiniz! Giriş Yap / Kayıt Ol",
+  "@welcomeLoginSignUp": {
+    "description": "Shown when user is not logged in on profile card"
+  },
+
+  "myProfile": "Profilim",
+  "@myProfile": {
+    "description": "Label for user profile (e.g., in header or menu)"
+  },
+
+  "findMyAgent": "Acentemi Bul",
+  "@findMyAgent": {
+    "description": "Menu item to find agent page"
+  },
+
+  "favorites": "Favoriler",
+  "@favorites": {
+    "description": "Menu item for favorite properties"
+  },
+
+  "savedAlerts": "Kaydedilen Uyarılar",
+  "@savedAlerts": {
+    "description": "Menu item for saved search alerts"
+  },
+
+  "contactedProperties": "İletişime Geçilen İlanlar",
+  "@contactedProperties": {
+    "description": "Menu item for properties user has contacted"
+  },
+
+  "aboutUs": "Hakkımızda",
+  "@aboutUs": {
+    "description": "Menu item for About Us page"
+  },
+
+  "support": "Destek",
+  "@support": {
+    "description": "Menu item for support/contact page"
+  },
+
+  "privacyPolicy": "Gizlilik Politikası",
+  "@privacyPolicy": {
+    "description": "Menu item for Privacy Policy page"
+  },
+
+  "termsAndConditions": "Şartlar ve Koşullar",
+  "@termsAndConditions": {
+    "description": "Menu item for Terms and Conditions page"
+  },
+
+  "rateUs": "Bizi Değerlendir",
+  "@rateUs": {
+    "description": "Menu item or button to rate the app"
+  },
+
+  "logout": "Çıkış Yap",
+  "@logout": {
+    "description": "Menu item or button for logging out"
+  },
+
+  "logoutConfirmationTitle": "Çıkış yapmak istediğinize emin misiniz?",
+  "@logoutConfirmationTitle": {
+    "description": "Title of logout confirmation dialog"
+  },
+
+  "loginRequiredTitle": "Giriş Gereklidir",
+  "@loginRequiredTitle": {
+    "description": "Dialog title when action needs authentication"
+  },
+
+  "loginToAccessFavorites": "Favorilere erişmek için lütfen giriş yapın.",
+  "@loginToAccessFavorites": {
+    "description": "Message explaining why login is needed to view favorites"
+  },
+
+  "loginToAccessSavedAlerts": "Kaydedilen uyarılara erişmek için lütfen giriş yapın.",
+  "@loginToAccessSavedAlerts": {
+    "description": "Message for accessing saved alerts without login"
+  },
+
+  "loginToViewContacted": "İletişime geçilen ilanları görmek için lütfen giriş yapın.",
+  "@loginToViewContacted": {
+    "description": "Message for viewing contacted properties without login"
+  },
+    "notLoggedInForAction": "Giriş yapmadınız",
+    "@notLoggedInForAction": {
+      "description": "Shown when user tries to delete account or perform authenticated action without being logged in"
     },
 
-    "noProjectsFound": "Hiç mülk bulunamadı.",
-    "@noProjectsFound": {
-      "description": "Message when no projects are available"
+    "accountDeletedSuccessfully": "Hesap başarıyla silindi",
+    "@accountDeletedSuccessfully": {
+      "description": "Shown after successful account deletion"
     },
 
-    "projectInformation": "Proje Bilgileri",
-    "@projectInformation": {
-      "description": "Section title for project details"
-    },
-      "projectDetail": "Proje Detayı",
-      "@projectDetail": {
-        "description": "Title for the project detail screen/app bar"
-      },
-
-      "noData": "Veri yok",
-      "@noData": {
-        "description": "Message shown when project data is missing or null"
-      },
-        "latestProjectsTitle": "Dubai'deki En Son Projeler",
-        "@latestProjectsTitle": {
-          "description": "Message shown when latest project in Dubai"
-        },
-
-          "loginRequired": "Giriş Yapılması Gerekiyor",
-          "@loginRequired": {
-            "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
-          },
-
-          "loginToAccessFavorites": "Favorilere erişmek için lütfen giriş yapın.",
-          "@loginToAccessFavorites": {
-            "description": "Message explaining why login is needed to view favorites"
-          },
-
-          "cancel": "İptal",
-          "@cancel": {
-            "description": "Button text to close/cancel the login dialog"
-          },
-
-          "login": "Giriş Yap",
-          "@login": {
-            "description": "Button text that takes the user to the login screen"
-          },
-            "newProjectsTitle": "Yeni Projeler",
-            "@newProjectsTitle": {
-              "description": "Title of the New Projects screen / app bar"
-            }
+    "deletionFailed": "Silme işlemi başarısız oldu",
+    "@deletionFailed": {
+      "description": "Prefix for account deletion error messages"
+    }
 }

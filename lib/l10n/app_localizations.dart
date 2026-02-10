@@ -124,7 +124,7 @@ abstract class AppLocalizations {
   /// **'Hello'**
   String get hello;
 
-  /// No description provided for @language.
+  /// Menu item for changing app language
   ///
   /// In en, this message translates to:
   /// **'Language'**
@@ -136,11 +136,23 @@ abstract class AppLocalizations {
   /// **'My Account'**
   String get myAccount;
 
+  /// Title of the New Projects screen / app bar
+  ///
+  /// In en, this message translates to:
+  /// **'New Projects'**
+  String get newProjectsTitle;
+
   /// Subtitle text shown on the New Projects screen
   ///
   /// In en, this message translates to:
   /// **'Find off-plan development and everything you need to know to invest in UAE\'s real estate market'**
   String get newProjectsSubtitle;
+
+  /// Message shown when latest project in Dubai
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Projects in Dubai'**
+  String get latestProjectsTitle;
 
   /// Error message when projects fail to load
   ///
@@ -153,6 +165,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No properties found.'**
   String get noProjectsFound;
+
+  /// Fallback text when agent name is missing
+  ///
+  /// In en, this message translates to:
+  /// **'Agent'**
+  String get agent;
+
+  /// Shown when property price is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Price on request'**
+  String get priceOnRequest;
+
+  /// Fallback when location is missing
+  ///
+  /// In en, this message translates to:
+  /// **'Location not available'**
+  String get locationNotAvailable;
+
+  /// Label on the call button in property card
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get call;
+
+  /// Label on the WhatsApp button in property card
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get whatsapp;
+
+  /// Small label under agent avatar in property card
+  ///
+  /// In en, this message translates to:
+  /// **'AGENT'**
+  String get agentLabel;
+
+  /// Fallback when property title is null
+  ///
+  /// In en, this message translates to:
+  /// **'No title'**
+  String get noTitle;
+
+  /// Currency suffix for UAE Dirham (keep as code in English)
+  ///
+  /// In en, this message translates to:
+  /// **'AED'**
+  String get currencyAed;
 
   /// Section title for project details
   ///
@@ -171,12 +231,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No data available'**
   String get noData;
-
-  /// Message shown when latest project in Dubai
-  ///
-  /// In en, this message translates to:
-  /// **'Latest Projects in Dubai'**
-  String get latestProjectsTitle;
 
   /// Title of the dialog that appears when user tries to access favorites without being logged in
   ///
@@ -202,11 +256,119 @@ abstract class AppLocalizations {
   /// **'Login'**
   String get login;
 
-  /// Title of the New Projects screen / app bar
+  /// Shown when user is not logged in on profile card
   ///
   /// In en, this message translates to:
-  /// **'New Projects'**
-  String get newProjectsTitle;
+  /// **'Welcome! Login / Sign up'**
+  String get welcomeLoginSignUp;
+
+  /// Label for user profile (e.g., in header or menu)
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get myProfile;
+
+  /// Menu item to find agent page
+  ///
+  /// In en, this message translates to:
+  /// **'Find My Agent'**
+  String get findMyAgent;
+
+  /// Menu item for favorite properties
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favorites;
+
+  /// Menu item for saved search alerts
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Alerts'**
+  String get savedAlerts;
+
+  /// Menu item for properties user has contacted
+  ///
+  /// In en, this message translates to:
+  /// **'Contacted Properties'**
+  String get contactedProperties;
+
+  /// Menu item for About Us page
+  ///
+  /// In en, this message translates to:
+  /// **'About Us'**
+  String get aboutUs;
+
+  /// Menu item for support/contact page
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get support;
+
+  /// Menu item for Privacy Policy page
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// Menu item for Terms and Conditions page
+  ///
+  /// In en, this message translates to:
+  /// **'Terms And Conditions'**
+  String get termsAndConditions;
+
+  /// Menu item or button to rate the app
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Us'**
+  String get rateUs;
+
+  /// Menu item or button for logging out
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// Title of logout confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout?'**
+  String get logoutConfirmationTitle;
+
+  /// Dialog title when action needs authentication
+  ///
+  /// In en, this message translates to:
+  /// **'Login Required'**
+  String get loginRequiredTitle;
+
+  /// Message shown when trying to access saved alerts without login
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to access saved alerts.'**
+  String get loginToAccessSavedAlerts;
+
+  /// Message shown when trying to view contacted properties without login
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to view contacted properties.'**
+  String get loginToViewContacted;
+
+  /// Shown when user tries to delete account or perform authenticated action without being logged in
+  ///
+  /// In en, this message translates to:
+  /// **'You are not logged in'**
+  String get notLoggedInForAction;
+
+  /// Shown after successful account deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted successfully'**
+  String get accountDeletedSuccessfully;
+
+  /// Prefix for account deletion error messages
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion failed'**
+  String get deletionFailed;
 }
 
 class _AppLocalizationsDelegate

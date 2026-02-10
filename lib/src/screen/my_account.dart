@@ -157,61 +157,93 @@ class _My_AccountState extends State<My_Account> {
   Future<void> deleteAccount() async {
     try {
       final token = SessionManager().token;
+
+      final l10n = AppLocalizations.of(context);
+
       if (token == null || token.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You are not logged in')),
+          SnackBar(
+            content: Text(
+              l10n?.notLoggedInForAction ??
+                  l10n?.loginRequired ??
+                  'You are not logged in',
+            ),
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
         return;
       }
 
-      // Primary attempt: use proper DELETE method
+      // ──────────────────────────────────────────────
+      // ... DELETE request logic remains the same ...
+      // ──────────────────────────────────────────────
+
       var resp = await ApiService.delete(
         '/delete',
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       );
 
-      // Fallback: if backend rejects DELETE (405 or 404),
-      // use POST with _method=DELETE (common in Laravel/Sanctum)
       if (resp.statusCode == 405 || resp.statusCode == 404) {
         resp = await ApiService.post(
           '/delete',
           body: {'_method': 'DELETE'},
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
+          headers: {'Authorization': 'Bearer $token'},
         );
       }
 
-      // Success check
       if (resp.statusCode == 200 || resp.statusCode == 204) {
         await SessionManager().signOut();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account deleted successfully')),
+          SnackBar(
+            content: Text(
+              l10n?.accountDeletedSuccessfully ?? 'Account deleted successfully',
+            ),
+            backgroundColor: Colors.green[700],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
         );
 
         if (mounted) {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const LoginDemo()),
-            (route) => false,
+                (route) => false,
           );
         }
       } else {
-        // Improved error with response body if available
-        String errorMsg = 'Failed: ${resp.statusCode}';
+        String errorMsg = '${l10n?.deletionFailed ?? 'Deletion failed'}: ${resp.statusCode}';
         try {
           final errorBody = jsonDecode(resp.body);
-          errorMsg += ' - ${errorBody['message'] ?? 'Unknown error'}';
+          final serverMessage = errorBody['message'] ?? errorBody['error'] ?? 'Unknown error';
+          errorMsg += ' - $serverMessage';
         } catch (_) {}
-        throw Exception(errorMsg);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMsg),
+              backgroundColor: Colors.red[700],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Deletion failed: $e')),
+          SnackBar(
+            content: Text(
+              '${l10n?.deletionFailed ?? 'Deletion failed'}: $e',
+            ),
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     }

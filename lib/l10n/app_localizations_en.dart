@@ -27,14 +27,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myAccount => 'My Account';
 
   @override
+  String get newProjectsTitle => 'New Projects';
+
+  @override
   String get newProjectsSubtitle =>
       'Find off-plan development and everything you need to know to invest in UAE\'s real estate market';
+
+  @override
+  String get latestProjectsTitle => 'Latest Projects in Dubai';
 
   @override
   String get errorLoadingProjects => 'Failed to load projects.';
 
   @override
   String get noProjectsFound => 'No properties found.';
+
+  @override
+  String get agent => 'Agent';
+
+  @override
+  String get priceOnRequest => 'Price on request';
+
+  @override
+  String get locationNotAvailable => 'Location not available';
+
+  @override
+  String get call => 'Call';
+
+  @override
+  String get whatsapp => 'WhatsApp';
+
+  @override
+  String get agentLabel => 'AGENT';
+
+  @override
+  String get noTitle => 'No title';
+
+  @override
+  String get currencyAed => 'AED';
 
   @override
   String get projectInformation => 'Project Information';
@@ -44,9 +74,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noData => 'No data available';
-
-  @override
-  String get latestProjectsTitle => 'Latest Projects in Dubai';
 
   @override
   String get loginRequired => 'Login Required';
@@ -61,5 +88,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Login';
 
   @override
-  String get newProjectsTitle => 'New Projects';
+  String get welcomeLoginSignUp => 'Welcome! Login / Sign up';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get findMyAgent => 'Find My Agent';
+
+  @override
+  String get favorites => 'Favorites';
+
+  @override
+  String get savedAlerts => 'Saved Alerts';
+
+  @override
+  String get contactedProperties => 'Contacted Properties';
+
+  @override
+  String get aboutUs => 'About Us';
+
+  @override
+  String get support => 'Support';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get termsAndConditions => 'Terms And Conditions';
+
+  @override
+  String get rateUs => 'Rate Us';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get logoutConfirmationTitle => 'Are you sure you want to logout?';
+
+  @override
+  String get loginRequiredTitle => 'Login Required';
+
+  @override
+  String get loginToAccessSavedAlerts => 'Please login to access saved alerts.';
+
+  @override
+  String get loginToViewContacted =>
+      'Please login to view contacted properties.';
+
+  @override
+  String get notLoggedInForAction => 'You are not logged in';
+
+  @override
+  String get accountDeletedSuccessfully => 'Account deleted successfully';
+
+  @override
+  String get deletionFailed => 'Deletion failed';
 }

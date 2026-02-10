@@ -6,13 +6,27 @@
   "properties": "Properties",
   "hello": "Hello",
   "language": "Language",
+
   "myAccount": "My Account",
   "@myAccount": {
     "description": "Title for the My Account screen"
   },
+
+  "@_new_projects_section": "================= NEW PROJECTS =================",
+
+  "newProjectsTitle": "New Projects",
+  "@newProjectsTitle": {
+    "description": "Title of the New Projects screen / app bar"
+  },
+
   "newProjectsSubtitle": "Find off-plan development and everything you need to know to invest in UAE's real estate market",
   "@newProjectsSubtitle": {
     "description": "Subtitle text shown on the New Projects screen"
+  },
+
+  "latestProjectsTitle": "Latest Projects in Dubai",
+  "@latestProjectsTitle": {
+    "description": "Message shown when latest project in Dubai"
   },
 
   "errorLoadingProjects": "Failed to load projects.",
@@ -25,24 +39,66 @@
     "description": "Message when no projects are available"
   },
 
+  "@_property_card_section": "================= PROPERTY CARD =================",
+
+  "agent": "Agent",
+  "@agent": {
+    "description": "Fallback text when agent name is missing"
+  },
+
+  "priceOnRequest": "Price on request",
+  "@priceOnRequest": {
+    "description": "Shown when property price is not available"
+  },
+
+  "locationNotAvailable": "Location not available",
+  "@locationNotAvailable": {
+    "description": "Fallback when location is missing"
+  },
+
+  "call": "Call",
+  "@call": {
+    "description": "Label on the call button in property card"
+  },
+
+  "whatsapp": "WhatsApp",
+  "@whatsapp": {
+    "description": "Label on the WhatsApp button in property card"
+  },
+
+  "agentLabel": "AGENT",
+  "@agentLabel": {
+    "description": "Small label under agent avatar in property card"
+  },
+
+  "noTitle": "No title",
+  "@noTitle": {
+    "description": "Fallback when property title is null"
+  },
+
+  "currencyAed": "AED",
+  "@currencyAed": {
+    "description": "Currency suffix for UAE Dirham (keep as code in English)"
+  },
+
+  "@_project_details_section": "================= PROJECT DETAILS =================",
+
   "projectInformation": "Project Information",
   "@projectInformation": {
     "description": "Section title for project details"
   },
-    "projectDetail": "Project Detail",
-    "@projectDetail": {
-      "description": "Title for the project detail screen/app bar"
-    },
 
-    "noData": "No data available",
-    "@noData": {
-      "description": "Message shown when project data is missing or null"
-    },
+  "projectDetail": "Project Detail",
+  "@projectDetail": {
+    "description": "Title for the project detail screen/app bar"
+  },
 
-     "latestProjectsTitle": "Latest Projects in Dubai",
-     "@latestProjectsTitle": {
-       "description": "Message shown when latest project in Dubai"
-},
+  "noData": "No data available",
+  "@noData": {
+    "description": "Message shown when project data is missing or null"
+  },
+
+  "@_auth_section": "================= AUTH & FAVORITES =================",
 
   "loginRequired": "Login Required",
   "@loginRequired": {
@@ -63,8 +119,105 @@
   "@login": {
     "description": "Button text that takes the user to the login screen"
   },
-    "newProjectsTitle": "New Projects",
-    "@newProjectsTitle": {
-      "description": "Title of the New Projects screen / app bar"
+
+  "@_my_account_section": "================= MY ACCOUNT =================",
+
+  "welcomeLoginSignUp": "Welcome! Login / Sign up",
+  "@welcomeLoginSignUp": {
+    "description": "Shown when user is not logged in on profile card"
+  },
+
+  "myProfile": "My Profile",
+  "@myProfile": {
+    "description": "Label for user profile (e.g., in header or menu)"
+  },
+
+  "findMyAgent": "Find My Agent",
+  "@findMyAgent": {
+    "description": "Menu item to find agent page"
+  },
+
+  "favorites": "Favorites",
+  "@favorites": {
+    "description": "Menu item for favorite properties"
+  },
+
+  "savedAlerts": "Saved Alerts",
+  "@savedAlerts": {
+    "description": "Menu item for saved search alerts"
+  },
+
+  "contactedProperties": "Contacted Properties",
+  "@contactedProperties": {
+    "description": "Menu item for properties user has contacted"
+  },
+
+  "aboutUs": "About Us",
+  "@aboutUs": {
+    "description": "Menu item for About Us page"
+  },
+
+  "support": "Support",
+  "@support": {
+    "description": "Menu item for support/contact page"
+  },
+
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Menu item for Privacy Policy page"
+  },
+
+  "termsAndConditions": "Terms And Conditions",
+  "@termsAndConditions": {
+    "description": "Menu item for Terms and Conditions page"
+  },
+
+  "language": "Language",
+  "@language": {
+    "description": "Menu item for changing app language"
+  },
+
+  "rateUs": "Rate Us",
+  "@rateUs": {
+    "description": "Menu item or button to rate the app"
+  },
+
+  "logout": "Logout",
+  "@logout": {
+    "description": "Menu item or button for logging out"
+  },
+
+  "logoutConfirmationTitle": "Are you sure you want to logout?",
+  "@logoutConfirmationTitle": {
+    "description": "Title of logout confirmation dialog"
+  },
+
+  "loginRequiredTitle": "Login Required",
+  "@loginRequiredTitle": {
+    "description": "Dialog title when action needs authentication"
+  },
+
+  "loginToAccessSavedAlerts": "Please login to access saved alerts.",
+  "@loginToAccessSavedAlerts": {
+    "description": "Message shown when trying to access saved alerts without login"
+  },
+
+  "loginToViewContacted": "Please login to view contacted properties.",
+  "@loginToViewContacted": {
+    "description": "Message shown when trying to view contacted properties without login"
+  },
+    "notLoggedInForAction": "You are not logged in",
+    "@notLoggedInForAction": {
+      "description": "Shown when user tries to delete account or perform authenticated action without being logged in"
+    },
+
+    "accountDeletedSuccessfully": "Account deleted successfully",
+    "@accountDeletedSuccessfully": {
+      "description": "Shown after successful account deletion"
+    },
+
+    "deletionFailed": "Deletion failed",
+    "@deletionFailed": {
+      "description": "Prefix for account deletion error messages"
     }
 }

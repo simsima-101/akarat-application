@@ -12,61 +12,212 @@
     "description": "Title for the My Account screen"
   },
 
+  "@_new_projects_section": "================= NEW PROJECTS =================",
+
+  "newProjectsTitle": "المشاريع الجديدة",
+  "@newProjectsTitle": {
+    "description": "Title of the New Projects screen / app bar"
+  },
+
   "newProjectsSubtitle": "اكتشف التطويرات تحت الإنشاء وكل ما تحتاج معرفته للاستثمار في سوق العقارات في الإمارات",
   "@newProjectsSubtitle": {
     "description": "Subtitle text shown on the New Projects screen"
   },
-    "errorLoadingProjects": "فشل تحميل المشاريع.",
-    "@errorLoadingProjects": {
-      "description": "Error message when projects fail to load"
+
+  "latestProjectsTitle": "أحدث المشاريع في دبي",
+  "@latestProjectsTitle": {
+    "description": "Message shown when latest project in Dubai"
+  },
+
+  "errorLoadingProjects": "فشل تحميل المشاريع.",
+  "@errorLoadingProjects": {
+    "description": "Error message when projects fail to load"
+  },
+
+  "noProjectsFound": "لم يتم العثور على عقارات.",
+  "@noProjectsFound": {
+    "description": "Message when no projects are available"
+  },
+
+  "@_property_card_section": "================= PROPERTY CARD =================",
+
+  "agent": "وكيل",
+  "@agent": {
+    "description": "Fallback text when agent name is missing"
+  },
+
+  "priceOnRequest": "السعر عند الطلب",
+  "@priceOnRequest": {
+    "description": "Shown when property price is not available"
+  },
+
+  "locationNotAvailable": "الموقع غير متوفر",
+  "@locationNotAvailable": {
+    "description": "Fallback when location is missing"
+  },
+
+  "call": "اتصال",
+  "@call": {
+    "description": "Label on the call button in property card"
+  },
+
+  "whatsapp": "واتساب",
+  "@whatsapp": {
+    "description": "Label on the WhatsApp button in property card"
+  },
+
+  "agentLabel": "وكيل",
+  "@agentLabel": {
+    "description": "Small label under agent avatar in property card"
+  },
+
+  "noTitle": "لا يوجد عنوان",
+  "@noTitle": {
+    "description": "Fallback when property title is null"
+  },
+
+  "currencyAed": "درهم",
+  "@currencyAed": {
+    "description": "Currency suffix for UAE Dirham in Arabic (درهم إماراتي abbreviated)"
+  },
+
+  "@_project_details_section": "================= تفاصيل المشروع =================",
+
+  "projectInformation": "معلومات المشروع",
+  "@projectInformation": {
+    "description": "Section title for project details"
+  },
+
+  "projectDetail": "تفاصيل المشروع",
+  "@projectDetail": {
+    "description": "Title for the project detail screen/app bar"
+  },
+
+  "noData": "لا توجد بيانات",
+  "@noData": {
+    "description": "Message shown when project data is missing or null"
+  },
+
+  "@_auth_section": "================= تسجيل الدخول والمفضلة =================",
+
+  "loginRequired": "يتطلب تسجيل الدخول",
+  "@loginRequired": {
+    "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
+  },
+
+  "loginToAccessFavorites": "يرجى تسجيل الدخول للوصول إلى المفضلة.",
+  "@loginToAccessFavorites": {
+    "description": "Message explaining why login is needed to view favorites"
+  },
+
+  "cancel": "إلغاء",
+  "@cancel": {
+    "description": "Button text to close/cancel the login dialog"
+  },
+
+  "login": "تسجيل الدخول",
+  "@login": {
+    "description": "Button text that takes the user to the login screen"
+  },
+
+  "@_my_account_section": "================= MY ACCOUNT SECTION =================",
+
+  "welcomeLoginSignUp": "مرحباً! تسجيل الدخول / إنشاء حساب",
+  "@welcomeLoginSignUp": {
+    "description": "Shown when user is not logged in on profile card"
+  },
+
+  "myProfile": "ملفي الشخصي",
+  "@myProfile": {
+    "description": "Label for user profile (e.g., in header or menu)"
+  },
+
+  "findMyAgent": "ابحث عن وكيلي",
+  "@findMyAgent": {
+    "description": "Menu item to find agent page"
+  },
+
+  "favorites": "المفضلة",
+  "@favorites": {
+    "description": "Menu item for favorite properties"
+  },
+
+  "savedAlerts": "التنبيهات المحفوظة",
+  "@savedAlerts": {
+    "description": "Menu item for saved search alerts"
+  },
+
+  "contactedProperties": "العقارات التي تم التواصل بشأنها",
+  "@contactedProperties": {
+    "description": "Menu item for properties user has contacted"
+  },
+
+  "aboutUs": "من نحن",
+  "@aboutUs": {
+    "description": "Menu item for About Us page"
+  },
+
+  "support": "الدعم",
+  "@support": {
+    "description": "Menu item for support/contact page"
+  },
+
+  "privacyPolicy": "سياسة الخصوصية",
+  "@privacyPolicy": {
+    "description": "Menu item for Privacy Policy page"
+  },
+
+  "termsAndConditions": "الشروط والأحكام",
+  "@termsAndConditions": {
+    "description": "Menu item for Terms and Conditions page"
+  },
+
+  "rateUs": "قيّمنا",
+  "@rateUs": {
+    "description": "Menu item or button to rate the app"
+  },
+
+  "logout": "تسجيل الخروج",
+  "@logout": {
+    "description": "Menu item or button for logging out"
+  },
+
+  "logoutConfirmationTitle": "هل أنت متأكد من تسجيل الخروج؟",
+  "@logoutConfirmationTitle": {
+    "description": "Title of logout confirmation dialog"
+  },
+
+  "loginRequiredTitle": "يتطلب تسجيل الدخول",
+  "@loginRequiredTitle": {
+    "description": "Dialog title when action needs authentication"
+  },
+
+  "loginToAccessFavorites": "يرجى تسجيل الدخول للوصول إلى المفضلة.",
+  "@loginToAccessFavorites": {
+    "description": "Message explaining why login is needed to view favorites"
+  },
+
+  "loginToAccessSavedAlerts": "يرجى تسجيل الدخول للوصول إلى التنبيهات المحفوظة.",
+  "@loginToAccessSavedAlerts": {
+    "description": "Message for accessing saved alerts without login"
+  },
+
+  "loginToViewContacted": "يرجى تسجيل الدخول لعرض العقارات التي تم التواصل بشأنها.",
+  "@loginToViewContacted": {
+    "description": "Message for viewing contacted properties without login"
+  },
+    "notLoggedInForAction": "أنت غير مسجل الدخول",
+    "@notLoggedInForAction": {
+      "description": "Shown when user tries to delete account or perform authenticated action without being logged in"
     },
 
-    "noProjectsFound": "لم يتم العثور على عقارات.",
-    "@noProjectsFound": {
-      "description": "Message when no projects are available"
+    "accountDeletedSuccessfully": "تم حذف الحساب بنجاح",
+    "@accountDeletedSuccessfully": {
+      "description": "Shown after successful account deletion"
     },
 
-    "projectInformation": "معلومات المشروع",
-    "@projectInformation": {
-      "description": "Section title for project details"
-    },
-
-      "projectDetail": "تفاصيل المشروع",
-      "@projectDetail": {
-        "description": "Title for the project detail screen/app bar"
-      },
-
-      "noData": "لا توجد بيانات",
-      "@noData": {
-        "description": "Message shown when project data is missing or null"
-      },
-        "latestProjectsTitle": "أحدث المشاريع في دبي",
-        "@latestProjectsTitle": {
-          "description": "Message shown when latest project in Dubai"
-        },
-
-          "loginRequired": "يتطلب تسجيل الدخول",
-          "@loginRequired": {
-            "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
-          },
-
-          "loginToAccessFavorites": "يرجى تسجيل الدخول للوصول إلى المفضلة.",
-          "@loginToAccessFavorites": {
-            "description": "Message explaining why login is needed to view favorites"
-          },
-
-          "cancel": "إلغاء",
-          "@cancel": {
-            "description": "Button text to close/cancel the login dialog"
-          },
-
-          "login": "تسجيل الدخول",
-          "@login": {
-            "description": "Button text that takes the user to the login screen"
-          },
-            "newProjectsTitle": "المشاريع الجديدة",
-            "@newProjectsTitle": {
-              "description": "Title of the New Projects screen / app bar"
-            }
-
+    "deletionFailed": "فشل الحذف",
+    "@deletionFailed": {
+      "description": "Prefix for account deletion error messages"
+    }
 }

@@ -6,9 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../core/services/api_service.dart';
 import '../../core/utils/secure_storage.dart';
 import '../../core/utils/session_manager.dart';
+import '../../extensions/localization_extension.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/localization/presentation/bloc/localization_cubit.dart';
 import '../../features/property/data/models/property_model.dart';
@@ -120,6 +122,13 @@ class PropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context);
+
+    // ──── Add these 3 debug lines ────
+    print("=== Locale debug ===");
+    print("Current language code: ${Localizations.localeOf(context).languageCode}");
+    print("currencyAed value: ${l10n?.currencyAed ?? 'MISSING'}");
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -175,8 +184,13 @@ class PropertyCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '${item.price ?? 'Price on request'} AED',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                  item.price?.trim().isNotEmpty == true
+                      ? '${item.price!.trim()} ${context.l10n.currencyAed}'
+                      : context.  l10n.priceOnRequest,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                  ),
                 ),
                 const SizedBox(height: 5),
 
@@ -232,7 +246,10 @@ class PropertyCard extends StatelessWidget {
                           if (await canLaunchUrlString(phone)) await launchUrlString(phone);
                         },
                         icon: const Icon(Icons.call, color: Colors.red),
-                        label: const Text("Call", style: TextStyle(color: Colors.black)),
+                        label: Text(
+                          context.l10n.call,                        // ← localized: "Call" / "اتصال" / "Ara"
+                          style: const TextStyle(color: Colors.black),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey[100],
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -249,7 +266,10 @@ class PropertyCard extends StatelessWidget {
                           if (await canLaunchUrlString(url)) await launchUrlString(url);
                         },
                         icon: Image.asset("assets/images/whats.png", height: 20),
-                        label: const Text("WhatsApp", style: TextStyle(color: Colors.black)),
+                        label: Text(
+                          context.l10n.whatsapp,                    // ← localized: "WhatsApp" / "واتساب" / "WhatsApp"
+                          style: const TextStyle(color: Colors.black),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey[100],
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -440,9 +460,9 @@ class _PropertyImageCarouselState extends State<PropertyImageCarousel> {
         ),
 
         // Agent Avatar
-        Positioned(
+        PositionedDirectional(
           bottom: -35,
-          left: 2,
+          start: 2,
           child: GestureDetector(
             onTap: () {
               Navigator.push(
