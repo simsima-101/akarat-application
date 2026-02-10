@@ -219,5 +219,9 @@
     "deletionFailed": "فشل الحذف",
     "@deletionFailed": {
       "description": "Prefix for account deletion error messages"
-    }
+    },
+      "loginToEditProfile": "يرجى تسجيل الدخول لتعديل ملفك الشخصي.",
+      "@loginToEditProfile": {
+        "description": "Message shown when user tries to edit profile without being logged in"
+      }
 }

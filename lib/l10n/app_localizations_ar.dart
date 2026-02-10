@@ -145,4 +145,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get deletionFailed => 'فشل الحذف';
+
+  @override
+  String get loginToEditProfile => 'يرجى تسجيل الدخول لتعديل ملفك الشخصي.';
 }

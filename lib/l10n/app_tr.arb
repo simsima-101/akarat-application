@@ -219,5 +219,9 @@
     "deletionFailed": "Silme işlemi başarısız oldu",
     "@deletionFailed": {
       "description": "Prefix for account deletion error messages"
-    }
+    },
+      "loginToEditProfile": "Profilinizi düzenlemek için lütfen giriş yapın.",
+      "@loginToEditProfile": {
+        "description": "Message shown when user tries to edit profile without being logged in"
+      }
 }

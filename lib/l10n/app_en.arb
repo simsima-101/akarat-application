@@ -219,5 +219,9 @@
     "deletionFailed": "Deletion failed",
     "@deletionFailed": {
       "description": "Prefix for account deletion error messages"
-    }
+    },
+      "loginToEditProfile": "Please login to edit your profile.",
+      "@loginToEditProfile": {
+        "description": "Message shown when user tries to edit profile without being logged in"
+      }
 }

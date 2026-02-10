@@ -369,6 +369,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deletion failed'**
   String get deletionFailed;
+
+  /// Message shown when user tries to edit profile without being logged in
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to edit your profile.'**
+  String get loginToEditProfile;
 }
 
 class _AppLocalizationsDelegate

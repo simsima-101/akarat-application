@@ -144,4 +144,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deletionFailed => 'Deletion failed';
+
+  @override
+  String get loginToEditProfile => 'Please login to edit your profile.';
 }

@@ -147,4 +147,8 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get deletionFailed => 'Silme işlemi başarısız oldu';
+
+  @override
+  String get loginToEditProfile =>
+      'Profilinizi düzenlemek için lütfen giriş yapın.';
 }

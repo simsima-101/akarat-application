@@ -33,6 +33,6 @@ extension AppLocalizationsX on BuildContext {
     }
   }
 
-  // Optional: nullable version (no fallback logic)
+  // Optional: nullable version
   AppLocalizations? get l10nOrNull => AppLocalizations.of(this);
 }
