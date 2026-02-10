@@ -1,12 +1,11 @@
-import 'package:Akarat/src/features/property/data/models/featuredmodel.dart'
-    as featured;
-import 'package:Akarat/src/features/property/data/models/property_model.dart';
+import 'package:Akarat/general/services/home_app_logo_manager_service.dart';
+import 'package:Akarat/src/features/localization/presentation/bloc/localization_cubit.dart';
+import 'package:Akarat/src/features/localization/presentation/bloc/localization_state.dart';
 import 'package:Akarat/src/features/property/presentation/bloc/properties_bloc.dart';
 import 'package:Akarat/src/screen/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../l10n/app_localizations.dart';
 import '../common/widgets/property_card.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/filter/presentation/view/filter.dart' as filter;
@@ -21,33 +20,6 @@ import 'login.dart';
 import 'my_account.dart';
 import 'new_projects.dart';
 
-extension AppLocalizationExtension on BuildContext {
-  AppLocalizations get loc => AppLocalizations.of(this)!;
-}
-
-extension FeaturedDataToProperty on featured.Data {
-  Property toProperty() {
-    return Property(
-      id: id?.toString() ?? '0',
-      title: title ?? 'No title',
-      price: price ?? 'Price on request',
-      location: location ?? address ?? 'Dubai, UAE',
-      bedrooms: bedrooms ?? 0,
-      bathrooms: bathrooms ?? 0,
-      squareFeet: squareFeet ?? displaySize ?? 'N/A',
-      description: 'Beautiful property listed on Akarat.',
-      image: media?.isNotEmpty == true ? media!.first.originalUrl ?? '' : '',
-      media: media ?? [],
-      agent: agentName ?? 'Agent',
-      agentImage: agentImage,
-      phoneNumber: phoneNumber,
-      whatsapp: whatsapp,
-      postedOn: postedOn,
-      agencyLogo: agencyLogo,
-    );
-  }
-}
-
 String _getSortDisplayName(String sortKey) {
   const displayMap = {
     'featured': 'Featured',
@@ -60,49 +32,6 @@ String _getSortDisplayName(String sortKey) {
 
 class Home extends StatelessWidget {
   const Home({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const HomeDemo(),
-    );
-  }
-}
-
-class _FixedHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  _FixedHeaderDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_FixedHeaderDelegate oldDelegate) {
-    return minHeight != oldDelegate.minHeight ||
-        maxHeight != oldDelegate.maxHeight ||
-        child != oldDelegate.child;
-  }
-}
-
-class HomeDemo extends StatelessWidget {
-  const HomeDemo({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -169,25 +98,21 @@ class HomeDemo extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        height: 40,
-                        width: 40,
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage('assets/images/app_icon.png'),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        height: 80,
-                        width: 120,
-                        decoration: const BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage('assets/images/logo-text.png'),
-                          ),
-                        ),
+                      BlocBuilder<LocalizationCubit, LocalizationState>(
+                        builder: (context, localizationState) {
+                          return Container(
+                            margin: const EdgeInsets.only(top: 10),
+                            height: 100,
+                            width: 160,
+                            child: Image.asset(
+                              HomeAppLogoManagerService
+                                  .getHomeAppLogoBasedLocale(
+                                localizationState.locale,
+                              ),
+                              fit: BoxFit.contain,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
