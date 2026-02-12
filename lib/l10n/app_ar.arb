@@ -293,6 +293,7 @@
       },
 
 
+
        "@_my_account_support_section": "================= MY ACCOUNT → SUPPORT SCREEN =================",
 
         "myAccountSupportTitle": "اتصل بنا",
@@ -382,4 +383,225 @@
 
 
 
-}
+},
+
+       "@_register_screen_section": "================= REGISTER SCREEN =================",
+
+  "registerTitle": "إنشاء حساب",
+  "@registerTitle": {
+    "description": "Title of the registration screen app bar"
+  },
+
+  "continueWithGoogle": "المتابعة باستخدام جوجل",
+  "@continueWithGoogle": {
+    "description": "Label on Google sign-in button"
+  },
+
+  "or": "أو",
+  "@or": {
+    "description": "Separator between sign-in methods"
+  },
+
+  "firstNameHint": "الاسم الأول",
+  "@firstNameHint": {
+    "description": "Hint for first name field"
+  },
+
+  "lastNameHint": "الاسم الأخير",
+  "@lastNameHint": {
+    "description": "Hint for last name field"
+  },
+
+  "emailHint": "البريد الإلكتروني",
+  "@emailHint": {
+    "description": "Hint for email field"
+  },
+
+  "phoneHint": "رقم الهاتف",
+  "@phoneHint": {
+    "description": "Hint for phone number field"
+  },
+
+  "passwordHint": "كلمة المرور",
+  "@passwordHint": {
+    "description": "Hint for password field"
+  },
+
+  "confirmPasswordHint": "تأكيد كلمة المرور",
+  "@confirmPasswordHint": {
+    "description": "Hint for confirm password field"
+  },
+
+  "atLeast8Characters": "على الأقل 8 أحرف",
+  "@atLeast8Characters": {
+    "description": "Password rule - length"
+  },
+
+  "oneUppercaseLetter": "حرف كبير واحد",
+  "@oneUppercaseLetter": {
+    "description": "Password rule - uppercase"
+  },
+
+  "oneNumber": "رقم واحد",
+  "@oneNumber": {
+    "description": "Password rule - digit"
+  },
+
+  "oneSpecialCharacter": "رمز خاص واحد",
+  "@oneSpecialCharacter": {
+    "description": "Password rule - special char"
+  },
+
+  "registerButton": "تسجيل",
+  "@registerButton": {
+    "description": "Label on register submit button"
+  },
+
+  "bySigningUpAgreeTo": "بالتسجيل أوافق على ",
+  "@bySigningUpAgreeTo": {
+    "description": "Start of terms/privacy agreement sentence"
+  },
+
+  "and": " و ",
+  "@and": {
+    "description": "Conjunction in terms/privacy sentence"
+  },
+
+  "alreadyHaveAccount": "لديك حساب بالفعل؟  ",
+  "@alreadyHaveAccount": {
+    "description": "Text before login link"
+  },
+
+  "loginHere": "تسجيل الدخول هنا",
+  "@loginHere": {
+    "description": "Login link text"
+  },
+
+  "errorFirstNameRequired": "يرجى إدخال الاسم الأول",
+  "@errorFirstNameRequired": {
+    "description": "Validation error - missing first name"
+  },
+
+  "errorLastNameRequired": "يرجى إدخال الاسم الأخير",
+  "@errorLastNameRequired": {
+    "description": "Validation error - missing last name"
+  },
+
+  "errorEmailRequired": "يرجى إدخال البريد الإلكتروني",
+  "@errorEmailRequired": {
+    "description": "Validation error - missing email"
+  },
+
+  "errorInvalidEmail": "بريد إلكتروني غير صالح",
+  "@errorInvalidEmail": {
+    "description": "Validation error - bad email format"
+  },
+
+  "errorPhoneRequired": "يرجى إدخال رقم الهاتف",
+  "@errorPhoneRequired": {
+    "description": "Validation error - missing phone"
+  },
+
+  "errorInvalidPhoneDigits": "أدخل رقمًا صالحًا",
+  "@errorInvalidPhoneDigits": {
+    "description": "Validation error - invalid phone characters"
+  },
+
+  "errorPhoneLength": "يجب أن يتكون رقم الهاتف من {length} أرقام لـ {countryCode}",
+  "@errorPhoneLength": {
+    "description": "Validation error - wrong phone length",
+    "placeholders": {
+      "length": {},
+      "countryCode": {}
+    }
+  },
+
+  "errorPasswordRequired": "يرجى إدخال كلمة المرور",
+  "@errorPasswordRequired": {
+    "description": "Validation error - missing password"
+  },
+
+  "errorPasswordRequirements": "كلمة المرور لا تلبي المتطلبات",
+  "@errorPasswordRequirements": {
+    "description": "Validation error - password too weak"
+  },
+
+  "errorConfirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+  "@errorConfirmPasswordRequired": {
+    "description": "Validation error - missing confirmation"
+  },
+
+  "errorPasswordsNotMatch": "كلمات المرور غير متطابقة",
+  "@errorPasswordsNotMatch": {
+    "description": "Validation error - passwords mismatch"
+  },
+
+  "otpSentMessage": "تم إرسال رمز التحقق. يرجى التحقق من بريدك الإلكتروني.",
+  "@otpSentMessage": {
+    "description": "Success message after registration"
+  },
+
+  "registrationTimedOut": "انتهت مهلة التسجيل. يرجى المحاولة مرة أخرى.",
+  "@registrationTimedOut": {
+    "description": "Timeout error message"
+  },
+
+  "emailAlreadyRegistered": "هذا البريد الإلكتروني مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام نسيت كلمة المرور.",
+  "@emailAlreadyRegistered": {
+    "description": "Error when email is taken"
+  },
+
+  "tooManyAttempts": "محاولات كثيرة جدًا. يرجى الانتظار دقيقة وإعادة المحاولة.",
+  "@tooManyAttempts": {
+    "description": "Rate limit error message"
+  },
+
+    "searchCountryHint": "ابحث عن الدولة",
+    "@searchCountryHint": {
+      "description": "Search for Country"
+    },
+
+      "googleSignInNotSupported": "هذه المنصة لا تدعم تسجيل الدخول عبر جوجل",
+      "@googleSignInNotSupported": {
+        "description": "This platform does not support authenticate()"
+      },
+
+        "firebaseUserNullAfterSignIn": "فشل تسجيل الدخول. لم يتم إنشاء حساب مستخدم.",
+        "@firebaseUserNullAfterSignIn": {
+          "description": "Error when Firebase returns no user after Google credential sign-in"
+        },
+
+        "failedToGetFirebaseIdToken": "فشل في استرجاع رمز المصادقة.",
+        "@failedToGetFirebaseIdToken": {
+          "description": "Error when Firebase ID token cannot be obtained"
+        },
+
+  "accountDeletedOrInactiveContactSupport": "تم حذف هذا الحساب أو أنه غير نشط.\nيرجى التواصل مع الدعم لإعادة تفعيله أو استخدام بريد إلكتروني آخر",
+  "@accountDeletedOrInactiveContactSupport": {
+    "description": "User-facing error when account is deleted/inactive after Google sign-in"
+  },
+
+        "accountDeletedOrTokenMissing": "تم حذف هذا الحساب أو أن التوكن مفقود.",
+        "@accountDeletedOrTokenMissing": {
+          "description": "Technical error when backend token is null/empty or account is deleted"
+        },
+
+        "nonJsonFromLoginGoogle": "استجابة غير صالحة من الخادم. يرجى المحاولة لاحقًا.",
+        "@nonJsonFromLoginGoogle": {
+          "description": "User-friendly message when /login-google returns HTML instead of JSON"
+        },
+
+        "googleLoginFailedWithCode": "فشل تسجيل الدخول عبر جوجل (خطأ {code}). يرجى المحاولة مرة أخرى.",
+        "@googleLoginFailedWithCode": {
+          "description": "Generic Google login failure with status code",
+          "placeholders": {
+            "code": {}
+          }
+        },
+
+        "googleSignInFailedGeneric": "فشل تسجيل الدخول عبر جوجل. يرجى المحاولة مرة أخرى.",
+        "@googleSignInFailedGeneric": {
+          "description": "Fallback generic error for any Google Sign-In issue"
+        }
+      }
+

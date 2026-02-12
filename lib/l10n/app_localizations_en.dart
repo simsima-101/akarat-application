@@ -186,6 +186,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginToEditProfile => 'Please login to edit your profile.';
 
   @override
+
   String get myAccountSupportTitle => 'Contact Us';
 
   @override
@@ -236,4 +237,144 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get myAccountSupportValidationEmailInvalid =>
       'Please enter a valid email';
+
+  String get registerTitle => 'Create Account';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get or => 'OR';
+
+  @override
+  String get firstNameHint => 'First Name';
+
+  @override
+  String get lastNameHint => 'Last Name';
+
+  @override
+  String get emailHint => 'E-mail';
+
+  @override
+  String get phoneHint => 'Phone';
+
+  @override
+  String get passwordHint => 'Password';
+
+  @override
+  String get confirmPasswordHint => 'Confirm Password';
+
+  @override
+  String get atLeast8Characters => 'At least 8 characters';
+
+  @override
+  String get oneUppercaseLetter => 'One uppercase letter';
+
+  @override
+  String get oneNumber => 'One number';
+
+  @override
+  String get oneSpecialCharacter => 'One special character';
+
+  @override
+  String get registerButton => 'Register';
+
+  @override
+  String get bySigningUpAgreeTo => 'By Signing up I agree to the ';
+
+  @override
+  String get and => ' and ';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?  ';
+
+  @override
+  String get loginHere => 'Login Here';
+
+  @override
+  String get errorFirstNameRequired => 'Please enter first name';
+
+  @override
+  String get errorLastNameRequired => 'Please enter last name';
+
+  @override
+  String get errorEmailRequired => 'Please enter email';
+
+  @override
+  String get errorInvalidEmail => 'Invalid email';
+
+  @override
+  String get errorPhoneRequired => 'Please enter phone';
+
+  @override
+  String get errorInvalidPhoneDigits => 'Enter a valid number';
+
+  @override
+  String errorPhoneLength(Object length, Object countryCode) {
+    return 'Phone number must be $length digits for $countryCode';
+  }
+
+  @override
+  String get errorPasswordRequired => 'Please enter password';
+
+  @override
+  String get errorPasswordRequirements => 'Password doesn’t meet requirements';
+
+  @override
+  String get errorConfirmPasswordRequired => 'Please confirm password';
+
+  @override
+  String get errorPasswordsNotMatch => 'Passwords do not match';
+
+  @override
+  String get otpSentMessage => 'OTP sent. Please check your email.';
+
+  @override
+  String get registrationTimedOut =>
+      'Registration timed out. Please try again.';
+
+  @override
+  String get emailAlreadyRegistered =>
+      'This email is already registered. Please Login or use Forgot Password.';
+
+  @override
+  String get tooManyAttempts =>
+      'Too many attempts. Please wait a minute and try again.';
+
+  @override
+  String get searchCountryHint => 'Search Country';
+
+  @override
+  String get googleSignInNotSupported =>
+      'This platform does not support authenticate()';
+
+  @override
+  String get firebaseUserNullAfterSignIn =>
+      'Sign-in failed. No user account was created.';
+
+  @override
+  String get failedToGetFirebaseIdToken =>
+      'Failed to retrieve authentication token.';
+
+  @override
+  String get accountDeletedOrInactiveContactSupport =>
+      'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email';
+
+  @override
+  String get accountDeletedOrTokenMissing =>
+      'This account has been deleted or token missing.';
+
+  @override
+  String get nonJsonFromLoginGoogle =>
+      'Invalid response from server. Please try again later.';
+
+  @override
+  String googleLoginFailedWithCode(Object code) {
+    return 'Google login failed (error $code). Please try again.';
+  }
+
+  @override
+  String get googleSignInFailedGeneric =>
+      'Google Sign-In failed. Please try again.';
+
 }

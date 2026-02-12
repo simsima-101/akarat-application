@@ -190,6 +190,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Profilinizi düzenlemek için lütfen giriş yapın.';
 
   @override
+
   String get myAccountSupportTitle => 'Bize Ulaşın';
 
   @override
@@ -240,4 +241,145 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get myAccountSupportValidationEmailInvalid =>
       'Lütfen geçerli bir e-posta girin';
+
+  String get registerTitle => 'Hesap Oluştur';
+
+  @override
+  String get continueWithGoogle => 'Google ile Devam Et';
+
+  @override
+  String get or => 'VEYA';
+
+  @override
+  String get firstNameHint => 'Ad';
+
+  @override
+  String get lastNameHint => 'Soyad';
+
+  @override
+  String get emailHint => 'E-posta';
+
+  @override
+  String get phoneHint => 'Telefon';
+
+  @override
+  String get passwordHint => 'Şifre';
+
+  @override
+  String get confirmPasswordHint => 'Şifreyi Onayla';
+
+  @override
+  String get atLeast8Characters => 'En az 8 karakter';
+
+  @override
+  String get oneUppercaseLetter => 'Bir büyük harf';
+
+  @override
+  String get oneNumber => 'Bir rakam';
+
+  @override
+  String get oneSpecialCharacter => 'Bir özel karakter';
+
+  @override
+  String get registerButton => 'Kayıt Ol';
+
+  @override
+  String get bySigningUpAgreeTo => 'Kaydolarak kabul ediyorum ';
+
+  @override
+  String get and => ' ve ';
+
+  @override
+  String get alreadyHaveAccount => 'Zaten bir hesabınız var mı?  ';
+
+  @override
+  String get loginHere => 'Buradan Giriş Yapın';
+
+  @override
+  String get errorFirstNameRequired => 'Lütfen adınızı girin';
+
+  @override
+  String get errorLastNameRequired => 'Lütfen soyadınızı girin';
+
+  @override
+  String get errorEmailRequired => 'Lütfen e-posta adresinizi girin';
+
+  @override
+  String get errorInvalidEmail => 'Geçersiz e-posta';
+
+  @override
+  String get errorPhoneRequired => 'Lütfen telefon numaranızı girin';
+
+  @override
+  String get errorInvalidPhoneDigits => 'Geçerli bir numara girin';
+
+  @override
+  String errorPhoneLength(Object length, Object countryCode) {
+    return 'Telefon numarası $countryCode için $length hane olmalıdır';
+  }
+
+  @override
+  String get errorPasswordRequired => 'Lütfen şifrenizi girin';
+
+  @override
+  String get errorPasswordRequirements => 'Şifre gereksinimleri karşılamıyor';
+
+  @override
+  String get errorConfirmPasswordRequired => 'Lütfen şifreyi onaylayın';
+
+  @override
+  String get errorPasswordsNotMatch => 'Şifreler eşleşmiyor';
+
+  @override
+  String get otpSentMessage =>
+      'OTP gönderildi. Lütfen e-postanızı kontrol edin.';
+
+  @override
+  String get registrationTimedOut =>
+      'Kayıt zaman aşımına uğradı. Lütfen tekrar deneyin.';
+
+  @override
+  String get emailAlreadyRegistered =>
+      'Bu e-posta zaten kayıtlı. Lütfen giriş yapın veya Şifremi Unuttum kullanın.';
+
+  @override
+  String get tooManyAttempts =>
+      'Çok fazla deneme. Lütfen bir dakika bekleyip tekrar deneyin.';
+
+  @override
+  String get searchCountryHint => 'Ülke ara';
+
+  @override
+  String get googleSignInNotSupported =>
+      'Bu platform Google ile girişi desteklemiyor';
+
+  @override
+  String get firebaseUserNullAfterSignIn =>
+      'Giriş başarısız. Kullanıcı hesabı oluşturulmadı.';
+
+  @override
+  String get failedToGetFirebaseIdToken =>
+      'Kimlik doğrulama token\'ı alınamadı.';
+
+  @override
+  String get accountDeletedOrInactiveContactSupport =>
+      'Bu hesap silinmiş veya devre dışı bırakılmış.\nYeniden etkinleştirmek için lütfen destek ekibiyle iletişime geçin ya da farklı bir e-posta kullanın';
+
+  @override
+  String get accountDeletedOrTokenMissing =>
+      'Bu hesap silinmiş veya token eksik.';
+
+  @override
+  String get nonJsonFromLoginGoogle =>
+      'Sunucudan geçersiz yanıt alındı. Lütfen daha sonra tekrar deneyin.';
+
+  @override
+  String googleLoginFailedWithCode(Object code) {
+    return 'Google ile giriş başarısız (hata $code). Lütfen tekrar deneyin.';
+  }
+
+  @override
+  String get googleSignInFailedGeneric =>
+      'Google ile giriş başarısız oldu. Lütfen tekrar deneyin.';
+
 }

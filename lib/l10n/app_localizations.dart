@@ -448,6 +448,7 @@ abstract class AppLocalizations {
   /// **'Please login to edit your profile.'**
   String get loginToEditProfile;
 
+
   /// This text is displayed in the support screen app bar title of the My Account screen
   ///
   /// In en, this message translates to:
@@ -537,6 +538,259 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a valid email'**
   String get myAccountSupportValidationEmailInvalid;
+
+  /// Title of the registration screen app bar
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get registerTitle;
+
+  /// Label on Google sign-in button
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// Separator between sign-in methods
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get or;
+
+  /// Hint for first name field
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get firstNameHint;
+
+  /// Hint for last name field
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get lastNameHint;
+
+  /// Hint for email field
+  ///
+  /// In en, this message translates to:
+  /// **'E-mail'**
+  String get emailHint;
+
+  /// Hint for phone number field
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phoneHint;
+
+  /// Hint for password field
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordHint;
+
+  /// Hint for confirm password field
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPasswordHint;
+
+  /// Password rule - length
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get atLeast8Characters;
+
+  /// Password rule - uppercase
+  ///
+  /// In en, this message translates to:
+  /// **'One uppercase letter'**
+  String get oneUppercaseLetter;
+
+  /// Password rule - digit
+  ///
+  /// In en, this message translates to:
+  /// **'One number'**
+  String get oneNumber;
+
+  /// Password rule - special char
+  ///
+  /// In en, this message translates to:
+  /// **'One special character'**
+  String get oneSpecialCharacter;
+
+  /// Label on register submit button
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get registerButton;
+
+  /// Start of terms/privacy agreement sentence
+  ///
+  /// In en, this message translates to:
+  /// **'By Signing up I agree to the '**
+  String get bySigningUpAgreeTo;
+
+  /// Conjunction in terms/privacy sentence
+  ///
+  /// In en, this message translates to:
+  /// **' and '**
+  String get and;
+
+  /// Text before login link
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?  '**
+  String get alreadyHaveAccount;
+
+  /// Login link text
+  ///
+  /// In en, this message translates to:
+  /// **'Login Here'**
+  String get loginHere;
+
+  /// Validation error - missing first name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter first name'**
+  String get errorFirstNameRequired;
+
+  /// Validation error - missing last name
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter last name'**
+  String get errorLastNameRequired;
+
+  /// Validation error - missing email
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter email'**
+  String get errorEmailRequired;
+
+  /// Validation error - bad email format
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email'**
+  String get errorInvalidEmail;
+
+  /// Validation error - missing phone
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter phone'**
+  String get errorPhoneRequired;
+
+  /// Validation error - invalid phone characters
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid number'**
+  String get errorInvalidPhoneDigits;
+
+  /// Validation error - wrong phone length
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must be {length} digits for {countryCode}'**
+  String errorPhoneLength(Object length, Object countryCode);
+
+  /// Validation error - missing password
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter password'**
+  String get errorPasswordRequired;
+
+  /// Validation error - password too weak
+  ///
+  /// In en, this message translates to:
+  /// **'Password doesn’t meet requirements'**
+  String get errorPasswordRequirements;
+
+  /// Validation error - missing confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm password'**
+  String get errorConfirmPasswordRequired;
+
+  /// Validation error - passwords mismatch
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get errorPasswordsNotMatch;
+
+  /// Success message after registration
+  ///
+  /// In en, this message translates to:
+  /// **'OTP sent. Please check your email.'**
+  String get otpSentMessage;
+
+  /// Timeout error message
+  ///
+  /// In en, this message translates to:
+  /// **'Registration timed out. Please try again.'**
+  String get registrationTimedOut;
+
+  /// Error when email is taken
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered. Please Login or use Forgot Password.'**
+  String get emailAlreadyRegistered;
+
+  /// Rate limit error message
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait a minute and try again.'**
+  String get tooManyAttempts;
+
+  /// Search for Country
+  ///
+  /// In en, this message translates to:
+  /// **'Search Country'**
+  String get searchCountryHint;
+
+  /// This platform does not support authenticate()
+  ///
+  /// In en, this message translates to:
+  /// **'This platform does not support authenticate()'**
+  String get googleSignInNotSupported;
+
+  /// Error when Firebase returns no user after Google credential sign-in
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in failed. No user account was created.'**
+  String get firebaseUserNullAfterSignIn;
+
+  /// Error when Firebase ID token cannot be obtained
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to retrieve authentication token.'**
+  String get failedToGetFirebaseIdToken;
+
+  /// User-facing error when account is deleted/inactive after Google sign-in
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email'**
+  String get accountDeletedOrInactiveContactSupport;
+
+  /// Technical error when backend token is null/empty or account is deleted
+  ///
+  /// In en, this message translates to:
+  /// **'This account has been deleted or token missing.'**
+  String get accountDeletedOrTokenMissing;
+
+  /// User-friendly message when /login-google returns HTML instead of JSON
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid response from server. Please try again later.'**
+  String get nonJsonFromLoginGoogle;
+
+  /// Generic Google login failure with status code
+  ///
+  /// In en, this message translates to:
+  /// **'Google login failed (error {code}). Please try again.'**
+  String googleLoginFailedWithCode(Object code);
+
+  /// Fallback generic error for any Google Sign-In issue
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-In failed. Please try again.'**
+  String get googleSignInFailedGeneric;
+
 }
 
 class _AppLocalizationsDelegate

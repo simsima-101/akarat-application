@@ -187,6 +187,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginToEditProfile => 'يرجى تسجيل الدخول لتعديل ملفك الشخصي.';
 
   @override
+
   String get myAccountSupportTitle => 'اتصل بنا';
 
   @override
@@ -237,4 +238,144 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get myAccountSupportValidationEmailInvalid =>
       'يرجى إدخال بريد إلكتروني صالح';
+
+  String get registerTitle => 'إنشاء حساب';
+
+  @override
+  String get continueWithGoogle => 'المتابعة باستخدام جوجل';
+
+  @override
+  String get or => 'أو';
+
+  @override
+  String get firstNameHint => 'الاسم الأول';
+
+  @override
+  String get lastNameHint => 'الاسم الأخير';
+
+  @override
+  String get emailHint => 'البريد الإلكتروني';
+
+  @override
+  String get phoneHint => 'رقم الهاتف';
+
+  @override
+  String get passwordHint => 'كلمة المرور';
+
+  @override
+  String get confirmPasswordHint => 'تأكيد كلمة المرور';
+
+  @override
+  String get atLeast8Characters => 'على الأقل 8 أحرف';
+
+  @override
+  String get oneUppercaseLetter => 'حرف كبير واحد';
+
+  @override
+  String get oneNumber => 'رقم واحد';
+
+  @override
+  String get oneSpecialCharacter => 'رمز خاص واحد';
+
+  @override
+  String get registerButton => 'تسجيل';
+
+  @override
+  String get bySigningUpAgreeTo => 'بالتسجيل أوافق على ';
+
+  @override
+  String get and => ' و ';
+
+  @override
+  String get alreadyHaveAccount => 'لديك حساب بالفعل؟  ';
+
+  @override
+  String get loginHere => 'تسجيل الدخول هنا';
+
+  @override
+  String get errorFirstNameRequired => 'يرجى إدخال الاسم الأول';
+
+  @override
+  String get errorLastNameRequired => 'يرجى إدخال الاسم الأخير';
+
+  @override
+  String get errorEmailRequired => 'يرجى إدخال البريد الإلكتروني';
+
+  @override
+  String get errorInvalidEmail => 'بريد إلكتروني غير صالح';
+
+  @override
+  String get errorPhoneRequired => 'يرجى إدخال رقم الهاتف';
+
+  @override
+  String get errorInvalidPhoneDigits => 'أدخل رقمًا صالحًا';
+
+  @override
+  String errorPhoneLength(Object length, Object countryCode) {
+    return 'يجب أن يتكون رقم الهاتف من $length أرقام لـ $countryCode';
+  }
+
+  @override
+  String get errorPasswordRequired => 'يرجى إدخال كلمة المرور';
+
+  @override
+  String get errorPasswordRequirements => 'كلمة المرور لا تلبي المتطلبات';
+
+  @override
+  String get errorConfirmPasswordRequired => 'يرجى تأكيد كلمة المرور';
+
+  @override
+  String get errorPasswordsNotMatch => 'كلمات المرور غير متطابقة';
+
+  @override
+  String get otpSentMessage =>
+      'تم إرسال رمز التحقق. يرجى التحقق من بريدك الإلكتروني.';
+
+  @override
+  String get registrationTimedOut =>
+      'انتهت مهلة التسجيل. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get emailAlreadyRegistered =>
+      'هذا البريد الإلكتروني مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام نسيت كلمة المرور.';
+
+  @override
+  String get tooManyAttempts =>
+      'محاولات كثيرة جدًا. يرجى الانتظار دقيقة وإعادة المحاولة.';
+
+  @override
+  String get searchCountryHint => 'ابحث عن الدولة';
+
+  @override
+  String get googleSignInNotSupported =>
+      'هذه المنصة لا تدعم تسجيل الدخول عبر جوجل';
+
+  @override
+  String get firebaseUserNullAfterSignIn =>
+      'فشل تسجيل الدخول. لم يتم إنشاء حساب مستخدم.';
+
+  @override
+  String get failedToGetFirebaseIdToken => 'فشل في استرجاع رمز المصادقة.';
+
+  @override
+  String get accountDeletedOrInactiveContactSupport =>
+      'تم حذف هذا الحساب أو أنه غير نشط.\nيرجى التواصل مع الدعم لإعادة تفعيله أو استخدام بريد إلكتروني آخر';
+
+  @override
+  String get accountDeletedOrTokenMissing =>
+      'تم حذف هذا الحساب أو أن التوكن مفقود.';
+
+  @override
+  String get nonJsonFromLoginGoogle =>
+      'استجابة غير صالحة من الخادم. يرجى المحاولة لاحقًا.';
+
+  @override
+  String googleLoginFailedWithCode(Object code) {
+    return 'فشل تسجيل الدخول عبر جوجل (خطأ $code). يرجى المحاولة مرة أخرى.';
+  }
+
+  @override
+  String get googleSignInFailedGeneric =>
+      'فشل تسجيل الدخول عبر جوجل. يرجى المحاولة مرة أخرى.';
+
 }

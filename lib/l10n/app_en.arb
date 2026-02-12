@@ -292,6 +292,7 @@
       },
 
 
+
       "@_my_account_support_section": "================= MY ACCOUNT → SUPPORT SCREEN =================",
 
       "myAccountSupportTitle": "Contact Us",
@@ -365,27 +366,170 @@
 "myAccountSupportValidationEmailInvalid": "Please enter a valid email",
 "@myAccountSupportValidationEmailInvalid": {
   "description": "Validation error on the My Account > Support screen when the Email text field has an invalid format."
-}
+},
 
 
 
 
 
 
+       "@_register_screen_section": "================= REGISTER SCREEN =================",
 
 
+ "registerTitle": "Create Account",
+  "@registerTitle": {
+    "description": "Title of the registration screen app bar"
+  },
 
+  "continueWithGoogle": "Continue with Google",
+  "@continueWithGoogle": {
+    "description": "Label on Google sign-in button"
+  },
 
+  "or": "OR",
+  "@or": {
+    "description": "Separator between sign-in methods"
+  },
 
+  "firstNameHint": "First Name",
+  "@firstNameHint": { "description": "Hint for first name field" },
 
+  "lastNameHint": "Last Name",
+  "@lastNameHint": { "description": "Hint for last name field" },
 
+  "emailHint": "E-mail",
+  "@emailHint": { "description": "Hint for email field" },
 
+  "phoneHint": "Phone",
+  "@phoneHint": { "description": "Hint for phone number field" },
 
+  "passwordHint": "Password",
+  "@passwordHint": { "description": "Hint for password field" },
 
+  "confirmPasswordHint": "Confirm Password",
+  "@confirmPasswordHint": { "description": "Hint for confirm password field" },
 
+  "atLeast8Characters": "At least 8 characters",
+  "@atLeast8Characters": { "description": "Password rule - length" },
 
+  "oneUppercaseLetter": "One uppercase letter",
+  "@oneUppercaseLetter": { "description": "Password rule - uppercase" },
 
+  "oneNumber": "One number",
+  "@oneNumber": { "description": "Password rule - digit" },
 
+  "oneSpecialCharacter": "One special character",
+  "@oneSpecialCharacter": { "description": "Password rule - special char" },
+
+  "registerButton": "Register",
+  "@registerButton": { "description": "Label on register submit button" },
+
+  "bySigningUpAgreeTo": "By Signing up I agree to the ",
+  "@bySigningUpAgreeTo": { "description": "Start of terms/privacy agreement sentence" },
+
+  "and": " and ",
+  "@and": { "description": "Conjunction in terms/privacy sentence" },
+
+  "alreadyHaveAccount": "Already have an account?  ",
+  "@alreadyHaveAccount": { "description": "Text before login link" },
+
+  "loginHere": "Login Here",
+  "@loginHere": { "description": "Login link text" },
+
+  "errorFirstNameRequired": "Please enter first name",
+  "@errorFirstNameRequired": { "description": "Validation error - missing first name" },
+
+  "errorLastNameRequired": "Please enter last name",
+  "@errorLastNameRequired": { "description": "Validation error - missing last name" },
+
+  "errorEmailRequired": "Please enter email",
+  "@errorEmailRequired": { "description": "Validation error - missing email" },
+
+  "errorInvalidEmail": "Invalid email",
+  "@errorInvalidEmail": { "description": "Validation error - bad email format" },
+
+  "errorPhoneRequired": "Please enter phone",
+  "@errorPhoneRequired": { "description": "Validation error - missing phone" },
+
+  "errorInvalidPhoneDigits": "Enter a valid number",
+  "@errorInvalidPhoneDigits": { "description": "Validation error - invalid phone characters" },
+
+"errorPhoneLength": "Phone number must be {length} digits for {countryCode}",
+"@errorPhoneLength": {
+  "description": "Validation error - wrong phone length",
+  "placeholders": {
+    "length": {},
+    "countryCode": {}
+  }
+},
+
+  "errorPasswordRequired": "Please enter password",
+  "@errorPasswordRequired": { "description": "Validation error - missing password" },
+
+  "errorPasswordRequirements": "Password doesn’t meet requirements",
+  "@errorPasswordRequirements": { "description": "Validation error - password too weak" },
+
+  "errorConfirmPasswordRequired": "Please confirm password",
+  "@errorConfirmPasswordRequired": { "description": "Validation error - missing confirmation" },
+
+  "errorPasswordsNotMatch": "Passwords do not match",
+  "@errorPasswordsNotMatch": { "description": "Validation error - passwords mismatch" },
+
+  "otpSentMessage": "OTP sent. Please check your email.",
+  "@otpSentMessage": { "description": "Success message after registration" },
+
+  "registrationTimedOut": "Registration timed out. Please try again.",
+  "@registrationTimedOut": { "description": "Timeout error message" },
+
+  "emailAlreadyRegistered": "This email is already registered. Please Login or use Forgot Password.",
+  "@emailAlreadyRegistered": { "description": "Error when email is taken" },
+
+  "tooManyAttempts": "Too many attempts. Please wait a minute and try again.",
+  "@tooManyAttempts": { "description": "Rate limit error message" },
+
+    "searchCountryHint": "Search Country",
+    "@searchCountryHint": { "description": "Search for Country" },
+
+        "googleSignInNotSupported": "This platform does not support authenticate()",
+        "@googleSignInNotSupported": { "description": "This platform does not support authenticate()" },
+
+          "firebaseUserNullAfterSignIn": "Sign-in failed. No user account was created.",
+          "@firebaseUserNullAfterSignIn": {
+            "description": "Error when Firebase returns no user after Google credential sign-in"
+          },
+
+          "failedToGetFirebaseIdToken": "Failed to retrieve authentication token.",
+          "@failedToGetFirebaseIdToken": {
+            "description": "Error when Firebase ID token cannot be obtained"
+          },
+
+        "accountDeletedOrInactiveContactSupport": "This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email",
+        "@accountDeletedOrInactiveContactSupport": {
+          "description": "User-facing error when account is deleted/inactive after Google sign-in"
+        },
+
+         "accountDeletedOrTokenMissing": "This account has been deleted or token missing.",
+         "@accountDeletedOrTokenMissing": {
+           "description": "Technical error when backend token is null/empty or account is deleted"
+         },
+
+          "nonJsonFromLoginGoogle": "Invalid response from server. Please try again later.",
+          "@nonJsonFromLoginGoogle": {
+            "description": "User-friendly message when /login-google returns HTML instead of JSON"
+          },
+
+          "googleLoginFailedWithCode": "Google login failed (error {code}). Please try again.",
+          "@googleLoginFailedWithCode": {
+            "description": "Generic Google login failure with status code",
+            "placeholders": {
+              "code": {}
+            }
+          },
+
+          "googleSignInFailedGeneric": "Google Sign-In failed. Please try again.",
+          "@googleSignInFailedGeneric": {
+            "description": "Fallback generic error for any Google Sign-In issue"
+          }
 
 
 }

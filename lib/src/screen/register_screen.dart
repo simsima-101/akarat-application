@@ -13,6 +13,7 @@ import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:http/http.dart' as http;
 import 'package:intl_country_data/intl_country_data.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/auth_prefs.dart' as prefs;
 import '../core/utils/profile_cache.dart';
@@ -30,7 +31,7 @@ class RegisterScreen extends StatefulWidget {
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
-
+final _formKey = GlobalKey<FormState>();
 class _RegisterScreenState extends State<RegisterScreen> {
   bool get _isFormValid {
     final first = firstController.text.trim().isNotEmpty;
@@ -40,6 +41,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final pwd = passwordController.text;
     final confirm = confirmController.text;
 
+
+
+
+    final loc = AppLocalizations.of(context)!;
     // Email validation
     final validEmail =
         RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(email);
@@ -95,6 +100,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool get _ruleSpecial => RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-\\/\[\]=;+`~]')
       .hasMatch(passwordController.text);
 
+  String? _validatePhone(BuildContext context, String? value) {
+    final loc = AppLocalizations.of(context)!;
+
+    // Allow empty during typing — only validate length when something is entered
+    if (value == null || value.isEmpty) {
+      return null;  // ← Critical: do NOT return loc.errorPhoneRequired here
+    }
+
+    final enteredLength = value.length;
+    final expectedLength = _maxPhoneLength ?? 9;
+
+    if (enteredLength != expectedLength) {
+      return loc.errorPhoneLength(
+        '$expectedLength',
+        selectedCountryCode,
+      );
+    }
+
+    // Optional UAE mobile prefix check (only when length is correct)
+    if (selectedCountryCode == '+971' && !value.startsWith('5')) {
+      return 'UAE mobile numbers usually start with 5';
+    }
+
+    return null;
+  }
+
   // Styles
   OutlineInputBorder get _fieldBorder => OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -124,7 +155,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // ---------- SUBMIT ----------
   Future<void> _submit() async {
-    // Read values
+    final loc = AppLocalizations.of(context)!;
+
+    // Validate the entire form (including phone via _validatePhone)
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      // Optional: Scroll to the first error field for better UX
+      // You can add ScrollController to your SingleChildScrollView if you want auto-scroll
+      return;
+    }
+
+    // At this point, ALL fields are valid according to their validators
     final first = firstController.text.trim();
     final last = lastController.text.trim();
     final email = emailController.text.trim().toLowerCase();
@@ -132,63 +172,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final pwd = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
-    // Manual validation (screen-level)
-    if (first.isEmpty) {
-      _showErr('Please enter first name');
-      return;
-    }
-    if (last.isEmpty) {
-      _showErr('Please enter last name');
-      return;
-    }
-    if (email.isEmpty) {
-      _showErr('Please enter email');
-      return;
-    }
-    if (!RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$').hasMatch(email)) {
-      _showErr('Invalid email');
-      return;
-    }
-    if (phone.isEmpty) {
-      _showErr('Please enter phone');
-      return;
-    }
-    if (!RegExp(r'^[0-9]{7,12}$').hasMatch(phone)) {
-      _showErr('Enter a valid number');
-      return;
-    }
-    debugPrint("phone:${phone.length}, max len :${_maxPhoneLength}");
-
-    // Check length based on selected country
-    if (phone.length != _maxPhoneLength) {
-      _showErr(
-          'Phone number must be $_maxPhoneLength digits for ${selectedCountryCode}');
-
-      return;
-    }
-
-    if (pwd.isEmpty) {
-      _showErr('Please enter password');
-      return;
-    }
+    // Keep password strength check (not yet in a FormField validator)
     if (!(_ruleLen && _ruleUpper && _ruleNum && _ruleSpecial)) {
-      _showErr('Password doesn’t meet requirements');
-      return;
-    }
-    if (confirm.isEmpty) {
-      _showErr('Please confirm password');
-      return;
-    }
-    if (confirm != pwd) {
-      _showErr('Passwords do not match');
+      _showErr(loc.errorPasswordRequirements);
       return;
     }
 
+    // Hide keyboard
     FocusScope.of(context).unfocus();
+
     setState(() => _isLoading = true);
 
     try {
-      // Prefer normalized endpoint
       final reg = await registerStart(
         firstName: first,
         lastName: last,
@@ -200,34 +195,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ).timeout(const Duration(seconds: 15));
 
       final status = reg['__status'] as int? ?? 500;
-      if (status == 200 || status == 201) {
-        // Pull optional OTP hints / timers (with sane fallbacks)
-        final devOtp = (reg['otp'] ?? reg['dev_otp'] ?? '').toString().trim();
-        final expiresIn =
-            reg['expires_in'] is int ? reg['expires_in'] as int : 300;
-        final resendAfter =
-            reg['resend_after'] is int ? reg['resend_after'] as int : 60;
 
-        // Try to extract a token if your backend returned one on register
+      if (status == 200 || status == 201) {
+        final devOtp = (reg['otp'] ?? reg['dev_otp'] ?? '').toString().trim();
+        final expiresIn = reg['expires_in'] is int ? reg['expires_in'] as int : 300;
+        final resendAfter = reg['resend_after'] is int ? reg['resend_after'] as int : 60;
+
         final regToken = _extractTokenFromAny(reg) ?? '';
 
-        // Prefer server-provided identity if present
         final emailFromApi = (reg['email'] ?? email).toString().trim();
-        final serverUser =
-            ((reg['user'] ?? reg['name']) ?? '').toString().trim();
+        final serverUser = ((reg['user'] ?? reg['name']) ?? '').toString().trim();
 
         final fullName = serverUser.isNotEmpty
             ? serverUser
             : (('$first $last').trim().isNotEmpty
-                ? ('$first $last').trim()
-                : emailFromApi.split('@').first);
+            ? ('$first $last').trim()
+            : emailFromApi.split('@').first);
 
         if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('OTP sent. Please check your email.')),
+          SnackBar(content: Text(loc.otpSentMessage)),
         );
 
-        // 🚀 Navigate to OTP with everything needed to seed Session after verify
         Navigator.of(context, rootNavigator: true).pushNamed(
           '/verify-otp',
           arguments: {
@@ -248,19 +238,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return;
       }
 
-      // Non-200/201
+      // Handle non-success response
       final msg = (reg['message'] ?? 'Registration failed').toString();
       _showErr(msg);
     } on TimeoutException {
-      _showErr('Registration timed out. Please try again.');
+      _showErr(loc.registrationTimedOut);
     } catch (e) {
       final low = e.toString().toLowerCase();
+
       if (low.contains('already been taken') ||
           low.contains('already exists') ||
           low.contains('conflict') ||
           low.contains('422')) {
-        _showErr(
-            'This email is already registered. Please Login or use Forgot Password.');
+        _showErr(loc.emailAlreadyRegistered);
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
@@ -270,12 +260,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           low.contains('throttle') ||
           low.contains('rate limit') ||
           low.contains('429')) {
-        _showErr('Too many attempts. Please wait a minute and try again.');
+        _showErr(loc.tooManyAttempts);
       } else {
         _showErr(e.toString());
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -743,6 +735,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // ----------------- Google Sign-In (v7) -----------------
   Future<void> _signInWithGoogle() async {
     if (isLoading) return;
+
+    final loc = AppLocalizations.of(context)!;
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -761,7 +755,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (_googleSignIn.supportsAuthenticate()) {
         await _googleSignIn.authenticate(); // opens the Google sheet
       } else {
-        throw Exception('This platform does not support authenticate().');
+        throw Exception(loc.googleSignInNotSupported);
       }
 
       final account = await completer.future;
@@ -776,18 +770,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) throw Exception('Firebase user is null after sign-in');
+      if (user == null) throw Exception(loc.firebaseUserNullAfterSignIn);
 
       final String? firebaseIdToken = await user.getIdToken(true);
       if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
-        throw Exception('Failed to get Firebase ID token.');
+        throw Exception(loc.failedToGetFirebaseIdToken);
       }
 
       // Exchange token with your backend
       final data = await loginWithGoogleIdToken(firebaseIdToken);
       final token = extractToken(data);
       if (token == null || token.isEmpty) {
-        throw Exception('This account has been deleted or token missing.');
+        throw Exception(loc.accountDeletedOrTokenMissing);
       }
 
       await _hydrateAfterAuth(token: token, loginBody: data);
@@ -804,7 +798,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         setState(
           () => errorMessage =
-              'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email',
+              loc.accountDeletedOrInactiveContactSupport
         );
       }
     } finally {
@@ -862,10 +856,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // ----------------- UI -----------------
   @override
   Widget build(BuildContext context) {
+
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFF4F4F4),
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: Text(loc.registerTitle),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
@@ -877,10 +873,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         child: Center(
-          // 🔹 Constrain horizontal width like login
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 380),
-            child: _buildScreenContent(context),
+            child: Form(                           // ← Add this
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,// ← Add GlobalKey<FormState> _formKey = GlobalKey();
+              child: _buildScreenContent(context),
+            ),
           ),
         ),
       ),
@@ -888,6 +887,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildScreenContent(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -910,9 +910,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Icon(Icons.g_mobiledata_outlined, size: 20),
                 ),
               ),
-              label: const Text(
-                'Continue with Google',
-                style: TextStyle(fontWeight: FontWeight.w600),
+              label: Text(loc.continueWithGoogle,
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.black12),
@@ -927,14 +926,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
 
         const SizedBox(height: 18),
-        const Row(
+        Row(
           children: [
-            Expanded(child: Divider(color: Color(0xFFE3E3E3))),
+            const Expanded(child: Divider(color: Color(0xFFE3E3E3))),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Text('OR', style: TextStyle(color: Color(0xFF6B6B6B))),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                AppLocalizations.of(context)!.or,           // ← changed here
+                style: const TextStyle(color: Color(0xFF6B6B6B)),
+              ),
             ),
-            Expanded(child: Divider(color: Color(0xFFE3E3E3))),
+            const Expanded(child: Divider(color: Color(0xFFE3E3E3))),
           ],
         ),
         const SizedBox(height: 16),
@@ -943,87 +945,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
         TextField(
           controller: firstController,
           textInputAction: TextInputAction.next,
-          decoration: _dec('First Name'),
+          decoration: _dec(loc.firstNameHint),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: lastController,
           textInputAction: TextInputAction.next,
-          decoration: _dec('Last Name'),
+          decoration: _dec(loc.lastNameHint),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: emailController,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
-          decoration: _dec('E-mail'),
+          decoration: _dec(loc.emailHint),
         ),
         const SizedBox(height: 12),
 
         Row(
           children: [
-            Container(
-              height: 52,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE9E9E9)),
-              ),
-              child: CountryCodePicker(
-                onChanged: (code) {
-                  setState(() {
-                    selectedCountryCode = code.dialCode ?? "+971";
-                    final intlCountry = IntlCountryData.fromCountryCodeAlpha2(
-                        code.code ?? "AE");
+            // Country Code Picker
+            CountryCodePicker(
+              onChanged: (code) {
+                setState(() {
+                  selectedCountryCode = code.dialCode ?? "+971";
+                  final intlCountry = IntlCountryData.fromCountryCodeAlpha2(
+                    code.code ?? "AE",
+                  );
 
-                    phoneController.clear();
+                  phoneController.clear();
+                  _maxPhoneLength = intlCountry.telephoneMaxLength;
+                });
+              },
+              initialSelection: 'AE', // UAE default
+              favorite: const [],
+              showDropDownButton: false,
+              showCountryOnly: false,
+              showOnlyCountryWhenClosed: false,
+              alignLeft: false,
+              margin: const EdgeInsets.only(left: 0, right: 8), // ← adjusted like your second example
+              padding: EdgeInsets.zero,
+              headerTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              closeIcon: const Icon(Icons.close, size: 25),
+              dialogSize: const Size(double.infinity, 700),
 
-                    _maxPhoneLength = intlCountry.telephoneMaxLength;
-                  });
-                },
-                initialSelection: 'AE', // UAE default
-                favorite: const [],
-                showDropDownButton: false,
-                showCountryOnly: false,
-                showOnlyCountryWhenClosed: false,
-                alignLeft: false,
-                margin: EdgeInsetsGeometry.only(left: 0, right: 8),
-                padding: EdgeInsetsGeometry.all(0),
-                headerTextStyle:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                closeIcon: Icon(
-                  Icons.close,
-                  size: 25,
+              searchDecoration: InputDecoration(
+                hintText: loc.searchCountryHint,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
-                dialogSize: Size(double.infinity, 700),
-
-                searchDecoration: InputDecoration(
-                  hintText: 'Search country',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                dialogItemPadding:
-                    EdgeInsetsGeometry.symmetric(horizontal: 12, vertical: 13),
-                // topBarPadding: EdgeInsets.only(bottom: 20),
-                searchPadding:
-                    EdgeInsetsGeometry.only(bottom: 10, left: 10, right: 10),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-
-              // const Row(
-              //   mainAxisSize: MainAxisSize.min,
-              //   children: [
-              //     Text('🇦🇪', style: TextStyle(fontSize: 16)),
-              //     SizedBox(width: 8),
-              //     Text('+971', style: TextStyle(fontWeight: FontWeight.w600)),
-              //   ],
-              // ),
+              dialogItemPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+              searchPadding: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
             ),
+
             const SizedBox(width: 8),
+
+            // Phone number Input
             Expanded(
               child: TextFormField(
                 controller: phoneController,
@@ -1032,22 +1012,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                 ],
-                // Fallback default if no country selected
+                validator: (value) => _validatePhone(context, value),
                 decoration: InputDecoration(
-                  hintText: 'Phone',
+                  hintText: loc.phoneHint,
                   hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   filled: true,
                   fillColor: Colors.white,
                   enabledBorder: _fieldBorder,
                   focusedBorder: _fieldBorder.copyWith(
                     borderSide: const BorderSide(color: Color(0xFFDADADA)),
                   ),
-                  prefixIconConstraints: const BoxConstraints(minWidth: 0),
-                  counterText: '',
                   border: InputBorder.none,
                   isDense: true,
+                  counterText: '',
                 ),
               ),
             ),
@@ -1060,7 +1038,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           obscureText: _hidePwd,
           textInputAction: TextInputAction.next,
           decoration: _dec(
-            'Password',
+       loc.passwordHint,
             suffix: IconButton(
               onPressed: () => setState(() => _hidePwd = !_hidePwd),
               icon: Icon(_hidePwd ? Icons.visibility_off : Icons.visibility),
@@ -1068,17 +1046,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        _ruleRow(_ruleLen, 'At least 8 characters'),
-        _ruleRow(_ruleUpper, 'One uppercase letter'),
-        _ruleRow(_ruleNum, 'One number'),
-        _ruleRow(_ruleSpecial, 'One special character'),
+        _ruleRow(_ruleLen, loc.atLeast8Characters),
+        _ruleRow(_ruleUpper, loc.oneUppercaseLetter),
+        _ruleRow(_ruleNum, loc.oneNumber),
+        _ruleRow(_ruleSpecial, loc.oneSpecialCharacter),
         const SizedBox(height: 12),
 
         TextField(
           controller: confirmController,
           obscureText: _hideConfirm,
           decoration: _dec(
-            'Confirm Password',
+         loc.confirmPasswordHint,
             suffix: IconButton(
               onPressed: () => setState(() => _hideConfirm = !_hideConfirm),
               icon:
@@ -1120,10 +1098,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Register',
+                  : Text(
+                      loc.registerButton,
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
             ),
           ),
@@ -1141,9 +1119,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 height: 1.4,
               ),
               children: [
-                const TextSpan(text: 'By Signing up I agree to the '),
+                TextSpan(text: loc.bySigningUpAgreeTo),
                 TextSpan(
-                  text: 'Terms and Conditions',
+                  text: loc.termsAndConditions,
                   style: const TextStyle(
                     color: Color(0xFF2F6FE4),
                     decoration: TextDecoration.underline,
@@ -1157,9 +1135,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       );
                     },
                 ),
-                const TextSpan(text: ' and '),
+                TextSpan(text: loc.and),
                 TextSpan(
-                  text: 'Privacy Policy',
+                  text: loc.privacyPolicy,
                   style: const TextStyle(
                     color: Color(0xFF2F6FE4),
                     decoration: TextDecoration.underline,
@@ -1185,8 +1163,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Already have an account?  ',
+           Text(
+              loc.alreadyHaveAccount,
               style: TextStyle(color: Color(0xFF616161), fontSize: 16),
             ),
             GestureDetector(
@@ -1194,8 +1172,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 context,
                 MaterialPageRoute(builder: (_) => const LoginDemo()),
               ),
-              child: const Text(
-                'Login Here',
+              child:Text(
+              loc.loginHere,
                 style: TextStyle(
                   color: Color(0xFF2F6FE4),
                   fontWeight: FontWeight.w600,

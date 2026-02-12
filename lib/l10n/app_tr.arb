@@ -1,141 +1,417 @@
-{
-  "@@locale": "tr",
+    {
+      "@@locale": "tr",
 
-  "appTitle": "Emlak",
-  "search": "Ara",
-  "properties": "Emlaklar",
-  "hello": "Merhaba",
-  "language": "Dil",
+      "appTitle": "Emlak",
+      "search": "Ara",
+      "properties": "Emlaklar",
+      "hello": "Merhaba",
+      "language": "Dil",
 
-  "myAccount": "Hesabım",
-  "@myAccount": {
-    "description": "Title for the My Account screen"
+      "myAccount": "Hesabım",
+      "@myAccount": {
+        "description": "Title for the My Account screen"
+      },
+
+      "@_new_projects_section": "================= NEW PROJECTS =================",
+
+      "newProjectsTitle": "Yeni Projeler",
+      "@newProjectsTitle": {
+        "description": "Title of the New Projects screen / app bar"
+      },
+
+      "newProjectsSubtitle": "Dubai'deki yeni inşaat projelerini keşfedin ve BAE emlak piyasasına yatırım yapmak için bilmeniz gereken her şeyi öğrenin",
+      "@newProjectsSubtitle": {
+        "description": "Subtitle text shown on the New Projects screen"
+      },
+
+      "latestProjectsTitle": "Dubai'deki En Son Projeler",
+      "@latestProjectsTitle": {
+        "description": "Message shown when latest project in Dubai"
+      },
+
+      "errorLoadingProjects": "Projeler yüklenemedi.",
+      "@errorLoadingProjects": {
+        "description": "Error message when projects fail to load"
+      },
+
+      "noProjectsFound": "Hiç mülk bulunamadı.",
+      "@noProjectsFound": {
+        "description": "Message when no projects are available"
+      },
+
+      "@_property_card_section": "================= PROPERTY CARD =================",
+
+      "agent": "Acenta",
+      "@agent": {
+        "description": "Fallback text when agent name is missing"
+      },
+
+      "priceOnRequest": "Fiyat bilgisi için iletişime geçin",
+      "@priceOnRequest": {
+        "description": "Shown when property price is not available"
+      },
+
+      "locationNotAvailable": "Konum mevcut değil",
+      "@locationNotAvailable": {
+        "description": "Fallback when location is missing"
+      },
+
+      "call": "Ara",
+      "@call": {
+        "description": "Label on the call button in property card"
+      },
+
+      "whatsapp": "WhatsApp",
+      "@whatsapp": {
+        "description": "Label on the WhatsApp button in property card"
+      },
+
+      "agentLabel": "ACENTA",
+      "@agentLabel": {
+        "description": "Small label under agent avatar in property card"
+      },
+
+      "noTitle": "Başlık yok",
+      "@noTitle": {
+        "description": "Fallback when property title is null"
+      },
+
+      "currencyAed": "AED",
+      "@currencyAed": {
+        "description": "Currency suffix for UAE Dirham (kept as code in Turkish)"
+      },
+
+      "@_project_details_section": "================= PROJE DETAYLARI =================",
+
+      "projectInformation": "Proje Bilgileri",
+      "@projectInformation": {
+        "description": "Section title for project details"
+      },
+
+      "projectDetail": "Proje Detayı",
+      "@projectDetail": {
+        "description": "Title for the project detail screen/app bar"
+      },
+
+      "noData": "Veri yok",
+      "@noData": {
+        "description": "Message shown when project data is missing or null"
+      },
+
+      "@_auth_section": "================= GİRİŞ & FAVORİLER =================",
+
+      "loginRequired": "Giriş Yapılması Gerekiyor",
+      "@loginRequired": {
+        "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
+      },
+
+      "loginToAccessFavorites": "Favorilere erişmek için lütfen giriş yapın.",
+      "@loginToAccessFavorites": {
+        "description": "Message explaining why login is needed to view favorites"
+      },
+
+      "cancel": "İptal",
+      "@cancel": {
+        "description": "Button text to close/cancel the login dialog"
+      },
+
+      "login": "Giriş Yap",
+      "@login": {
+        "description": "Button text that takes the user to the login screen"
+      },
+
+      "@_my_account_section": "================= MY ACCOUNT SECTION =================",
+
+      "welcomeLoginSignUp": "Hoş geldiniz! Giriş Yap / Kayıt Ol",
+      "@welcomeLoginSignUp": {
+        "description": "Shown when user is not logged in on profile card"
+      },
+
+      "myProfile": "Profilim",
+      "@myProfile": {
+        "description": "Label for user profile (e.g., in header or menu)"
+      },
+
+      "findMyAgent": "Acentemi Bul",
+      "@findMyAgent": {
+        "description": "Menu item to find agent page"
+      },
+
+      "favorites": "Favoriler",
+      "@favorites": {
+        "description": "Menu item for favorite properties"
+      },
+
+      "savedAlerts": "Kaydedilen Uyarılar",
+      "@savedAlerts": {
+        "description": "Menu item for saved search alerts"
+      },
+
+      "contactedProperties": "İletişime Geçilen İlanlar",
+      "@contactedProperties": {
+        "description": "Menu item for properties user has contacted"
+      },
+
+      "aboutUs": "Hakkımızda",
+      "@aboutUs": {
+        "description": "Menu item for About Us page"
+      },
+
+      "support": "Destek",
+      "@support": {
+        "description": "Menu item for support/contact page"
+      },
+
+      "privacyPolicy": "Gizlilik Politikası",
+      "@privacyPolicy": {
+        "description": "Menu item for Privacy Policy page"
+      },
+
+      "termsAndConditions": "Şartlar ve Koşullar",
+      "@termsAndConditions": {
+        "description": "Menu item for Terms and Conditions page"
+      },
+
+      "rateUs": "Bizi Değerlendir",
+      "@rateUs": {
+        "description": "Menu item or button to rate the app"
+      },
+
+      "logout": "Çıkış Yap",
+      "@logout": {
+        "description": "Menu item or button for logging out"
+      },
+
+      "logoutConfirmationTitle": "Çıkış yapmak istediğinize emin misiniz?",
+      "@logoutConfirmationTitle": {
+        "description": "Title of logout confirmation dialog"
+      },
+
+      "loginRequiredTitle": "Giriş Gereklidir",
+      "@loginRequiredTitle": {
+        "description": "Dialog title when action needs authentication"
+      },
+
+      "loginToAccessFavorites": "Favorilere erişmek için lütfen giriş yapın.",
+      "@loginToAccessFavorites": {
+        "description": "Message explaining why login is needed to view favorites"
+      },
+
+      "loginToAccessSavedAlerts": "Kaydedilen uyarılara erişmek için lütfen giriş yapın.",
+      "@loginToAccessSavedAlerts": {
+        "description": "Message for accessing saved alerts without login"
+      },
+
+      "loginToViewContacted": "İletişime geçilen ilanları görmek için lütfen giriş yapın.",
+      "@loginToViewContacted": {
+        "description": "Message for viewing contacted properties without login"
+      },
+        "notLoggedInForAction": "Giriş yapmadınız",
+        "@notLoggedInForAction": {
+          "description": "Shown when user tries to delete account or perform authenticated action without being logged in"
+        },
+
+        "accountDeletedSuccessfully": "Hesap başarıyla silindi",
+        "@accountDeletedSuccessfully": {
+          "description": "Shown after successful account deletion"
+        },
+
+        "deletionFailed": "Silme işlemi başarısız oldu",
+        "@deletionFailed": {
+          "description": "Prefix for account deletion error messages"
+        },
+          "loginToEditProfile": "Profilinizi düzenlemek için lütfen giriş yapın.",
+          "@loginToEditProfile": {
+            "description": "Message shown when user tries to edit profile without being logged in"
+          },
+
+
+         "@_home_screen_section": "================= HOME SCREEN =================",
+
+         "homeSearchLocationHint": "Bir mahalle, bölge veya şehir ara",
+         "@homeSearchLocationHint": {
+           "description": "Hint text for the search field on the home screen"
+         },
+
+
+      "homePropertyForRent": "Kiralık Emlak",
+      "@homePropertyForRent": {
+        "description": "Label for property for rent"
+      },
+
+      "homePropertyForSale": "Satılık Emlak",
+      "@homePropertyForSale": {
+        "description": "Label for property for sale"
+      },
+
+      "homeOffPlanProperties": "Planlanan Projeler",
+      "@homeOffPlanProperties": {
+        "description": "Label for off-plan properties"
+      },
+
+      "homeCommercial": "Ticari",
+      "@homeCommercial": {
+        "description": "Label for commercial properties"
+      },
+
+      "homeVilla": "Villalar",
+      "@homeVilla": {
+        "description": "Label for villas"
+      },
+
+      "homeApartment": "Daireler",
+      "@homeApartment": {
+        "description": "Label for apartments"
+      },
+
+      "homeDiscoverUaeRealEstate": "BAE emlak piyasası hakkında daha fazlasını keşfedin",
+      "@homeDiscoverUaeRealEstate": {
+        "description": "Subtitle text shown in the Home screen New Projects section"
+      },
+
+
+        "homeSortNewest": "En Yeniler",
+        "@homeSortNewest": {
+          "description": "Dropdown value shown in the Home screen sorting filter"
+        },
+
+        "homeSortFeatured": "Öne Çıkanlar",
+        "@homeSortFeatured": {
+          "description": "Dropdown value shown in the Home screen sorting filter"
+        },
+
+        "homeSortPriceLow": "Fiyat (Düşük)",
+        "@homeSortPriceLow": {
+          "description": "Dropdown value shown in the Home screen sorting filter"
+        },
+
+        "homeSortPriceHigh": "Fiyat (Yüksek)",
+        "@homeSortPriceHigh": {
+          "description": "Dropdown value shown in the Home screen sorting filter"
+        },
+
+ "@_register_screen_section": "================= REGISTER SCREEN =================",
+
+  "registerTitle": "Hesap Oluştur",
+  "@registerTitle": {
+    "description": "Title of the registration screen app bar"
   },
 
-  "@_new_projects_section": "================= NEW PROJECTS =================",
-
-  "newProjectsTitle": "Yeni Projeler",
-  "@newProjectsTitle": {
-    "description": "Title of the New Projects screen / app bar"
+  "continueWithGoogle": "Google ile Devam Et",
+  "@continueWithGoogle": {
+    "description": "Label on Google sign-in button"
   },
 
-  "newProjectsSubtitle": "Dubai'deki yeni inşaat projelerini keşfedin ve BAE emlak piyasasına yatırım yapmak için bilmeniz gereken her şeyi öğrenin",
-  "@newProjectsSubtitle": {
-    "description": "Subtitle text shown on the New Projects screen"
+  "or": "VEYA",
+  "@or": {
+    "description": "Separator between sign-in methods"
   },
 
-  "latestProjectsTitle": "Dubai'deki En Son Projeler",
-  "@latestProjectsTitle": {
-    "description": "Message shown when latest project in Dubai"
+  "firstNameHint": "Ad",
+  "@firstNameHint": {
+    "description": "Hint for first name field"
   },
 
-  "errorLoadingProjects": "Projeler yüklenemedi.",
-  "@errorLoadingProjects": {
-    "description": "Error message when projects fail to load"
+  "lastNameHint": "Soyad",
+  "@lastNameHint": {
+    "description": "Hint for last name field"
   },
 
-  "noProjectsFound": "Hiç mülk bulunamadı.",
-  "@noProjectsFound": {
-    "description": "Message when no projects are available"
+  "emailHint": "E-posta",
+  "@emailHint": {
+    "description": "Hint for email field"
   },
 
-  "@_property_card_section": "================= PROPERTY CARD =================",
-
-  "agent": "Acenta",
-  "@agent": {
-    "description": "Fallback text when agent name is missing"
+  "phoneHint": "Telefon",
+  "@phoneHint": {
+    "description": "Hint for phone number field"
   },
 
-  "priceOnRequest": "Fiyat bilgisi için iletişime geçin",
-  "@priceOnRequest": {
-    "description": "Shown when property price is not available"
+  "passwordHint": "Şifre",
+  "@passwordHint": {
+    "description": "Hint for password field"
   },
 
-  "locationNotAvailable": "Konum mevcut değil",
-  "@locationNotAvailable": {
-    "description": "Fallback when location is missing"
+  "confirmPasswordHint": "Şifreyi Onayla",
+  "@confirmPasswordHint": {
+    "description": "Hint for confirm password field"
   },
 
-  "call": "Ara",
-  "@call": {
-    "description": "Label on the call button in property card"
+  "atLeast8Characters": "En az 8 karakter",
+  "@atLeast8Characters": {
+    "description": "Password rule - length"
   },
 
-  "whatsapp": "WhatsApp",
-  "@whatsapp": {
-    "description": "Label on the WhatsApp button in property card"
+  "oneUppercaseLetter": "Bir büyük harf",
+  "@oneUppercaseLetter": {
+    "description": "Password rule - uppercase"
   },
 
-  "agentLabel": "ACENTA",
-  "@agentLabel": {
-    "description": "Small label under agent avatar in property card"
+  "oneNumber": "Bir rakam",
+  "@oneNumber": {
+    "description": "Password rule - digit"
   },
 
-  "noTitle": "Başlık yok",
-  "@noTitle": {
-    "description": "Fallback when property title is null"
+  "oneSpecialCharacter": "Bir özel karakter",
+  "@oneSpecialCharacter": {
+    "description": "Password rule - special char"
   },
 
-  "currencyAed": "AED",
-  "@currencyAed": {
-    "description": "Currency suffix for UAE Dirham (kept as code in Turkish)"
+  "registerButton": "Kayıt Ol",
+  "@registerButton": {
+    "description": "Label on register submit button"
   },
 
-  "@_project_details_section": "================= PROJE DETAYLARI =================",
-
-  "projectInformation": "Proje Bilgileri",
-  "@projectInformation": {
-    "description": "Section title for project details"
+  "bySigningUpAgreeTo": "Kaydolarak kabul ediyorum ",
+  "@bySigningUpAgreeTo": {
+    "description": "Start of terms/privacy agreement sentence"
   },
 
-  "projectDetail": "Proje Detayı",
-  "@projectDetail": {
-    "description": "Title for the project detail screen/app bar"
+  "and": " ve ",
+  "@and": {
+    "description": "Conjunction in terms/privacy sentence"
   },
 
-  "noData": "Veri yok",
-  "@noData": {
-    "description": "Message shown when project data is missing or null"
+  "alreadyHaveAccount": "Zaten bir hesabınız var mı?  ",
+  "@alreadyHaveAccount": {
+    "description": "Text before login link"
   },
 
-  "@_auth_section": "================= GİRİŞ & FAVORİLER =================",
-
-  "loginRequired": "Giriş Yapılması Gerekiyor",
-  "@loginRequired": {
-    "description": "Title of the dialog that appears when user tries to access favorites without being logged in"
+  "loginHere": "Buradan Giriş Yapın",
+  "@loginHere": {
+    "description": "Login link text"
   },
 
-  "loginToAccessFavorites": "Favorilere erişmek için lütfen giriş yapın.",
-  "@loginToAccessFavorites": {
-    "description": "Message explaining why login is needed to view favorites"
+  "errorFirstNameRequired": "Lütfen adınızı girin",
+  "@errorFirstNameRequired": {
+    "description": "Validation error - missing first name"
   },
 
-  "cancel": "İptal",
-  "@cancel": {
-    "description": "Button text to close/cancel the login dialog"
+  "errorLastNameRequired": "Lütfen soyadınızı girin",
+  "@errorLastNameRequired": {
+    "description": "Validation error - missing last name"
   },
 
-  "login": "Giriş Yap",
-  "@login": {
-    "description": "Button text that takes the user to the login screen"
+  "errorEmailRequired": "Lütfen e-posta adresinizi girin",
+  "@errorEmailRequired": {
+    "description": "Validation error - missing email"
   },
 
-  "@_my_account_section": "================= MY ACCOUNT SECTION =================",
-
-  "welcomeLoginSignUp": "Hoş geldiniz! Giriş Yap / Kayıt Ol",
-  "@welcomeLoginSignUp": {
-    "description": "Shown when user is not logged in on profile card"
+  "errorInvalidEmail": "Geçersiz e-posta",
+  "@errorInvalidEmail": {
+    "description": "Validation error - bad email format"
   },
 
-  "myProfile": "Profilim",
-  "@myProfile": {
-    "description": "Label for user profile (e.g., in header or menu)"
+  "errorPhoneRequired": "Lütfen telefon numaranızı girin",
+  "@errorPhoneRequired": {
+    "description": "Validation error - missing phone"
   },
 
-  "findMyAgent": "Acentemi Bul",
-  "@findMyAgent": {
-    "description": "Menu item to find agent page"
+  "errorInvalidPhoneDigits": "Geçerli bir numara girin",
+  "@errorInvalidPhoneDigits": {
+    "description": "Validation error - invalid phone characters"
   },
+
 
   "favorites": "Favoriler",
   "@favorites": {
@@ -366,7 +642,7 @@
 "myAccountSupportValidationEmailInvalid": "Lütfen geçerli bir e-posta girin",
 "@myAccountSupportValidationEmailInvalid": {
   "description": "Validation error on the My Account > Support screen when the Email text field has an invalid format."
-}
+},
 
 
 
@@ -382,9 +658,102 @@
 
 
 
+  "errorPhoneLength": "Telefon numarası {countryCode} için {length} hane olmalıdır",
+  "@errorPhoneLength": {
+    "description": "Validation error - wrong phone length",
+    "placeholders": {
+      "length": {},
+      "countryCode": {}
+    }
+  },
+
+  "errorPasswordRequired": "Lütfen şifrenizi girin",
+  "@errorPasswordRequired": {
+    "description": "Validation error - missing password"
+  },
+
+  "errorPasswordRequirements": "Şifre gereksinimleri karşılamıyor",
+  "@errorPasswordRequirements": {
+    "description": "Validation error - password too weak"
+  },
+
+  "errorConfirmPasswordRequired": "Lütfen şifreyi onaylayın",
+  "@errorConfirmPasswordRequired": {
+    "description": "Validation error - missing confirmation"
+  },
+
+  "errorPasswordsNotMatch": "Şifreler eşleşmiyor",
+  "@errorPasswordsNotMatch": {
+    "description": "Validation error - passwords mismatch"
+  },
+
+  "otpSentMessage": "OTP gönderildi. Lütfen e-postanızı kontrol edin.",
+  "@otpSentMessage": {
+    "description": "Success message after registration"
+  },
+
+  "registrationTimedOut": "Kayıt zaman aşımına uğradı. Lütfen tekrar deneyin.",
+  "@registrationTimedOut": {
+    "description": "Timeout error message"
+  },
+
+  "emailAlreadyRegistered": "Bu e-posta zaten kayıtlı. Lütfen giriş yapın veya Şifremi Unuttum kullanın.",
+  "@emailAlreadyRegistered": {
+    "description": "Error when email is taken"
+  },
+
+  "tooManyAttempts": "Çok fazla deneme. Lütfen bir dakika bekleyip tekrar deneyin.",
+  "@tooManyAttempts": {
+    "description": "Rate limit error message"
+  },
+
+    "searchCountryHint": "Ülke ara",
+    "@searchCountryHint": {
+      "description": "Search for Country"
+    },
+      "googleSignInNotSupported": "Bu platform Google ile girişi desteklemiyor",
+      "@googleSignInNotSupported": {
+        "description": "This platform does not support authenticate()"
+      },
+
+        "firebaseUserNullAfterSignIn": "Giriş başarısız. Kullanıcı hesabı oluşturulmadı.",
+        "@firebaseUserNullAfterSignIn": {
+          "description": "Error when Firebase returns no user after Google credential sign-in"
+        },
+
+        "failedToGetFirebaseIdToken": "Kimlik doğrulama token'ı alınamadı.",
+        "@failedToGetFirebaseIdToken": {
+          "description": "Error when Firebase ID token cannot be obtained"
+        },
+
+  "accountDeletedOrInactiveContactSupport": "Bu hesap silinmiş veya devre dışı bırakılmış.\nYeniden etkinleştirmek için lütfen destek ekibiyle iletişime geçin ya da farklı bir e-posta kullanın",
+  "@accountDeletedOrInactiveContactSupport": {
+    "description": "User-facing error when account is deleted/inactive after Google sign-in"
+  },
+
+    "accountDeletedOrTokenMissing": "Bu hesap silinmiş veya token eksik.",
+    "@accountDeletedOrTokenMissing": {
+      "description": "Technical error when backend token is null/empty or account is deleted"
+    },
+
+        "nonJsonFromLoginGoogle": "Sunucudan geçersiz yanıt alındı. Lütfen daha sonra tekrar deneyin.",
+        "@nonJsonFromLoginGoogle": {
+          "description": "User-friendly message when /login-google returns HTML instead of JSON"
+        },
+
+        "googleLoginFailedWithCode": "Google ile giriş başarısız (hata {code}). Lütfen tekrar deneyin.",
+        "@googleLoginFailedWithCode": {
+          "description": "Generic Google login failure with status code",
+          "placeholders": {
+            "code": {}
+          }
+        },
+
+        "googleSignInFailedGeneric": "Google ile giriş başarısız oldu. Lütfen tekrar deneyin.",
+        "@googleSignInFailedGeneric": {
+          "description": "Fallback generic error for any Google Sign-In issue"
+        }
 
 
 
-
-
-}
+    }
