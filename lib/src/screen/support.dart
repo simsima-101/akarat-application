@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl_country_data/intl_country_data.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
@@ -74,17 +75,28 @@ class _SupportState extends State<Support> {
   }
 
   // ---------------- Validators ----------------
-  String? _required(String? v, String label) {
+  String? _required(String? v, String label, BuildContext context) {
     final t = v?.trim() ?? '';
-    if (t.isEmpty) return 'Please enter $label';
+    if (t.isEmpty) {
+      return AppLocalizations.of(context)!
+          .myAccountSupportValidationRequired(label);
+    }
     return null;
   }
 
-  String? _validateEmail(String? v) {
+  String? _validateEmail(String? v, BuildContext context) {
     final t = v?.trim() ?? '';
-    if (t.isEmpty) return 'Please enter Email';
+    if (t.isEmpty) {
+      return AppLocalizations.of(context)!
+          .myAccountSupportValidationEmailRequired;
+    }
+
     final re = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w{2,}$');
-    if (!re.hasMatch(t)) return 'Please enter a valid email';
+    if (!re.hasMatch(t)) {
+      return AppLocalizations.of(context)!
+          .myAccountSupportValidationEmailRequired;
+    }
+
     return null;
   }
 
@@ -150,18 +162,25 @@ class _SupportState extends State<Support> {
     }
   }
 
-  String? _validatePhone(String? v) {
+  String? _validatePhone(BuildContext context, String? v) {
     final input = v?.trim() ?? '';
-    if (input.isEmpty) return 'Please enter Phone Number';
+    final l10n = AppLocalizations.of(context)!;
+
+    if (input.isEmpty) {
+      return l10n.myAccountSupportValidationEnterPhone;
+    }
 
     // Check if all digits
     if (!RegExp(r'^\d+$').hasMatch(input)) {
-      return 'Phone number must contain digits only';
+      return l10n.myAccountSupportValidationPhoneDigitsOnly;
     }
 
     // Check length based on selected country
     if (input.length != _maxPhoneLength) {
-      return 'Phone number must be $_maxPhoneLength digits for ${selectedCountryCode}';
+      return l10n.myAccountSupportValidationPhoneLength(
+        _maxPhoneLength,
+        selectedCountryCode,
+      );
     }
 
     return null; // valid
@@ -223,14 +242,17 @@ class _SupportState extends State<Support> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
 
+    final appLocalization = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.red),
-        title: const Text(
-          "Contact Us",
+        title: Text(
+          appLocalization.myAccountSupportTitle,
+          // "Contact Us",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -247,8 +269,9 @@ class _SupportState extends State<Support> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Ask us anything?",
+            Text(
+              appLocalization.myAccountSupportSubTitle,
+              // "Ask us anything?",
               style: TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.bold,
@@ -265,42 +288,43 @@ class _SupportState extends State<Support> {
                 width: screenSize.width, // let padding manage insets
                 margin: const EdgeInsets.only(top: 10),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Name
-                    _label("Name"),
+                    _label(appLocalization.myAccountSupportNameLabel),
                     _boxedField(
                       child: TextFormField(
                         controller: nameController,
                         keyboardType: TextInputType.name,
-                        validator: (v) => _required(v, 'Name'),
+                        validator: (v) => _required(v,
+                            appLocalization.myAccountSupportNameLabel, context),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                        textAlign: TextAlign.left,
                       ),
                     ),
 
                     // Email
-                    _label("Email Address"),
+                    _label(appLocalization.myAccountSupportEmailLabel),
                     _boxedField(
                       child: TextFormField(
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
-                        validator: _validateEmail,
+                        validator: (v) =>
+                            _validateEmail(v, context), // pass context here
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                        textAlign: TextAlign.left,
                       ),
                     ),
 
                     // Phone
-                    _label("Phone Number"),
+                    _label(appLocalization.myAccountSupportPhoneLabel),
                     _boxedField(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,7 +351,7 @@ class _SupportState extends State<Support> {
                             showCountryOnly: false,
                             showOnlyCountryWhenClosed: false,
                             alignLeft: false,
-                            margin: EdgeInsetsGeometry.only(left: 0, right: 8),
+                            margin: EdgeInsetsGeometry.only(left: 8, right: 8),
                             padding: EdgeInsetsGeometry.all(0),
                             headerTextStyle: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w700),
@@ -365,7 +389,8 @@ class _SupportState extends State<Support> {
                               maxLength: _maxPhoneLength ??
                                   9, // Fallback default if no country selected
                               keyboardType: TextInputType.phone,
-                              validator: _validatePhone,
+                              validator: (value) =>
+                                  _validatePhone(context, value),
                               decoration: const InputDecoration(
                                 counterText: '',
                                 border: InputBorder.none,
@@ -380,35 +405,39 @@ class _SupportState extends State<Support> {
                     ),
 
                     // Subject
-                    _label("Subject"),
+                    _label(appLocalization.myAccountSupportSubjectLabel),
                     _boxedField(
                       child: TextFormField(
                         controller: subjectController,
                         keyboardType: TextInputType.text,
-                        validator: (v) => _required(v, 'Subject'),
+                        validator: (v) => _required(
+                            v,
+                            appLocalization.myAccountSupportSubjectLabel,
+                            context),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                        textAlign: TextAlign.left,
                       ),
                     ),
 
                     // Message
-                    _label("Message"),
+                    _label(appLocalization.myAccountSupportMessageLabel),
                     _boxedField(
                       child: TextFormField(
                         controller: messageController,
                         maxLines: 4,
                         keyboardType: TextInputType.multiline,
-                        validator: (v) => _required(v, 'Message'),
+                        validator: (v) => _required(
+                            v,
+                            appLocalization.myAccountSupportMessageLabel,
+                            context),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           isDense: true,
                           contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                        textAlign: TextAlign.left,
                       ),
                     ),
 
@@ -436,8 +465,9 @@ class _SupportState extends State<Support> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                "Submit",
+                            : Text(
+                                appLocalization
+                                    .myAccountSupportSubmitButtonText,
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 15),
                               ),
@@ -457,14 +487,11 @@ class _SupportState extends State<Support> {
   // ---------- UI helpers ----------
   Widget _label(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10.0, top: 8, bottom: 4),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          text,
-          textAlign: TextAlign.left,
-          style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
-        ),
+      padding:
+          const EdgeInsets.only(left: 10.0, top: 8, bottom: 4, right: 10.0),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 15, letterSpacing: 0.5),
       ),
     );
   }
@@ -473,7 +500,7 @@ class _SupportState extends State<Support> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Container(
-        padding: const EdgeInsets.only(left: 10),
+        padding: const EdgeInsets.only(left: 10, right: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadiusDirectional.circular(10.0),
           boxShadow: const [

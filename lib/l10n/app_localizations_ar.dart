@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -148,9 +147,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get deletionFailed => 'فشل الحذف';
 
   @override
-  String get loginToEditProfile => 'يرجى تسجيل الدخول لتعديل ملفك الشخصي.';
-
-  @override
   String get homeSearchLocationHint => 'ابحث عن منطقة أو حي أو مدينة';
 
   @override
@@ -186,4 +182,59 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeSortPriceHigh => 'السعر (مرتفع)';
+
+  @override
+  String get loginToEditProfile => 'يرجى تسجيل الدخول لتعديل ملفك الشخصي.';
+
+  @override
+  String get myAccountSupportTitle => 'اتصل بنا';
+
+  @override
+  String get myAccountSupportSubTitle => 'اسألنا أي شيء؟';
+
+  @override
+  String get myAccountSupportNameLabel => 'الاسم';
+
+  @override
+  String get myAccountSupportEmailLabel => 'البريد الإلكتروني';
+
+  @override
+  String get myAccountSupportPhoneLabel => 'رقم الهاتف';
+
+  @override
+  String get myAccountSupportSubjectLabel => 'الموضوع';
+
+  @override
+  String get myAccountSupportMessageLabel => 'الرسالة';
+
+  @override
+  String get myAccountSupportSubmitButtonText => 'إرسال';
+
+  @override
+  String get myAccountSupportValidationEnterText => 'الرجاء الإدخال';
+
+  @override
+  String get myAccountSupportValidationEnterPhone => 'الرجاء إدخال رقم الهاتف';
+
+  @override
+  String get myAccountSupportValidationPhoneDigitsOnly =>
+      'يجب أن يحتوي رقم الهاتف على أرقام فقط';
+
+  @override
+  String myAccountSupportValidationPhoneLength(Object country, Object length) {
+    return 'يجب أن يكون رقم الهاتف $length أرقام لدولة $country';
+  }
+
+  @override
+  String myAccountSupportValidationRequired(Object label) {
+    return 'يرجى إدخال $label';
+  }
+
+  @override
+  String get myAccountSupportValidationEmailRequired =>
+      'يرجى إدخال البريد الإلكتروني';
+
+  @override
+  String get myAccountSupportValidationEmailInvalid =>
+      'يرجى إدخال بريد إلكتروني صالح';
 }

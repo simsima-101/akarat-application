@@ -5,7 +5,7 @@ class HomeAppLogoManagerService {
   static const Map<String, String> _homeAppLogos = {
     'en': AppImages.homeAppLogoEN,
     'ar': AppImages.homeAppLogoAR,
-    'tr': AppImages.homeAppLogoTR
+    'tr': AppImages.homeAppLogoEN
   };
 
   // Get logo based on Locale

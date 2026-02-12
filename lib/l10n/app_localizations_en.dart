@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -147,9 +146,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deletionFailed => 'Deletion failed';
 
   @override
-  String get loginToEditProfile => 'Please login to edit your profile.';
-
-  @override
   String get homeSearchLocationHint => 'Search for a locality, area or city';
 
   @override
@@ -185,4 +181,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeSortPriceHigh => 'Price (High)';
+
+  @override
+  String get loginToEditProfile => 'Please login to edit your profile.';
+
+  @override
+  String get myAccountSupportTitle => 'Contact Us';
+
+  @override
+  String get myAccountSupportSubTitle => 'Ask us anything?';
+
+  @override
+  String get myAccountSupportNameLabel => 'Name';
+
+  @override
+  String get myAccountSupportEmailLabel => 'Email Address';
+
+  @override
+  String get myAccountSupportPhoneLabel => 'Phone Number';
+
+  @override
+  String get myAccountSupportSubjectLabel => 'Subject';
+
+  @override
+  String get myAccountSupportMessageLabel => 'Message';
+
+  @override
+  String get myAccountSupportSubmitButtonText => 'Submit';
+
+  @override
+  String get myAccountSupportValidationEnterText => 'Please enter';
+
+  @override
+  String get myAccountSupportValidationEnterPhone =>
+      'Please enter Phone Number';
+
+  @override
+  String get myAccountSupportValidationPhoneDigitsOnly =>
+      'Phone number must contain digits only';
+
+  @override
+  String myAccountSupportValidationPhoneLength(Object country, Object length) {
+    return 'Phone number must be $length digits for $country';
+  }
+
+  @override
+  String myAccountSupportValidationRequired(Object label) {
+    return 'Please enter $label';
+  }
+
+  @override
+  String get myAccountSupportValidationEmailRequired => 'Please enter Email';
+
+  @override
+  String get myAccountSupportValidationEmailInvalid =>
+      'Please enter a valid email';
 }

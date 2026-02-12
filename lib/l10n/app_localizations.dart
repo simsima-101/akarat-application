@@ -447,6 +447,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please login to edit your profile.'**
   String get loginToEditProfile;
+
+  /// This text is displayed in the support screen app bar title of the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get myAccountSupportTitle;
+
+  /// this is the sub title show in teh support screen in the my screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask us anything?'**
+  String get myAccountSupportSubTitle;
+
+  /// Label text for the name input field on the support screen in the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get myAccountSupportNameLabel;
+
+  /// Label text for the email input field on the support screen in the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get myAccountSupportEmailLabel;
+
+  /// Label text for the phone number input field on the support screen in the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get myAccountSupportPhoneLabel;
+
+  /// Label text for the subject input field on the support screen in the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get myAccountSupportSubjectLabel;
+
+  /// Label text for the message input field on the support screen in the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get myAccountSupportMessageLabel;
+
+  /// Text for the submit button on the support form in the My Account screen
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get myAccountSupportSubmitButtonText;
+
+  /// Validation message shown on the My Account support screen when a required text field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter'**
+  String get myAccountSupportValidationEnterText;
+
+  /// Validation message shown on the My Account support screen when the phone number field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter Phone Number'**
+  String get myAccountSupportValidationEnterPhone;
+
+  /// Validation message shown on the My Account support screen when the phone number contains non-numeric characters
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must contain digits only'**
+  String get myAccountSupportValidationPhoneDigitsOnly;
+
+  /// Validation message shown on the My Account support screen when the phone number length is invalid for the selected country; {length} and {country} are dynamic values
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must be {length} digits for {country}'**
+  String myAccountSupportValidationPhoneLength(Object country, Object length);
+
+  /// Validation error on the My Account > Support screen when a required text field is empty. {label} is the field name.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter {label}'**
+  String myAccountSupportValidationRequired(Object label);
+
+  /// Validation error on the My Account > Support screen when the Email text field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter Email'**
+  String get myAccountSupportValidationEmailRequired;
+
+  /// Validation error on the My Account > Support screen when the Email text field has an invalid format.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get myAccountSupportValidationEmailInvalid;
 }
 
 class _AppLocalizationsDelegate

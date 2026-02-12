@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -150,10 +149,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get deletionFailed => 'Silme işlemi başarısız oldu';
 
   @override
-  String get loginToEditProfile =>
-      'Profilinizi düzenlemek için lütfen giriş yapın.';
-
-  @override
   String get homeSearchLocationHint => 'Bir mahalle, bölge veya şehir ara';
 
   @override
@@ -189,4 +184,60 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get homeSortPriceHigh => 'Fiyat (Yüksek)';
+
+  @override
+  String get loginToEditProfile =>
+      'Profilinizi düzenlemek için lütfen giriş yapın.';
+
+  @override
+  String get myAccountSupportTitle => 'Bize Ulaşın';
+
+  @override
+  String get myAccountSupportSubTitle => 'Bize her şeyi sorabilirsiniz?';
+
+  @override
+  String get myAccountSupportNameLabel => 'Ad';
+
+  @override
+  String get myAccountSupportEmailLabel => 'E-posta Adresi';
+
+  @override
+  String get myAccountSupportPhoneLabel => 'Telefon Numarası';
+
+  @override
+  String get myAccountSupportSubjectLabel => 'Konu';
+
+  @override
+  String get myAccountSupportMessageLabel => 'Mesaj';
+
+  @override
+  String get myAccountSupportSubmitButtonText => 'Gönder';
+
+  @override
+  String get myAccountSupportValidationEnterText => 'Lütfen girin';
+
+  @override
+  String get myAccountSupportValidationEnterPhone =>
+      'Lütfen telefon numarası girin';
+
+  @override
+  String get myAccountSupportValidationPhoneDigitsOnly =>
+      'Telefon numarası yalnızca rakam içermelidir';
+
+  @override
+  String myAccountSupportValidationPhoneLength(Object country, Object length) {
+    return 'Telefon numarası $country için $length haneli olmalıdır';
+  }
+
+  @override
+  String myAccountSupportValidationRequired(Object label) {
+    return 'Lütfen $label girin';
+  }
+
+  @override
+  String get myAccountSupportValidationEmailRequired => 'Lütfen E-posta girin';
+
+  @override
+  String get myAccountSupportValidationEmailInvalid =>
+      'Lütfen geçerli bir e-posta girin';
 }

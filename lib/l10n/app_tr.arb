@@ -223,8 +223,8 @@
       "loginToEditProfile": "Profilinizi düzenlemek için lütfen giriş yapın.",
       "@loginToEditProfile": {
         "description": "Message shown when user tries to edit profile without being logged in"
-      }
-    },
+      },
+
 
 
      "@_home_screen_section": "================= HOME SCREEN =================",
@@ -289,7 +289,98 @@
     "homeSortPriceHigh": "Fiyat (Yüksek)",
     "@homeSortPriceHigh": {
       "description": "Dropdown value shown in the Home screen sorting filter"
-    }
+    },
+
+
+     "@_my_account_support_section": "================= MY ACCOUNT → SUPPORT SCREEN =================",
+
+    "myAccountSupportTitle": "Bize Ulaşın",
+    "@myAccountSupportTitle": {
+      "description": "This text is displayed in the support screen app bar title of the My Account screen"
+    },
+
+    "myAccountSupportSubTitle": "Bize her şeyi sorabilirsiniz?",
+    "@myAccountSupportSubTitle": {
+      "description": "this is the sub title show in teh support screen in the my screen."
+    },
+
+    "myAccountSupportNameLabel": "Ad",
+    "@myAccountSupportNameLabel": {
+      "description": "Label text for the name input field on the support screen in the My Account screen"
+    },
+
+    "myAccountSupportEmailLabel": "E-posta Adresi",
+    "@myAccountSupportEmailLabel": {
+      "description": "Label text for the email input field on the support screen in the My Account screen"
+    },
+
+    "myAccountSupportPhoneLabel": "Telefon Numarası",
+    "@myAccountSupportPhoneLabel": {
+      "description": "Label text for the phone number input field on the support screen in the My Account screen"
+    },
+
+    "myAccountSupportSubjectLabel": "Konu",
+    "@myAccountSupportSubjectLabel": {
+      "description": "Label text for the subject input field on the support screen in the My Account screen"
+    },
+
+    "myAccountSupportMessageLabel": "Mesaj",
+    "@myAccountSupportMessageLabel": {
+      "description": "Label text for the message input field on the support screen in the My Account screen"
+    },
+
+    "myAccountSupportSubmitButtonText": "Gönder",
+    "@myAccountSupportSubmitButtonText": {
+      "description": "Text for the submit button on the support form in the My Account screen"
+    },
+    "myAccountSupportValidationEnterText": "Lütfen girin",
+    "@myAccountSupportValidationEnterText": {
+      "description": "Validation message shown on the My Account support screen when a required text field is empty"
+    },
+
+    "myAccountSupportValidationEnterPhone": "Lütfen telefon numarası girin",
+    "@myAccountSupportValidationEnterPhone": {
+      "description": "Validation message shown on the My Account support screen when the phone number field is empty"
+    },
+
+    "myAccountSupportValidationPhoneDigitsOnly": "Telefon numarası yalnızca rakam içermelidir",
+    "@myAccountSupportValidationPhoneDigitsOnly": {
+      "description": "Validation message shown on the My Account support screen when the phone number contains non-numeric characters"
+    },
+
+    "myAccountSupportValidationPhoneLength": "Telefon numarası {country} için {length} haneli olmalıdır",
+    "@myAccountSupportValidationPhoneLength": {
+      "description": "Validation message shown on the My Account support screen when the phone number length is invalid for the selected country; {length} and {country} are dynamic values"
+    },
+
+"myAccountSupportValidationRequired": "Lütfen {label} girin",
+"@myAccountSupportValidationRequired": {
+  "description": "Validation error on the My Account > Support screen when a required text field is empty. {label} is the field name."
+},
+
+"myAccountSupportValidationEmailRequired": "Lütfen E-posta girin",
+"@myAccountSupportValidationEmailRequired": {
+  "description": "Validation error on the My Account > Support screen when the Email text field is empty."
+},
+
+"myAccountSupportValidationEmailInvalid": "Lütfen geçerli bir e-posta girin",
+"@myAccountSupportValidationEmailInvalid": {
+  "description": "Validation error on the My Account > Support screen when the Email text field has an invalid format."
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
