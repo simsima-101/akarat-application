@@ -365,27 +365,10 @@
       "myAccountSupportValidationEmailInvalid": "يرجى إدخال بريد إلكتروني صالح",
       "@myAccountSupportValidationEmailInvalid": {
         "description": "Validation error on the My Account > Support screen when the Email text field has an invalid format."
-      }
+      },
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-},
-
-       "@_register_screen_section": "================= REGISTER SCREEN =================",
+  "@_register_screen_section": "================= REGISTER SCREEN =================",
 
   "registerTitle": "إنشاء حساب",
   "@registerTitle": {
@@ -602,6 +585,485 @@
         "googleSignInFailedGeneric": "فشل تسجيل الدخول عبر جوجل. يرجى المحاولة مرة أخرى.",
         "@googleSignInFailedGeneric": {
           "description": "Fallback generic error for any Google Sign-In issue"
-        }
+        },
+
+
+      "@_my_account_terms_section": "================= MY ACCOUNT → TERMS & CONDITIONS SCREEN =================",
+
+
+    "myAccountTermsAndConditionsAppBarTitle": "الشروط والأحكام",
+    "@myAccountTermsAndConditionsAppBarTitle": {
+      "description": "App bar title text shown on the Terms & Conditions screen in the My Account section"
+    },
+
+    "myAccountTermsSectionIntroductionTitle": "المقدمة",
+    "@myAccountTermsSectionIntroductionTitle": {
+      "description": "Section title for the introduction"
+    },
+    "myAccountTermsSectionIntroductionContent": "مرحبًا بكم في أكارات (المنصة). تشكل هذه الشروط والأحكام اتفاقية ملزمة قانونًا بين أكارات وأي فرد أو كيان يصل أو يستخدم أو يتفاعل مع موقعنا الإلكتروني أو تطبيقنا للهواتف المحمولة أو حلولنا الرقمية أو أي أدوات ووظائف ذات صلة (يُشار إليها مجتمعة بـ \"الخدمات\"). تنطبق هذه الشروط على جميع فئات المستخدمين، بما في ذلك الزوار والأعضاء المسجلين والمعلنين والوكلاء المرخصين والمطورين وأي أطراف أخرى تصل أو تستخدم المنصة.\n\nمن خلال استخدام أو الوصول إلى أي جزء من المنصة، فإنك تقر بأنك قد قرأت وفهمت ووافقت على الالتزام بهذه الشروط، إلى جانب سياسة الخصوصية الخاصة بنا. إذا كنت لا توافق على أي بند من هذه الشروط، فيجب عليك التوقف فورًا عن استخدام المنصة وجميع الخدمات المرتبطة بها.",
+    "@myAccountTermsSectionIntroductionContent": {
+      "description": "Full introduction text in Terms & Conditions"
+    },
+
+    "myAccountTermsSectionWhoWeAreTitle": "1. من نحن",
+    "@myAccountTermsSectionWhoWeAreTitle": {
+      "description": "Title of the 'Who We Are' section including numbering"
+    },
+    "myAccountTermsWhoWeAreCompany": "تمتلك المنصة وتديرها شركة EMLAK BULUCU PORTAL LLC، وهي كيان قانوني مسجل في دولة الإمارات العربية المتحدة.",
+    "@myAccountTermsWhoWeAreCompany": {
+      "description": "Company name and country of registration"
+    },
+    "myAccountTermsWhoWeAreOffice": "المكتب المسجل: برج وستبري، الطابق 23، المكتب رقم 2303، الخليج التجاري، دبي، الإمارات العربية المتحدة\nالبريد الإلكتروني: info@akarat.com",
+    "@myAccountTermsWhoWeAreOffice": {
+      "description": "Registered office address and email"
+    },
+    "myAccountTermsWhoWeArePronouns": "تشير الإشارات إلى \"نحن\" أو \"نا\" أو \"لنا\" إلى أكارات كمشغل المنصة.",
+    "@myAccountTermsWhoWeArePronouns": {
+      "description": "Explanation of who 'we' refers to"
+    },
+
+    "myAccountTermsSectionDefinitionsTitle": "2. التعريفات",
+    "@myAccountTermsSectionDefinitionsTitle": {
+      "description": "Title of the Definitions section including numbering"
+    },
+    "myAccountTermsDefinitionAdvertiser": "المعلن: أي فرد أو شركة أو منظمة تنشر إعلانات عقارية على المنصة للترويج أو التسويق أو بيع العقارات.",
+    "@myAccountTermsDefinitionAdvertiser": { "description": "Definition of Advertiser" },
+    "myAccountTermsDefinitionAgent": "الوكيل: متخصص عقاري مرخص أو وسيط أو وكالة مخولة بإدراج أو تسويق العقارات.",
+    "@myAccountTermsDefinitionAgent": { "description": "Definition of Agent" },
+    "myAccountTermsDefinitionContent": "المحتوى: جميع المواد التي يتم رفعها أو تقديمها إلى المنصة، بما في ذلك النصوص والصور والفيديوهات والوثائق والرسومات وغيرها من الوسائط.",
+    "@myAccountTermsDefinitionContent": { "description": "Definition of Content" },
+    "myAccountTermsDefinitionListing": "الإعلان: أي إعلان عقاري أو منشور ترويجي يتم نشره على المنصة، بما في ذلك جميع التفاصيل والوسائط ذات الصلة.",
+    "@myAccountTermsDefinitionListing": { "description": "Definition of Listing" },
+    "myAccountTermsDefinitionUser": "المستخدم / أنت: أي شخص أو شركة أو كيان يصل أو يتصفح أو يتفاعل مع المنصة أو خدماتها.",
+    "@myAccountTermsDefinitionUser": { "description": "Definition of User / You" },
+    "myAccountTermsDefinitionServices": "الخدمات: مجموعة كاملة من الميزات والأدوات والوظائف والحلول التي تقدمها أكارات عبر المنصة.",
+    "@myAccountTermsDefinitionServices": { "description": "Definition of Services" },
+
+    "myAccountTermsSectionAcceptanceTitle": "3. قبول الشروط",
+    "@myAccountTermsSectionAcceptanceTitle": {
+      "description": "Title of Acceptance of Terms section"
+    },
+    "myAccountTermsAcceptanceMain": "من خلال الوصول إلى المنصة أو استخدامها، فإنك تقر صراحة بأنك قد قرأت وفهمت ووافقت على الالتزام بهذه الشروط. يعني استخدامك للمنصة قبولك لجميع الالتزامات المذكورة هنا.",
+    "@myAccountTermsAcceptanceMain": { "description": "Main acceptance paragraph" },
+    "myAccountTermsAcceptanceNotAllowed": "لا يجوز لك استخدام المنصة في أي من الحالات التالية:",
+    "@myAccountTermsAcceptanceNotAllowed": { "description": "Intro to list of prohibited users" },
+    "myAccountTermsAcceptanceConditions": "• إذا كنت دون سن 18 عامًا.\n• إذا كانت سلطتك القضائية تحظر الوصول إلى الأسواق العقارية الرقمية.\n• إذا كنت لا تستوفي متطلبات الأهلية أو المتطلبات القانونية لإدراج أو الإعلان أو التفاعل مع الإعلانات العقارية.",
+    "@myAccountTermsAcceptanceConditions": { "description": "List of cases when platform cannot be used" },
+    "myAccountTermsAcceptanceUpdates": "تحتفظ أكارات بالحق في تعديل أو تغيير أو تحديث هذه الشروط في أي وقت دون إشعار مسبق. تصبح التحديثات سارية المفعول فور نشرها. يشكل استمرار استخدام المنصة بعد هذه التغييرات قبولًا للشروط المعدلة.",
+    "@myAccountTermsAcceptanceUpdates": { "description": "Text about terms updates" },
+
+    "myAccountTermsSectionScopeTitle": "4. نطاق الاستخدام",
+    "@myAccountTermsSectionScopeTitle": { "description": "Title of Scope of Use section" },
+    "myAccountTermsScopeIntro": "يجب على المستخدمين استخدام المنصة بطريقة مهنية وأخلاقية ووفقًا لجميع القوانين المعمول بها. يُحظر عليك بشكل صارم:",
+    "@myAccountTermsScopeIntro": { "description": "Introduction to prohibited actions" },
+    "myAccountTermsScopeProhibited": "• رفع مواد غير قانونية أو مضللة أو احتيالية أو محمية بحقوق الطبع والنشر دون إذن.\n• استخراج أو نسخ أو تعدين بيانات المنصة للاستخدام التجاري.\n• نشر إعلانات عقارية غير دقيقة أو مكررة أو غير موجودة.\n• استخدام أدوات آلية أو بوتات أو سكربتات للوصول إلى المنصة أو التفاعل معها.\n• محاولة الإضرار أو تعطيل أو إثقال أو التدخل في أمان أو عمليات المنصة.",
+    "@myAccountTermsScopeProhibited": { "description": "List of prohibited activities" },
+    "myAccountTermsScopeConsequence": "قد يؤدي الاستخدام غير السليم إلى تعليق فوري أو إنهاء الحساب أو إزالة المحتوى أو اتخاذ إجراءات قانونية.",
+    "@myAccountTermsScopeConsequence": { "description": "Consequence of misuse" },
+
+    "myAccountTermsSectionRegistrationTitle": "5. تسجيل الحساب",
+    "@myAccountTermsSectionRegistrationTitle": { "description": "Title of Account Registration section" },
+    "myAccountTermsRegistrationIntro": "تتطلب بعض الخدمات تسجيل المستخدم. يجب عليك تقديم معلومات دقيقة وكاملة ومحدثة. المستخدمون مسؤولون عن:",
+    "@myAccountTermsRegistrationIntro": { "description": "Introduction to account responsibilities" },
+    "myAccountTermsRegistrationDuties": "• حماية بيانات تسجيل الدخول\n• منع الوصول غير المصرح به\n• جميع الأنشطة التي تتم تحت حسابهم",
+    "@myAccountTermsRegistrationDuties": { "description": "List of user responsibilities" },
+    "myAccountTermsRegistrationNoLiability": "لا تتحمل أكارات المسؤولية عن أي خسائر ناتجة عن الإهمال أو الوصول غير المصرح به.",
+    "@myAccountTermsRegistrationNoLiability": { "description": "Disclaimer about account security" },
+
+    "myAccountTermsSectionAdvertiserAgentTitle": "6. التزامات المعلنين والوكلاء",
+    "@myAccountTermsSectionAdvertiserAgentTitle": { "description": "Title of Advertiser & Agent Obligations section" },
+    "myAccountTermsAdvertiserAgentCompliance": "يجب على المعلنين والوكلاء الالتزام بجميع اللوائح العقارية ذات الصلة في دولة الإمارات، بما في ذلك متطلبات الترخيص والإعلان التي تحددها الجهات المختصة مثل دائرة الأراضي والأملاك في دبي (DLD).",
+    "@myAccountTermsAdvertiserAgentCompliance": { "description": "Compliance requirement for advertisers and agents" },
+    "myAccountTermsListingMust": "يجب أن تكون جميع الإعلانات العقارية:",
+    "@myAccountTermsListingMust": { "description": "Introduction to listing requirements" },
+    "myAccountTermsListingRequirements": "• دقيقة وصادقة ومتاحة حاليًا.\n• تحتوي على معلومات وصور ومواصفات وأسعار محدثة.\n• مدعومة بتفويض ساري أو وثائق ملكية أو اتفاقيات إدراج.",
+    "@myAccountTermsListingRequirements": { "description": "Requirements for property listings" },
+    "myAccountTermsAkaratRights": "تحتفظ أكارات بالحق الكامل في:",
+    "@myAccountTermsAkaratRights": { "description": "Introduction to Akarat's rights over listings" },
+    "myAccountTermsAkaratRightsList": "• مراجعة واعتماد الإعلانات قبل النشر.\n• تعديل أو إزالة المحتوى الذي يخالف الإرشادات.\n• تعليق الحسابات التي تمارس ممارسات غير نزيهة أو غير أخلاقية.",
+    "@myAccountTermsAkaratRightsList": { "description": "List of Akarat's rights regarding listings" },
+    "myAccountTermsAgentLicense": "يجب أن يمتلك الوكلاء ترخيص DLD ساري المفعول أو شهادة معادلة حسب الإمارة.",
+    "@myAccountTermsAgentLicense": { "description": "License requirement for agents" },
+
+    "myAccountTermsSectionUGCTitle": "7. المحتوى الذي ينشئه المستخدم",
+    "@myAccountTermsSectionUGCTitle": { "description": "Title of User-Generated Content section" },
+    "myAccountTermsUGCLicense": "من خلال رفع المحتوى، تمنح أكارات ترخيصًا عالميًا غير حصري وخالٍ من الرسوم لتخزين المحتوى ونشره وإعادة إنتاجه وتعديله أو استخدامه لأغراض تتعلق بالمنصة.",
+    "@myAccountTermsUGCLicense": { "description": "License granted for uploaded content" },
+    "myAccountTermsUGCAffirm": "أنت تؤكد أن:",
+    "@myAccountTermsUGCAffirm": { "description": "Introduction to content ownership affirmation" },
+    "myAccountTermsUGCAffirmList": "• أنت تمتلك المحتوى أو تمتلك الحقوق القانونية لاستخدامه.\n• لا ينتهك محتواك قوانين الملكية الفكرية.",
+    "@myAccountTermsUGCAffirmList": { "description": "Affirmations about content ownership" },
+
+    "myAccountTermsSectionIPTitle": "8. الملكية الفكرية",
+    "@myAccountTermsSectionIPTitle": { "description": "Title of Intellectual Property section" },
+    "myAccountTermsIPOwnership": "جميع حقوق الملكية الفكرية في المنصة، بما في ذلك على سبيل المثال لا الحصر العلامات التجارية والخدمية والشعارات والرسومات والنصوص والصور والمواد السمعية البصرية والبرمجيات وعناصر التصميم وغيرها من المحتويات، هي ملك حصري لأكارات أو المرخصين لها.",
+    "@myAccountTermsIPOwnership": { "description": "Statement of IP ownership" },
+    "myAccountTermsIPProhibited": "يُحظر على المستخدمين بشكل صارم:",
+    "@myAccountTermsIPProhibited": { "description": "Introduction to prohibited IP actions" },
+    "myAccountTermsIPProhibitedList": "• نسخ أو إعادة إنتاج أو توزيع أي محتوى في المنصة دون موافقة كتابية مسبقة.\n• تعديل أو إنشاء أعمال مشتقة أو استغلال تجاري للمنصة أو محتواها.\n• استخدام الملكية الفكرية بأي طريقة تنتهك حقوق أكارات أو المرخصين من الأطراف الثالثة.",
+    "@myAccountTermsIPProhibitedList": { "description": "Prohibited uses of intellectual property" },
+    "myAccountTermsIPConsequence": "أي استخدام غير مصرح به للملكية الفكرية للمنصة قد يؤدي إلى مسؤولية مدنية أو جنائية وفقًا للقوانين المعمول بها في دولة الإمارات العربية المتحدة.",
+    "@myAccountTermsIPConsequence": { "description": "Consequence of IP infringement" },
+
+    "myAccountTermsSectionDisclaimerTitle": "9. إخلاء المسؤولية وتحديد المسؤولية",
+    "@myAccountTermsSectionDisclaimerTitle": { "description": "Title of Disclaimer and Limitation of Liability section" },
+    "myAccountTermsDisclaimerBasis": "يتم توفير المنصة وخدماتها \"كما هي\" و\"حسب التوفر\". لا تقدم أكارات أي ضمانات، صريحة أو ضمنية، بشأن توفر أو دقة أو اكتمال أو موثوقية أو ملاءمة أي محتوى أو إعلانات أو خدمات مقدمة عبر المنصة.",
+    "@myAccountTermsDisclaimerBasis": { "description": "As-is disclaimer" },
+    "myAccountTermsNoLiabilityFor": "يقر المستخدمون ويوافقون على أن أكارات غير مسؤولة عن:",
+    "@myAccountTermsNoLiabilityFor": { "description": "Introduction to what Akarat is not liable for" },
+    "myAccountTermsNoLiabilityList": "• الأخطاء أو السهو أو المعلومات القديمة في الإعلانات العقارية أو المحتوى الذي ينشئه المستخدم.\n• الأضرار غير المباشرة أو العَرَضية أو التبعية أو العقابية أو الخاصة، بما في ذلك فقدان الأرباح أو الفرص أو انقطاع الأعمال.\n• السلوك الخاطئ أو التحريف أو الإهمال أو أي أفعال من قبل المعلنين أو الوكلاء أو المستخدمين أو الكيانات الخارجية.",
+    "@myAccountTermsNoLiabilityList": { "description": "List of non-liabilities" },
+    "myAccountTermsUseAtOwnRisk": "يصل المستخدمون ويستخدمون المنصة على مسؤوليتهم الخاصة بالكامل. لا تتجاوز المسؤولية الإجمالية لأكارات، سواء في العقد أو الضرر أو غير ذلك، الرسوم (إن وجدت) التي دفعها المستخدم مقابل الخدمات ذات الصلة.",
+    "@myAccountTermsUseAtOwnRisk": { "description": "Own risk clause and liability cap" },
+
+    "myAccountTermsSectionSuspensionTitle": "10. التعليق أو الإنهاء",
+    "@myAccountTermsSectionSuspensionTitle": { "description": "Title of Suspension or Termination section" },
+    "myAccountTermsSuspensionRight": "تحتفظ أكارات بالحق، وفقًا لتقديرها الخاص، في تعليق أو تقييد أو إنهاء حساب المستخدم ووصوله إلى المنصة، كليًا أو جزئيًا، دون إشعار مسبق، إذا:",
+    "@myAccountTermsSuspensionRight": { "description": "Introduction to suspension/termination rights" },
+    "myAccountTermsSuspensionReasons": "• انتهك المستخدم أي بند من هذه الشروط أو القانون المعمول به.\n• تم اكتشاف نشاط احتيالي أو مسيء أو غير أخلاقي.\n• تعرض أمان المنصة أو المستخدمين الآخرين للتهديد.",
+    "@myAccountTermsSuspensionReasons": { "description": "Reasons for suspension or termination" },
+    "myAccountTermsSuspensionEffect": "عند التعليق أو الإنهاء، يتم إلغاء الوصول إلى جميع الخدمات والمحتوى وبيانات المستخدم فورًا. يظل المستخدمون مسؤولين عن جميع الالتزامات والأفعال التي تمت تحت حسابهم قبل الإنهاء.",
+    "@myAccountTermsSuspensionEffect": { "description": "Effects of suspension or termination" },
+
+    "myAccountTermsSectionPrivacyTitle": "11. حماية البيانات والخصوصية",
+    "@myAccountTermsSectionPrivacyTitle": { "description": "Title of Data Protection & Privacy section" },
+    "myAccountTermsPrivacyProcessed": "يتم معالجة جميع البيانات الشخصية وغير الشخصية التي يتم جمعها عبر المنصة وفقًا لسياسة الخصوصية الخاصة بأكارات. تشمل الممارسات الرئيسية:",
+    "@myAccountTermsPrivacyProcessed": { "description": "Introduction to data processing" },
+    "myAccountTermsPrivacyPractices": "• جمع البيانات فقط لأغراض تشغيلية أو قانونية أو متعلقة بالخدمة.\n• تخزين البيانات بأمان وتقييد الوصول للأشخاص المصرح لهم فقط.\n• استخدام البيانات الشخصية فقط لتحسين الخدمات أو معالجة المعاملات أو الامتثال للالتزامات القانونية.\n• حقوق المستخدم في الوصول إلى بياناته الشخصية أو تصحيحها أو طلب حذفها، وفقًا للقوانين المعمول بها في الإمارات.",
+    "@myAccountTermsPrivacyPractices": { "description": "Key data protection practices" },
+    "myAccountTermsPrivacyConsent": "باستخدام المنصة، يوافق المستخدمون على جمع ومعالجة وتخزين البيانات كما هو موضح في سياسة الخصوصية.",
+    "@myAccountTermsPrivacyConsent": { "description": "Consent to privacy policy" },
+
+    "myAccountTermsSectionThirdPartyTitle": "12. الروابط الخارجية",
+    "@myAccountTermsSectionThirdPartyTitle": { "description": "Title of Third-Party Links section" },
+    "myAccountTermsThirdPartyContent": "قد تحتوي المنصة على روابط لمواقع أو تطبيقات أو خدمات تابعة لجهات خارجية. لا تتحكم أكارات في هذه المواقع ولا تؤيدها ولا تضمن دقة محتواها أو خصوصيتها أو أمانها.\n\nيقر المستخدمون بأن الوصول إلى المواقع أو الموارد الخارجية يكون على مسؤوليتهم الخاصة. تتنصل أكارات من جميع المسؤوليات عن أي أضرار أو خسائر تنتج عن استخدام هذه الخدمات الخارجية.",
+    "@myAccountTermsThirdPartyContent": { "description": "Full text about third-party links and disclaimer" },
+
+    "myAccountTermsSectionGoverningLawTitle": "13. القانون الحاكم والاختصاص القضائي",
+    "@myAccountTermsSectionGoverningLawTitle": { "description": "Title of Governing Law & Jurisdiction section" },
+    "myAccountTermsGoverningLawContent": "تخضع هذه الشروط وتُفسر وفقًا لقوانين دولة الإمارات العربية المتحدة. يخضع أي نزاع أو خلاف أو مطالبة تنشأ عن هذه الشروط أو استخدام المنصة للاختصاص الحصري للمحاكم المختصة في دبي.\n\nيخضع المستخدمون صراحة لاختصاص هذه المحاكم ويتنازلون عن أي اعتراض على مكان المحاكمة أو عدم ملاءمة المنتدى.",
+    "@myAccountTermsGoverningLawContent": { "description": "Governing law and jurisdiction clause" },
+
+    "myAccountTermsSectionLanguageTitle": "14. اللغة",
+    "@myAccountTermsSectionLanguageTitle": { "description": "Title of Language section" },
+    "myAccountTermsLanguageContent": "تم توفير هذه الشروط باللغتين الإنجليزية والعربية للتسهيل. في حال وجود أي تعارض أو عدم اتساق بين النسختين الإنجليزية والعربية، تكون النسخة الإنجليزية هي السائدة لجميع الأغراض القانونية والتفسير والتنفيذ.",
+    "@myAccountTermsLanguageContent": { "description": "Language precedence clause" },
+
+    "myAccountTermsSectionUpdatesTitle": "15. تحديثات هذه الشروط",
+    "@myAccountTermsSectionUpdatesTitle": { "description": "Title of Updates to These Terms section" },
+    "myAccountTermsUpdatesIntro": "تحتفظ أكارات بالحق في تعديل أو مراجعة أو تحديث هذه الشروط في أي وقت لتعكس التغييرات في:",
+    "@myAccountTermsUpdatesIntro": { "description": "Introduction to updates" },
+    "myAccountTermsUpdatesReasons": "• المتطلبات القانونية أو التنظيمية.\n• التحسينات التشغيلية أو التقنية أو الأمنية.\n• الميزات أو الوظائف أو الخدمات الجديدة المقدمة عبر المنصة.",
+    "@myAccountTermsUpdatesReasons": { "description": "Reasons for updating terms" },
+    "myAccountTermsUpdatesEffect": "تصبح الشروط المحدثة سارية المفعول فور نشرها على المنصة. يُنصح المستخدمون بمراجعة الشروط بشكل دوري. يشكل استمرار استخدام المنصة قبولًا لأي تعديلات أو تحديثات.",
+    "@myAccountTermsUpdatesEffect": { "description": "Effect and acceptance of updated terms" },
+
+    "myAccountTermsSectionContactTitle": "16. تواصلوا معنا",
+    "@myAccountTermsSectionContactTitle": { "description": "Title of Contact Us section" },
+    "myAccountTermsContactContent": "للمساعدة أو الاستفسارات أو الشكاوى:\n\n✉️ info@akarat.com\n\n📍 برج وستبري، الطابق 23، المكتب 2303، الخليج التجاري، دبي، الإمارات العربية المتحدة",
+    "@myAccountTermsContactContent": { "description": "Contact information text" },
+
+    "@_my_account_privacy_section": "================= MY ACCOUNT → PRIVACY POLICY SCREEN =================",
+
+"myAccountPrivacyAppBarTitle": "سياسة الخصوصية",
+"@myAccountPrivacyAppBarTitle": {
+  "description": "App bar title for the Privacy Policy screen in My Account section"
+},
+
+"myAccountPrivacyIntroductionTitle": "المقدمة",
+"@myAccountPrivacyIntroductionTitle": {
+  "description": "Section title: Introduction"
+},
+"myAccountPrivacyIntroductionContent": "حماية خصوصيتكم هي أولوية لدى أكارات. نحن ملتزمون بحماية بياناتكم الشخصية وبالشفافية في كيفية جمعها واستخدامها والكشف عنها فيما يتعلق باستخدامكم لموقعنا الإلكتروني وتطبيقاتنا للهواتف المحمولة (المنصة).\n\nتوضح سياسة الخصوصية هذه كيفية جمع أكارات لبياناتكم الشخصية ومعالجتها وإدارتها عند وصولكم أو استخدامكم للمنصة، وتحدد حقوقكم والحمايات القانونية المتاحة لكم.\n\nمن خلال الوصول إلى المنصة أو استخدامها، فإنكم تقرون وتوافقون على جمع واستخدام ونقل بياناتكم الشخصية وفقًا لهذه السياسة.",
+"@myAccountPrivacyIntroductionContent": {
+  "description": "Main introduction paragraph of the Privacy Policy"
+},
+
+"myAccountPrivacySectionsIntro": "تغطي سياسة الخصوصية هذه الأقسام التالية:",
+"@myAccountPrivacySectionsIntro": {
+  "description": "Intro text before the list of sections"
+},
+"myAccountPrivacySectionLinkAbout": "معلومات عن شركتنا وكيفية التواصل معنا",
+"@myAccountPrivacySectionLinkAbout": {
+  "description": "Clickable link title to 'Who We Are & Contact' section"
+},
+"myAccountPrivacySectionLinkTypes": "أنواع المعلومات التي نجمعها",
+"@myAccountPrivacySectionLinkTypes": {
+  "description": "Clickable link title to Types of Information section"
+},
+"myAccountPrivacySectionLinkLegal": "الأساس القانوني لمعالجة معلوماتك",
+"@myAccountPrivacySectionLinkLegal": {
+  "description": "Clickable link title to Legal Basis section"
+},
+"myAccountPrivacySectionLinkShare": "كيف نشارك معلوماتك",
+"@myAccountPrivacySectionLinkShare": {
+  "description": "Clickable link title to Sharing section"
+},
+"myAccountPrivacySectionLinkSecurity": "إجراءات أمان البيانات",
+"@myAccountPrivacySectionLinkSecurity": {
+  "description": "Clickable link title to Security section"
+},
+"myAccountPrivacySectionLinkRights": "حقوقك بشأن معلوماتك",
+"@myAccountPrivacySectionLinkRights": {
+  "description": "Clickable link title to Rights section"
+},
+"myAccountPrivacySectionLinkMarketing": "الاتصالات التسويقية والترويجية",
+"@myAccountPrivacySectionLinkMarketing": {
+  "description": "Clickable link title to Marketing section"
+},
+"myAccountPrivacySectionLinkMinors": "معلومات حول القاصرين",
+"@myAccountPrivacySectionLinkMinors": {
+  "description": "Clickable link title to Minors section"
+},
+"myAccountPrivacySectionLinkThirdParty": "روابط لأطراف ثالثة",
+"@myAccountPrivacySectionLinkThirdParty": {
+  "description": "Clickable link title to Third-Party Links section"
+},
+"myAccountPrivacySectionLinkUpdates": "تحديثات ومراجعات السياسة",
+"@myAccountPrivacySectionLinkUpdates": {
+  "description": "Clickable link title to Updates section"
+},
+
+"myAccountPrivacyFooterNote": "قد نراجع سياسة الخصوصية هذه بشكل دوري. ستكون النسخة الأحدث دائمًا متاحة على هذه الصفحة.\n\nإذا تم نشر هذه السياسة بلغات مختلفة وظهرت أي تناقضات، فإن النسخة الإنجليزية هي السائدة.",
+"@myAccountPrivacyFooterNote": {
+  "description": "Footer note about updates and language precedence"
+},
+
+"myAccountPrivacySectionWhoWeAreTitle": "من نحن وكيفية التواصل معنا؟",
+"@myAccountPrivacySectionWhoWeAreTitle": {
+  "description": "Main heading for company & contact section"
+},
+"myAccountPrivacyWhoWeAreSubtitle": "من نحن؟",
+"@myAccountPrivacyWhoWeAreSubtitle": {
+  "description": "Subheading: Who are we?"
+},
+"myAccountPrivacyWhoWeAreContent": "تُدار المنصة من قبل EMLAK BULUCU، وهي شركة مسجلة في دولة الإمارات العربية المتحدة، وعنوانها المسجل: برج وستبري، الطابق 23، المكتب رقم 2303، الخليج التجاري، دبي، الإمارات العربية المتحدة («أكارات»، «نحن»، «لنا»، «خاصتنا»).",
+"@myAccountPrivacyWhoWeAreContent": {
+  "description": "Company description and registration info"
+},
+"myAccountPrivacyContactSubtitle": "كيفية التواصل معنا؟",
+"@myAccountPrivacyContactSubtitle": {
+  "description": "Subheading: How to contact us?"
+},
+"myAccountPrivacyContactContent": "يمكنكم التواصل معنا عبر البريد الإلكتروني info@akarat.com لأي استفسارات تتعلق بسياسة الخصوصية هذه.",
+"@myAccountPrivacyContactContent": {
+  "description": "Contact instruction text"
+},
+
+"myAccountPrivacySectionTypesTitle": "المعلومات التي نجمعها وكيفية استخدامها",
+"@myAccountPrivacySectionTypesTitle": {
+  "description": "Main heading for data collection section"
+},
+"myAccountPrivacyTypesIntro": "يتم توضيح فئات البيانات الشخصية التي نجمعها مباشرة منكم أدناه.",
+"@myAccountPrivacyTypesIntro": {
+  "description": "Intro sentence before personal data explanation"
+},
+"myAccountPrivacyPersonalDataDefinition": "تشير «البيانات الشخصية» إلى أي معلومات تحدد هويتك أو يمكن استخدامها بشكل معقول لتحديد هويتك. لا يشمل ذلك البيانات المجهولة أو المجمعة التي لا يمكن ربطها بك. تفاصيل الإعلانات العقارية — مثل الصور والأسعار والأوصاف والمرافق — لا تُعتبر بيانات شخصية، لأنها تتعلق بالعقارات ولا تحدد الأفراد.",
+"@myAccountPrivacyPersonalDataDefinition": {
+  "description": "Definition of Personal Data and exclusion of listing details"
+},
+"myAccountPrivacyTypesCollectedIntro": "تشمل أنواع البيانات الشخصية التي قد نجمعها:",
+"@myAccountPrivacyTypesCollectedIntro": {
+  "description": "Intro before the list of data categories"
+},
+"myAccountPrivacyTypesList": "→ معلومات المستخدم\n→ معلومات الوكالة\n→ معلومات الوكيل\n→ معلومات إنشاء العقار\n→ بيانات الدردشة\n→ البيانات التقنية\n→ بيانات التسويق",
+"@myAccountPrivacyTypesList": {
+  "description": "Bullet list of main data categories"
+},
+
+"myAccountPrivacyUserInfoTitle": "→ معلومات المستخدم (للتسجيل وتسجيل الدخول)",
+"@myAccountPrivacyUserInfoTitle": {
+  "description": "Subsection title: User Information"
+},
+"myAccountPrivacyUserInfoPurpose": "عندما تسجل في Akarat.com، نجمع بعض المعلومات الشخصية لإنشاء حسابك وإدارته، والتحقق من هويتك، وتخصيص تجربتك على المنصة.",
+"@myAccountPrivacyUserInfoPurpose": {
+  "description": "Purpose of collecting user registration data"
+},
+"myAccountPrivacyUserInfoCollectedTitle": "تفاصيل الحساب والهوية التي نجمعها:",
+"@myAccountPrivacyUserInfoCollectedTitle": {
+  "description": "Subheading for list of user details"
+},
+"myAccountPrivacyUserInfoCollectedList": "• الاسم الكامل (الاسم الأول والأخير)\n• عنوان البريد الإلكتروني\n• رقم الهاتف المحمول (مع رمز الدولة)\n• رقم واتساب\n• كلمة المرور وبيانات تسجيل الدخول\n• تفاصيل تسجيل الدخول عبر جوجل (إذا اخترت \"المتابعة بجوجل\")\n• رموز التحقق أو OTP المستخدمة لإعداد الحساب أو تسجيل الدخول أو الفحص الأمني",
+"@myAccountPrivacyUserInfoCollectedList": {
+  "description": "List of user registration fields collected"
+},
+
+"myAccountPrivacyAgencyInfoTitle": "→ معلومات الوكالة",
+"@myAccountPrivacyAgencyInfoTitle": {
+  "description": "Subsection title: Agency Information"
+},
+"myAccountPrivacyAgencyInfoList": "• اسم الوكالة والإمارة\n• الهوية الوطنية وموقع العقار\n• رقم الترخيص المسجل للوكالة\n• الشعار المسجل للوكالة\n• وثيقة ترخيص الشركة المسجلة\n• رقم تسجيل المكتب المسجل",
+"@myAccountPrivacyAgencyInfoList": {
+  "description": "List of agency registration fields"
+},
+"myAccountPrivacyAgencyPurpose": "نجمع بيانات الوكالة للتحقق من شرعية النشاط التجاري والتأكد من الامتثال لمتطلبات الترخيص. تتيح هذه المعلومات إنشاء وعرض ملف وكالة موثق على Akarat.com، وتسهيل التواصل الشفاف بين المستخدمين والوكالات المسجلة، وإدارة الإعلانات العقارية والوكلاء المرتبطين بكل وكالة بكفاءة.",
+"@myAccountPrivacyAgencyPurpose": {
+  "description": "Purpose of collecting agency data"
+},
+"myAccountPrivacyAgencyPublicDisplayTitle": "قد تعرض أكارات علنًا:",
+"@myAccountPrivacyAgencyPublicDisplayTitle": {
+  "description": "Subheading for public display items"
+},
+"myAccountPrivacyAgencyPublicDisplayList": "• اسم الوكالة والشعار ورقم ORN ومعلومات الاتصال\n• عنوان المكتب والوكلاء المرتبطين\n• العقارات المدرجة علنًا (المشاهدات، الإعلانات)\n\nتبقى الوثائق الحساسة للتسجيل أو الترخيص سرية تمامًا.",
+"@myAccountPrivacyAgencyPublicDisplayList": {
+  "description": "What is shown publicly for agencies"
+},
+
+"myAccountPrivacyAgentInfoTitle": "→ معلومات الوكيل",
+"@myAccountPrivacyAgentInfoTitle": {
+  "description": "Subsection title: Agent Information"
+},
+"myAccountPrivacyAgentInfoList": "• اسم الوكيل والإمارة\n• رقم ترخيص الوكيل المسجل\n• الهوية الوطنية للوكيل\n• صورة الملف الشخصي للوكيل\n• رقم الهاتف المحمول ورقم واتساب\n• الجنسية",
+"@myAccountPrivacyAgentInfoList": {
+  "description": "List of agent registration fields"
+},
+"myAccountPrivacyAgentPurpose": "نجمع بيانات الوكيل للتحقق من هويته المهنية وتفويضه وفق إرشادات RERA/DLD، ولعرض ملفات وكلاء موثقة على Akarat.com، ولتسهيل التواصل بين الوكلاء والعملاء المحتملين. يتم عرض معلومات محدودة فقط علنًا، مثل اسم الوكيل، صورة الملف الشخصي، اسم وشعار الوكالة المرتبطة، والإعلانات العقارية النشطة.\n\nلا تُشارك الوثائق الحساسة، بما في ذلك نسخ بطاقات الهوية، علنًا أبدًا.",
+"@myAccountPrivacyAgentPurpose": {
+  "description": "Purpose and public display rules for agents"
+},
+
+"myAccountPrivacyPropertyInfoTitle": "→ معلومات إنشاء العقار",
+"@myAccountPrivacyPropertyInfoTitle": {
+  "description": "Subsection title: Property Creation Information"
+},
+"myAccountPrivacyPropertyPurpose": "عندما تقوم بإدراج أو إدارة عقار على Akarat.com، نجمع تفاصيل محددة لضمان أن يكون إعلانك كاملاً ودقيقاً ومتوافقاً.",
+"@myAccountPrivacyPropertyPurpose": {
+  "description": "Intro to property listing data collection"
+},
+"myAccountPrivacyPropertyCollectedTitle": "المعلومات المجمعة:",
+"@myAccountPrivacyPropertyCollectedTitle": {
+  "description": "Subheading for property data list"
+},
+"myAccountPrivacyPropertyCollectedList": "• تفاصيل الإمارة وترخيص تراخيصي\n• عنوان العقار والوصف\n• نوع العقار (شقة، فيلا، مكتب، أرض...)\n• الموقع وإحداثيات الخريطة\n• تفاصيل الدفع ومدة الإيجار\n• المساحة، عدد غرف النوم والحمامات\n• المرافق وتفاصيل التأثيث\n• حالة توفر العقار\n• جميع تفاصيل المشروع\n• الوسائط المرفوعة (صور، مخططات أرضية، رابط يوتيوب)",
+"@myAccountPrivacyPropertyCollectedList": {
+  "description": "List of property listing fields collected"
+},
+"myAccountPrivacyTrakheesiNote": "ترخيص تراخيصي هو تصريح إلزامي يصدره دائرة الأراضي والأملاك في دبي (DLD) عبر RERA، وينظم جميع الإعلانات العقارية في دبي. يضمن أن تكون الإعلانات شرعية وقابلة للتتبع ومتوافقة.\n\nنجمع معلومات الإعلانات العقارية لنشرها وعرضها للمشترين أو المستأجرين المحتملين، والتحقق من صحتها، وتحسين دقة البحث، وضمان الامتثال للإعلانات في الإمارات.",
+"@myAccountPrivacyTrakheesiNote": {
+  "description": "Explanation of Trakheesi and purpose of property data"
+},
+
+"myAccountPrivacyChatDataTitle": "→ بيانات الدردشة",
+"@myAccountPrivacyChatDataTitle": {
+  "description": "Subsection title: Chat Data"
+},
+"myAccountPrivacyChatDataContent": "تشير بيانات الدردشة إلى الرسائل التي تتبادلونها عبر المنصة، بما في ذلك أي نص يتم إرساله أو استقباله. نستخدم هذه البيانات لتسهيل التواصل بين المستخدمين والوكلاء، والرد على الاستفسارات، وتقديم الدعم، والاحتفاظ بسجل التفاعلات، وتحسين خدماتنا.\n\nبيانات الدردشة سرية وتُخزن بأمان وفقًا لسياسة الخصوصية هذه.",
+"@myAccountPrivacyChatDataContent": {
+  "description": "Explanation and usage of chat data"
+},
+
+"myAccountPrivacyTechnicalDataTitle": "→ البيانات التقنية",
+"@myAccountPrivacyTechnicalDataTitle": {
+  "description": "Subsection title: Technical Data"
+},
+"myAccountPrivacyTechnicalDataList": "• عنوان IP\n• بيانات تسجيل الدخول\n• نوع المتصفح وإصداره\n• نظام التشغيل والمنصة\n• معلومات الجهاز\n• إعدادات المنطقة الزمنية",
+"@myAccountPrivacyTechnicalDataList": {
+  "description": "List of technical / device data points"
+},
+"myAccountPrivacyTechnicalPurpose": "نجمع البيانات التقنية لفهم كيفية تفاعل المستخدمين مع المنصة، وتشخيص المشكلات، وتحسين الأداء والوظائف، وتعزيز الأمان، وتحسين تجربة المستخدم. قد تُستخدم هذه البيانات أيضًا للتحليلات واكتشاف الاحتيال والامتثال التنظيمي.",
+"@myAccountPrivacyTechnicalPurpose": {
+  "description": "Purpose of collecting technical data"
+},
+
+"myAccountPrivacyMarketingDataTitle": "→ بيانات التسويق",
+"@myAccountPrivacyMarketingDataTitle": {
+  "description": "Subsection title: Marketing Data"
+},
+"myAccountPrivacyMarketingContent": "قد نجمع معلومات حول تفضيلاتك التسويقية، بما في ذلك ما إذا كنت ترغب في تلقي تنبيهات العقارات الجديدة، تحديثات حالة الحساب، إشعارات الاستفسارات، أو الرسائل الترويجية. يساعدنا ذلك على إرسال محتوى ذي صلة ومفيد مع ضمان تلقيك الاتصالات بالطريقة التي تفضلها.\n\nيمكنك تحديث أو سحب تفضيلاتك التسويقية في أي وقت من إعدادات حسابك أو بالتواصل معنا.",
+"@myAccountPrivacyMarketingContent": {
+  "description": "Explanation of marketing preferences collection"
+},
+
+"myAccountPrivacyRefusalTitle": "ماذا يحدث إذا رفضت تقديم البيانات الشخصية الضرورية؟",
+"@myAccountPrivacyRefusalTitle": {
+  "description": "Heading: What if user refuses to provide data"
+},
+"myAccountPrivacyRefusalContent": "لست ملزمًا بتقديم بيانات شخصية لنا. ومع ذلك، إذا كانت بعض البيانات ضرورية للوصول إلى المنصة أو للامتثال للمتطلبات القانونية ولم تقدمها، فقد لا نتمكن من منحك الوصول. على سبيل المثال، نحتاج إلى عنوان بريدك الإلكتروني لتسجيل حسابك على Akarat.com.",
+"@myAccountPrivacyRefusalContent": {
+  "description": "Consequence of not providing required data"
+},
+
+"myAccountPrivacySectionLegalTitle": "الأساس القانوني للمعالجة",
+"@myAccountPrivacySectionLegalTitle": {
+  "description": "Main heading: Legal Basis for Processing"
+},
+"myAccountPrivacyLegalIntro": "بموجب قوانين حماية البيانات المعمول بها، يجب أن يكون لكل غرض نستخدم من أجله بياناتك الشخصية أساس قانوني صحيح. في معظم الحالات، نعتمد على أحد الأسس التالية:",
+"@myAccountPrivacyLegalIntro": {
+  "description": "Introduction to legal bases"
+},
+"myAccountPrivacyLegalBases": "• الضرورة التعاقدية – عندما تكون معالجة بياناتك الشخصية مطلوبة للوفاء بالعقد المبرم معك (مثلاً تمكين وصولك إلى المنصة).\n\n• الامتثال للقانون – عندما يتعين علينا معالجة بياناتك الشخصية لتلبية متطلبات قانونية أو تنظيمية.\n\n• الموافقة – عندما تكون قد قدمت إذنًا واضحًا لمعالجة بياناتك الشخصية لغرض محدد.",
+"@myAccountPrivacyLegalBases": {
+  "description": "List of legal bases for processing"
+},
+
+"myAccountPrivacySectionShareTitle": "مع من نشارك معلوماتك؟",
+"@myAccountPrivacySectionShareTitle": {
+  "description": "Main heading: Sharing information"
+},
+"myAccountPrivacyShareContent": "نطلب من جميع الأطراف التي تتلقى بياناتك الشخصية تطبيق تدابير أمنية مناسبة لحمايتها، بما يتماشى مع سياساتنا والتزامات حماية البيانات المعمول بها. لا نسمح لأي مزودي خدمات خارجيين يعالجون البيانات نيابة عنا باستخدامها لأغراضهم الخاصة. يُسمح لهم فقط بمعالجة بياناتك الشخصية للأغراض المحددة من قبلنا وفق تعليماتنا الصارمة.\n\nقد نحتاج أيضًا إلى مشاركة بعض البيانات الشخصية مع مستخدمين آخرين للمنصة عندما تختار التعامل معهم. على سبيل المثال، إذا أبديت اهتمامًا بعقار مدرج من قبل وكيل، فقد يحتاج ممثلو ذلك الوكيل إلى الوصول إلى بياناتك الشخصية ذات الصلة.",
+"@myAccountPrivacyShareContent": {
+  "description": "Full text explaining data sharing practices"
+},
+
+"myAccountPrivacySectionSecurityTitle": "كيف نحافظ على أمان بياناتك",
+"@myAccountPrivacySectionSecurityTitle": {
+  "description": "Main heading: Data security"
+},
+"myAccountPrivacySecurityContent": "لقد طبقنا تدابير أمنية مناسبة لحماية بياناتك الشخصية من الضياع العرضي أو التغيير أو الوصول غير المصرح به أو الاستخدام السيئ.\n\nيُقتصر الوصول إلى بياناتك الشخصية على الموظفين والأشخاص المصرح لهم الذين يحتاجون إليها لأغراض تجارية مشروعة. جميع الأفراد الذين لهم مثل هذا الوصول ملزمون بالسرية.\n\nكما نحتفظ بإجراءات قوية لاكتشاف وإدارة والاستجابة لأي خرق فعلي أو مشتبه به لبيانات شخصية. في مثل هذه الحالات، نتخذ خطوات فورية لتقليل التأثير المحتمل على خصوصيتك ونتعاون مع الجهات التنظيمية ذات الصلة حسب الضرورة.",
+"@myAccountPrivacySecurityContent": {
+  "description": "Full text about security measures"
+},
+
+"myAccountPrivacySectionRightsTitle": "حقوقك",
+"@myAccountPrivacySectionRightsTitle": {
+  "description": "Main heading: User rights"
+},
+"myAccountPrivacyRightsIntro": "اعتمادًا على قوانين حماية البيانات المعمول بها ومكان سيطرة بياناتك الشخصية، قد تتمتع بالحقوق التالية:",
+"@myAccountPrivacyRightsIntro": {
+  "description": "Intro to list of rights"
+},
+"myAccountPrivacyRightsList": "• الوصول — طلب نسخة من البيانات الشخصية التي نحتفظ بها عنك.\n• التصحيح — طلب تحديث أو تعديل المعلومات غير الدقيقة أو غير الكاملة.\n• المحو — طلب حذف بياناتك الشخصية عندما لا تكون مطلوبة بعد الآن للغرض الأصلي.\n• تقييد المعالجة — طلب إيقاف معالجة كل أو جزء من بياناتك مؤقتًا أو بشكل دائم.\n• الاعتراض — الاعتراض على المعالجة بناءً على مصالحنا المشروعة أو لأغراض التسويق المباشر.\n• نقل البيانات — طلب نسخة منظمة وقابلة للقراءة آليًا من بياناتك الشخصية.\n• سحب الموافقة — سحب الموافقة عندما تكون المعالجة مبنية على إذنك.\n\nإذا أردت ممارسة أي من هذه الحقوق، يرجى التواصل معنا.",
+"@myAccountPrivacyRightsList": {
+  "description": "List of user data protection rights"
+},
+
+"myAccountPrivacySectionMarketingTitle": "الاتصالات التسويقية",
+"@myAccountPrivacySectionMarketingTitle": {
+  "description": "Main heading: Marketing communications"
+},
+"myAccountPrivacyMarketingContent": "قد نجمع ونخزن تفضيلاتك بشأن الاتصالات التسويقية التي ترغب في تلقيها منا، بما في ذلك تنبيهات العقارات الجديدة، تحديثات حالة الحساب، ردود الاستفسارات، أو الرسائل الترويجية. يساعدنا ذلك على تخصيص الاتصالات حسب اهتماماتك.\n\nيمكنك الانسحاب في أي وقت بالنقر على رابط \"إلغاء الاشتراك\" في أي بريد تسويقي أو بالتواصل معنا على info@akarat.com. الانسحاب لن يؤثر على قدرتك على استخدام المنصة.",
+"@myAccountPrivacyMarketingContent": {
+  "description": "Full text about marketing preferences and opt-out"
+},
+
+"myAccountPrivacySectionMinorsTitle": "خصوصيتنا تجاه القاصرين",
+"@myAccountPrivacySectionMinorsTitle": {
+  "description": "Main heading: Minors protection"
+},
+"myAccountPrivacyMinorsContent": "هذه المنصة غير مخصصة للاستخدام من قبل أي شخص دون سن 18 عامًا. لا نجمع بيانات من القاصرين عن علم ولا نتحقق من عمر المستخدم. إذا كنت تعتقد أن قاصرًا يستخدم المنصة، يرجى إعلامنا على info@akarat.com حتى نتمكن من إزالة أي بيانات شخصية مرتبطة ومنع الوصول المستقبلي.",
+"@myAccountPrivacyMinorsContent": {
+  "description": "Text about protection of minors"
+},
+
+"myAccountPrivacySectionThirdPartyTitle": "روابط لأطراف ثالثة",
+"@myAccountPrivacySectionThirdPartyTitle": {
+  "description": "Main heading: Third-party links"
+},
+"myAccountPrivacyThirdPartyContent": "قد تحتوي المنصة على روابط لمواقع أو خدمات تابعة لأطراف ثالثة. أكارات غير مسؤولة عن محتوى أو توفر أو ممارسات الخصوصية للمواقع الخارجية. عندما تغادر منصتنا، نشجعك على مراجعة سياسات الخصوصية لكل موقع تزوره.",
+"@myAccountPrivacyThirdPartyContent": {
+  "description": "Text about third-party links disclaimer"
+},
+
+"myAccountPrivacySectionUpdatesTitle": "التغييرات على سياسة الخصوصية",
+"@myAccountPrivacySectionUpdatesTitle": {
+  "description": "Main heading: Policy updates"
+},
+"myAccountPrivacyUpdatesContent": "قد نحدث سياسة الخصوصية هذه في أي وقت، مع أو بدون إشعار مسبق. عند حدوث تحديثات، سنراجع هذه الصفحة وقد نُخطرك مباشرة في حالات معينة (مثلاً عبر البريد الإلكتروني). تصبح جميع التغييرات سارية المفعول فور نشرها.",
+"@myAccountPrivacyUpdatesContent": {
+  "description": "Text about policy change procedure"
+}
+
+
+
       }
 

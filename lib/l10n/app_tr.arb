@@ -645,19 +645,6 @@
 },
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   "errorPhoneLength": "Telefon numarası {countryCode} için {length} hane olmalıdır",
   "@errorPhoneLength": {
     "description": "Validation error - wrong phone length",
@@ -752,7 +739,445 @@
         "googleSignInFailedGeneric": "Google ile giriş başarısız oldu. Lütfen tekrar deneyin.",
         "@googleSignInFailedGeneric": {
           "description": "Fallback generic error for any Google Sign-In issue"
-        }
+        },
+
+        "@_my_account_terms_section": "================= MY ACCOUNT → TERMS & CONDITIONS SCREEN =================",
+
+
+      "myAccountTermsAndConditionsAppBarTitle": "Şartlar ve Koşullar",
+      "@myAccountTermsAndConditionsAppBarTitle": {
+        "description": "App bar title text shown on the Terms & Conditions screen in the My Account section"
+      },
+
+      "myAccountTermsSectionIntroductionTitle": "Giriş",
+      "@myAccountTermsSectionIntroductionTitle": {
+        "description": "Section title for the introduction"
+      },
+      "myAccountTermsSectionIntroductionContent": "Akarat'a hoş geldiniz (\"Platform\"). Bu Şartlar ve Koşullar (\"Şartlar\"), Akarat ile web sitemize, mobil uygulamamıza, dijital çözümlerimize veya ilgili herhangi bir araç ve işlevselliğe (topluca \"Hizmetler\") erişen, kullanan veya bunlarla etkileşime giren herhangi bir birey veya kuruluş arasında yasal olarak bağlayıcı bir anlaşma oluşturur. Bu Şartlar, ziyaretçiler, kayıtlı üyeler, reklam verenler, lisanslı acenteler, geliştiriciler ve Platform'a erişen veya kullanan diğer tüm taraflar dahil olmak üzere tüm kullanıcı kategorilerine uygulanır.\n\nPlatform'un herhangi bir bileşenini kullanarak veya erişerek, bu Şartları ve Gizlilik Politikamızı okuduğunuzu, anladığınızı ve bunlara uymayı kabul ettiğinizi beyan etmiş olursunuz. Bu belgede yer alan herhangi bir hükme katılmıyorsanız, Platform'u ve ilgili tüm Hizmetleri derhal kullanmayı bırakmalısınız.",
+      "@myAccountTermsSectionIntroductionContent": {
+        "description": "Full introduction text in Terms & Conditions"
+      },
+
+      "myAccountTermsSectionWhoWeAreTitle": "1. Biz Kimiz",
+      "@myAccountTermsSectionWhoWeAreTitle": {
+        "description": "Title of the 'Who We Are' section including numbering"
+      },
+      "myAccountTermsWhoWeAreCompany": "Platform, Birleşik Arap Emirlikleri'nde (BAE) yasal olarak kayıtlı bir kuruluş olan EMLAK BULUCU PORTAL LLC tarafından sahip olunmakta ve işletilmektedir.",
+      "@myAccountTermsWhoWeAreCompany": {
+        "description": "Company name and country of registration"
+      },
+      "myAccountTermsWhoWeAreOffice": "Kayıtlı Ofis: Westburry Ofis Kulesi, 23. Kat, Ofis No. 2303, Business Bay, Dubai, BAE\nE-posta: info@akarat.com",
+      "@myAccountTermsWhoWeAreOffice": {
+        "description": "Registered office address and email"
+      },
+      "myAccountTermsWhoWeArePronouns": "\"Biz\", \"bize\" veya \"bizim\" ifadeleri Platform işletmecisi olan Akarat'ı ifade eder.",
+      "@myAccountTermsWhoWeArePronouns": {
+        "description": "Explanation of who 'we' refers to"
+      },
+
+      "myAccountTermsSectionDefinitionsTitle": "2. Tanımlar",
+      "@myAccountTermsSectionDefinitionsTitle": {
+        "description": "Title of the Definitions section including numbering"
+      },
+      "myAccountTermsDefinitionAdvertiser": "Reklam Veren: Platformda mülk ilanları yayınlayarak mülkleri tanıtmak, pazarlamak veya satmak amacıyla hareket eden herhangi bir birey, işletme veya kuruluş.",
+      "@myAccountTermsDefinitionAdvertiser": { "description": "Definition of Advertiser" },
+      "myAccountTermsDefinitionAgent": "Acente: Mülkleri listelemek veya pazarlamak için yetkili lisanslı gayrimenkul uzmanı, aracı veya ajans.",
+      "@myAccountTermsDefinitionAgent": { "description": "Definition of Agent" },
+      "myAccountTermsDefinitionContent": "İçerik: Platforma yüklenen veya gönderilen tüm materyaller; metin, resim, video, belge, grafik ve diğer medya dahil.",
+      "@myAccountTermsDefinitionContent": { "description": "Definition of Content" },
+      "myAccountTermsDefinitionListing": "İlan: Platformda yayınlanan herhangi bir mülk reklamı, tanıtım girişi veya gönderi; ilgili tüm detaylar ve medya dahil.",
+      "@myAccountTermsDefinitionListing": { "description": "Definition of Listing" },
+      "myAccountTermsDefinitionUser": "Kullanıcı / Siz: Platforma veya Hizmetlerine erişen, gezinen veya bunlarla etkileşime giren herhangi bir kişi, şirket veya kuruluş.",
+      "@myAccountTermsDefinitionUser": { "description": "Definition of User / You" },
+      "myAccountTermsDefinitionServices": "Hizmetler: Akarat tarafından Platform üzerinden sunulan özellikler, araçlar, işlevler ve çözümlerin tamamı.",
+      "@myAccountTermsDefinitionServices": { "description": "Definition of Services" },
+
+      "myAccountTermsSectionAcceptanceTitle": "3. Şartların Kabulü",
+      "@myAccountTermsSectionAcceptanceTitle": {
+        "description": "Title of Acceptance of Terms section"
+      },
+      "myAccountTermsAcceptanceMain": "Platforma erişerek veya kullanarak, bu Şartları okuduğunuzu, anladığınızı ve bunlara bağlı kalmayı açıkça kabul ettiğinizi beyan edersiniz. Platformu kullanmanız, burada belirtilen tüm yükümlülükleri kabul ettiğiniz anlamına gelir.",
+      "@myAccountTermsAcceptanceMain": { "description": "Main acceptance paragraph" },
+      "myAccountTermsAcceptanceNotAllowed": "Aşağıdaki durumlardan herhangi biri geçerliyse Platformu kullanamazsınız:",
+      "@myAccountTermsAcceptanceNotAllowed": { "description": "Intro to list of prohibited users" },
+      "myAccountTermsAcceptanceConditions": "• 18 yaşından küçükseniz.\n• Yargı bölgeniz dijital gayrimenkul pazarlarına erişimi yasaklamaktaysa.\n• İlan verme, reklam yapma veya gayrimenkul ilanlarıyla etkileşimde bulunma için yasal veya uygunluk şartlarını karşılamıyorsanız.",
+      "@myAccountTermsAcceptanceConditions": { "description": "List of cases when platform cannot be used" },
+      "myAccountTermsAcceptanceUpdates": "Akarat, bu Şartları herhangi bir zamanda önceden haber vermeksizin değiştirme, düzeltme veya güncelleme hakkını saklı tutar. Güncellemeler yayınlandığı anda yürürlüğe girer. Değişikliklerden sonra Platformu kullanmaya devam etmeniz, revize edilen Şartları kabul ettiğiniz anlamına gelir.",
+      "@myAccountTermsAcceptanceUpdates": { "description": "Text about terms updates" },
+
+      "myAccountTermsSectionScopeTitle": "4. Kullanım Kapsamı",
+      "@myAccountTermsSectionScopeTitle": { "description": "Title of Scope of Use section" },
+      "myAccountTermsScopeIntro": "Kullanıcılar Platformu profesyonel, etik ve yürürlükteki tüm yasalara uygun şekilde kullanmalıdır. Aşağıdaki eylemler kesinlikle yasaktır:",
+      "@myAccountTermsScopeIntro": { "description": "Introduction to prohibited actions" },
+      "myAccountTermsScopeProhibited": "• Yasadışı, yanıltıcı, hileli veya izinsiz telif hakkıyla korunan materyal yüklemek.\n• Platform verilerini ticari amaçla kazımak, kopyalamak veya çıkarmak.\n• Yanlış, tekrarlanan veya mevcut olmayan mülk ilanları yayınlamak.\n• Otomatik araçlar, botlar veya scriptler kullanarak Platforma erişmek veya etkileşimde bulunmak.\n• Platformun güvenliğini veya işleyişini zarar vermek, devre dışı bırakmak, aşırı yüklemek veya müdahale etmek.",
+      "@myAccountTermsScopeProhibited": { "description": "List of prohibited activities" },
+      "myAccountTermsScopeConsequence": "Kötüye kullanım, anında askıya alma, hesap kapatma, içerik kaldırma veya yasal işlemle sonuçlanabilir.",
+      "@myAccountTermsScopeConsequence": { "description": "Consequence of misuse" },
+
+      "myAccountTermsSectionRegistrationTitle": "5. Hesap Kaydı",
+      "@myAccountTermsSectionRegistrationTitle": { "description": "Title of Account Registration section" },
+      "myAccountTermsRegistrationIntro": "Bazı Hizmetler kullanıcı kaydı gerektirir. Doğru, eksiksiz ve güncel bilgi sağlamalısınız. Kullanıcılar şunlardan sorumludur:",
+      "@myAccountTermsRegistrationIntro": { "description": "Introduction to account responsibilities" },
+      "myAccountTermsRegistrationDuties": "• Giriş bilgilerini koruma\n• Yetkisiz erişimi önleme\n• Hesapları altında gerçekleştirilen tüm faaliyetler",
+      "@myAccountTermsRegistrationDuties": { "description": "List of user responsibilities" },
+      "myAccountTermsRegistrationNoLiability": "Akarat, ihmal veya yetkisiz erişimden kaynaklanan kayıplardan sorumlu değildir.",
+      "@myAccountTermsRegistrationNoLiability": { "description": "Disclaimer about account security" },
+
+      "myAccountTermsSectionAdvertiserAgentTitle": "6. İlan Veren ve Acente Yükümlülükleri",
+      "@myAccountTermsSectionAdvertiserAgentTitle": { "description": "Title of Advertiser & Agent Obligations section" },
+      "myAccountTermsAdvertiserAgentCompliance": "İlan verenler ve acenteler, DLD (Dubai Arazi Dairesi) gibi yetkililer tarafından belirlenen lisans ve reklam gereklilikleri dahil olmak üzere tüm ilgili BAE gayrimenkul düzenlemelerine uymalıdır.",
+      "@myAccountTermsAdvertiserAgentCompliance": { "description": "Compliance requirement for advertisers and agents" },
+      "myAccountTermsListingMust": "Tüm mülk ilanları:",
+      "@myAccountTermsListingMust": { "description": "Introduction to listing requirements" },
+      "myAccountTermsListingRequirements": "• Doğru, gerçek ve şu anda mevcut olmalıdır.\n• Güncel bilgi, resim, özellik ve fiyat içermelidir.\n• Geçerli yetki, mülkiyet belgeleri veya ilan anlaşmaları ile desteklenmelidir.",
+      "@myAccountTermsListingRequirements": { "description": "Requirements for property listings" },
+      "myAccountTermsAkaratRights": "Akarat tam haklara sahiptir:",
+      "@myAccountTermsAkaratRights": { "description": "Introduction to Akarat's rights over listings" },
+      "myAccountTermsAkaratRightsList": "• İlanları yayınlamadan önce inceleme ve onaylama.\n• Kurallara aykırı içeriği düzenleme veya kaldırma.\n• Dürüst olmayan veya etik olmayan uygulamalarda bulunan hesapları askıya alma.",
+      "@myAccountTermsAkaratRightsList": { "description": "List of Akarat's rights regarding listings" },
+      "myAccountTermsAgentLicense": "Acentelerin, emirete bağlı olarak geçerli bir DLD lisansı veya eşdeğer sertifikaya sahip olması gerekir.",
+      "@myAccountTermsAgentLicense": { "description": "License requirement for agents" },
+
+      "myAccountTermsSectionUGCTitle": "7. Kullanıcı Üretilen İçerik",
+      "@myAccountTermsSectionUGCTitle": { "description": "Title of User-Generated Content section" },
+      "myAccountTermsUGCLicense": "İçerik yükleyerek, Akarat'a içeriği Platform ile ilgili amaçlar için saklama, yayınlama, çoğaltma, değiştirme veya kullanma konusunda küresel, münhasır olmayan, telifsiz bir lisans verirsiniz.",
+      "@myAccountTermsUGCLicense": { "description": "License granted for uploaded content" },
+      "myAccountTermsUGCAffirm": "Şunu beyan edersiniz:",
+      "@myAccountTermsUGCAffirm": { "description": "Introduction to content ownership affirmation" },
+      "myAccountTermsUGCAffirmList": "• İçeriğin sahibi sizsiniz veya yasal kullanım hakkına sahipsiniz.\n• İçeriğiniz fikri mülkiyet kanunlarını ihlal etmemektedir.",
+      "@myAccountTermsUGCAffirmList": { "description": "Affirmations about content ownership" },
+
+      "myAccountTermsSectionIPTitle": "8. Fikri Mülkiyet",
+      "@myAccountTermsSectionIPTitle": { "description": "Title of Intellectual Property section" },
+      "myAccountTermsIPOwnership": "Platformdaki tüm fikri mülkiyet hakları; ticari markalar, hizmet markaları, logolar, grafikler, metinler, görüntüler, sesli-görsel materyaller, yazılımlar, tasarım unsurları ve diğer içerikler dahil ancak bunlarla sınırlı olmamak üzere, Akarat veya lisans verenlerinin münhasır mülkiyetidir.",
+      "@myAccountTermsIPOwnership": { "description": "Statement of IP ownership" },
+      "myAccountTermsIPProhibited": "Kullanıcıların kesinlikle yapmaması gerekenler:",
+      "@myAccountTermsIPProhibited": { "description": "Introduction to prohibited IP actions" },
+      "myAccountTermsIPProhibitedList": "• Önceden yazılı izin olmaksızın Platform içeriğini kopyalama, çoğaltma veya dağıtma.\n• Platformu veya içeriğini değiştirme, türev eserler oluşturma veya ticari olarak kullanma.\n• Akarat veya üçüncü taraf lisans verenlerinin haklarını ihlal edecek şekilde fikri mülkiyet kullanma.",
+      "@myAccountTermsIPProhibitedList": { "description": "Prohibited uses of intellectual property" },
+      "myAccountTermsIPConsequence": "Platformun fikri mülkiyetinin yetkisiz kullanımı, Birleşik Arap Emirlikleri yürürlükteki kanunları uyarınca medeni veya cezai sorumluluğa yol açabilir.",
+      "@myAccountTermsIPConsequence": { "description": "Consequence of IP infringement" },
+
+      "myAccountTermsSectionDisclaimerTitle": "9. Sorumluluk Reddi ve Sorumluluk Sınırlandırması",
+      "@myAccountTermsSectionDisclaimerTitle": { "description": "Title of Disclaimer and Limitation of Liability section" },
+      "myAccountTermsDisclaimerBasis": "Platform ve Hizmetleri \"olduğu gibi\" ve \"mevcut olduğu şekilde\" sunulmaktadır. Akarat, Platform üzerinden sunulan herhangi bir içerik, ilan veya Hizmetin kullanılabilirliği, doğruluğu, eksiksizliği, güvenilirliği veya amaca uygunluğu konusunda açık veya zımni hiçbir garanti vermez.",
+      "@myAccountTermsDisclaimerBasis": { "description": "As-is disclaimer" },
+      "myAccountTermsNoLiabilityFor": "Kullanıcılar, Akarat'ın aşağıdaki durumlardan sorumlu olmadığını kabul ve beyan eder:",
+      "@myAccountTermsNoLiabilityFor": { "description": "Introduction to what Akarat is not liable for" },
+      "myAccountTermsNoLiabilityList": "• Mülk ilanlarında veya kullanıcı tarafından üretilen içerikteki hatalar, eksiklikler veya güncel olmayan bilgiler.\n• Dolaylı, arızi, sonuçsal, cezai veya özel zararlar; kâr kaybı, fırsat kaybı veya iş kesintisi dahil.\n• İlan verenler, acenteler, kullanıcılar veya üçüncü tarafların kötü niyetli davranışları, yanlış beyanları, ihmalleri veya eylemleri.",
+      "@myAccountTermsNoLiabilityList": { "description": "List of non-liabilities" },
+      "myAccountTermsUseAtOwnRisk": "Kullanıcılar Platforma tamamen kendi riskleri altında erişir ve kullanır. Akarat'ın toplam sorumluluğu, sözleşme, haksız fiil veya başka bir şekilde, ilgili Hizmetler için kullanıcı tarafından ödenen ücretleri (varsa) aşmayacaktır.",
+      "@myAccountTermsUseAtOwnRisk": { "description": "Own risk clause and liability cap" },
+
+      "myAccountTermsSectionSuspensionTitle": "10. Askıya Alma veya Fesih",
+      "@myAccountTermsSectionSuspensionTitle": { "description": "Title of Suspension or Termination section" },
+      "myAccountTermsSuspensionRight": "Akarat, kendi takdirine bağlı olarak, herhangi bir ön ihbar yapmaksızın bir kullanıcının hesabını ve Platform erişimini tamamen veya kısmen askıya alma, kısıtlama veya feshetme hakkını saklı tutar, eğer:",
+      "@myAccountTermsSuspensionRight": { "description": "Introduction to suspension/termination rights" },
+      "myAccountTermsSuspensionReasons": "• Kullanıcı bu Şartların herhangi bir hükmünü veya yürürlükteki yasayı ihlal ederse.\n• Hileli, kötü niyetli veya etik olmayan faaliyet tespit edilirse.\n• Platformun veya diğer kullanıcıların güvenliği tehdit edilirse.",
+      "@myAccountTermsSuspensionReasons": { "description": "Reasons for suspension or termination" },
+      "myAccountTermsSuspensionEffect": "Askıya alma veya fesih üzerine, tüm Hizmetlere, içeriğe ve kullanıcı verilerine erişim derhal iptal edilir. Kullanıcılar, fesih öncesinde hesapları altında gerçekleştirilen tüm yükümlülüklerden ve eylemlerden sorumlu olmaya devam eder.",
+      "@myAccountTermsSuspensionEffect": { "description": "Effects of suspension or termination" },
+
+      "myAccountTermsSectionPrivacyTitle": "11. Veri Koruma ve Gizlilik",
+      "@myAccountTermsSectionPrivacyTitle": { "description": "Title of Data Protection & Privacy section" },
+      "myAccountTermsPrivacyProcessed": "Platform üzerinden toplanan tüm kişisel ve kişisel olmayan veriler, Akarat'ın Gizlilik Politikasına uygun olarak işlenir. Temel uygulamalar şunlardır:",
+      "@myAccountTermsPrivacyProcessed": { "description": "Introduction to data processing" },
+      "myAccountTermsPrivacyPractices": "• Verilerin yalnızca operasyonel, yasal veya hizmetle ilgili amaçlar için toplanması.\n• Verilerin güvenli şekilde saklanması ve yalnızca yetkili personele erişim izni verilmesi.\n• Kişisel verilerin yalnızca Hizmetleri iyileştirme, işlem işleme veya yasal yükümlülüklere uyma amacıyla kullanılması.\n• Kullanıcıların kişisel bilgilerine erişme, düzeltme veya silme talep etme hakları, BAE yasalarına tabidir.",
+      "@myAccountTermsPrivacyPractices": { "description": "Key data protection practices" },
+      "myAccountTermsPrivacyConsent": "Platformu kullanarak, kullanıcılar Gizlilik Politikasında açıklandığı şekilde veri toplanmasına, işlenmesine ve saklanmasına rıza gösterir.",
+      "@myAccountTermsPrivacyConsent": { "description": "Consent to privacy policy" },
+
+      "myAccountTermsSectionThirdPartyTitle": "12. Üçüncü Taraf Bağlantıları",
+      "@myAccountTermsSectionThirdPartyTitle": { "description": "Title of Third-Party Links section" },
+      "myAccountTermsThirdPartyContent": "Platform üçüncü taraf web sitelerine, uygulamalara veya hizmetlere bağlantılar içerebilir. Akarat bu siteleri kontrol etmez, onaylamaz veya bunların doğruluğunu, içeriğini, gizliliğini veya güvenliğini garanti etmez.\n\nKullanıcılar, harici web sitelerine veya kaynaklara erişmenin kendi riskleri altında olduğunu kabul eder. Akarat, bu tür üçüncü taraf hizmetlerin kullanımından kaynaklanan herhangi bir zarar veya kayıptan sorumlu tutulamaz.",
+      "@myAccountTermsThirdPartyContent": { "description": "Full text about third-party links and disclaimer" },
+
+      "myAccountTermsSectionGoverningLawTitle": "13. Uygulanacak Hukuk ve Yargı Yetkisi",
+      "@myAccountTermsSectionGoverningLawTitle": { "description": "Title of Governing Law & Jurisdiction section" },
+      "myAccountTermsGoverningLawContent": "Bu Şartlar, Birleşik Arap Emirlikleri yasalarına göre yönetilecek ve yorumlanacaktır. Bu Şartlardan veya Platform kullanımından kaynaklanan veya bunlarla ilgili herhangi bir uyuşmazlık, ihtilaf veya talep, Dubai'deki yetkili mahkemelerin münhasır yargı yetkisine tabi olacaktır.\n\nKullanıcılar açıkça bu mahkemelerin yargı yetkisine tabi olur ve yargı yeri veya uygun olmayan forum itirazından feragat eder.",
+      "@myAccountTermsGoverningLawContent": { "description": "Governing law and jurisdiction clause" },
+
+      "myAccountTermsSectionLanguageTitle": "14. Dil",
+      "@myAccountTermsSectionLanguageTitle": { "description": "Title of Language section" },
+      "myAccountTermsLanguageContent": "Bu Şartlar kolaylık sağlamak amacıyla İngilizce ve Arapça olarak sunulmuştur. İngilizce ve Arapça sürümler arasında herhangi bir çelişki veya tutarsızlık olması durumunda, tüm yasal amaçlar, yorum ve uygulama için İngilizce sürüm geçerli olacaktır.",
+      "@myAccountTermsLanguageContent": { "description": "Language precedence clause" },
+
+      "myAccountTermsSectionUpdatesTitle": "15. Bu Şartlarda Güncellemeler",
+      "@myAccountTermsSectionUpdatesTitle": { "description": "Title of Updates to These Terms section" },
+      "myAccountTermsUpdatesIntro": "Akarat, aşağıdaki konulardaki değişiklikleri yansıtmak için bu Şartları herhangi bir zamanda değiştirme, gözden geçirme veya güncelleme hakkını saklı tutar:",
+      "@myAccountTermsUpdatesIntro": { "description": "Introduction to updates" },
+      "myAccountTermsUpdatesReasons": "• Yasal veya düzenleyici gereklilikler.\n• Operasyonel, teknik veya güvenlik iyileştirmeleri.\n• Platform üzerinden sunulan yeni özellikler, işlevler veya Hizmetler.",
+      "@myAccountTermsUpdatesReasons": { "description": "Reasons for updating terms" },
+      "myAccountTermsUpdatesEffect": "Güncellenmiş Şartlar, Platformda yayınlandığı anda yürürlüğe girer. Kullanıcıların Şartları periyodik olarak gözden geçirmesi önerilir. Platformu kullanmaya devam etmek, herhangi bir değişiklik veya güncellemeyi kabul ettiğiniz anlamına gelir.",
+      "@myAccountTermsUpdatesEffect": { "description": "Effect and acceptance of updated terms" },
+
+      "myAccountTermsSectionContactTitle": "16. Bize Ulaşın",
+      "@myAccountTermsSectionContactTitle": { "description": "Title of Contact Us section" },
+      "myAccountTermsContactContent": "Yardım, soru veya şikayetler için:\n\n✉️ info@akarat.com\n\n📍 Westburry Ofis Kulesi, 23. Kat, Ofis 2303, Business Bay, Dubai, BAE",
+      "@myAccountTermsContactContent": { "description": "Contact information text" },
+
+      "@_my_account_privacy_section": "================= MY ACCOUNT → PRIVACY POLICY SCREEN =================",
+
+      "myAccountPrivacyAppBarTitle": "Gizlilik Politikası",
+      "@myAccountPrivacyAppBarTitle": {
+        "description": "App bar title for the Privacy Policy screen in My Account section"
+      },
+
+      "myAccountPrivacyIntroductionTitle": "Giriş",
+      "@myAccountPrivacyIntroductionTitle": {
+        "description": "Section title: Introduction"
+      },
+      "myAccountPrivacyIntroductionContent": "Gizliliğinizi korumak Akarat için önceliktir. Kişisel Verilerinizi korumaya ve web sitemiz ile mobil uygulamalarımızı (\"Platform\") kullandığınızda bu verilerin nasıl toplandığını, kullanıldığını ve açıklanacağını şeffaf bir şekilde paylaşmaya kararlıyız.\n\nBu Gizlilik Politikası, Platform'a eriştiğinizde veya kullandığınızda Akarat'ın Kişisel Verilerinizi nasıl topladığını, işlediğini ve yönettiğini açıklar ve haklarınızı ile size sunulan yasal korumaları belirtir.\n\nPlatform'a erişerek veya kullanarak, Kişisel Verilerinizin bu Gizlilik Politikasına uygun olarak toplanmasını, kullanılmasını ve aktarılmasını kabul etmiş olursunuz.",
+      "@myAccountPrivacyIntroductionContent": {
+        "description": "Main introduction paragraph of the Privacy Policy"
+      },
+
+      "myAccountPrivacySectionsIntro": "Bu Gizlilik Politikası aşağıdaki bölümleri kapsar:",
+      "@myAccountPrivacySectionsIntro": {
+        "description": "Intro text before the list of sections"
+      },
+      "myAccountPrivacySectionLinkAbout": "Şirketimiz ve iletişim bilgilerimiz hakkında",
+      "@myAccountPrivacySectionLinkAbout": {
+        "description": "Clickable link title to 'Who We Are & Contact' section"
+      },
+      "myAccountPrivacySectionLinkTypes": "Topladığımız bilgi türleri",
+      "@myAccountPrivacySectionLinkTypes": {
+        "description": "Clickable link title to Types of Information section"
+      },
+      "myAccountPrivacySectionLinkLegal": "Bilgilerinizi işlemenin yasal dayanağı",
+      "@myAccountPrivacySectionLinkLegal": {
+        "description": "Clickable link title to Legal Basis section"
+      },
+      "myAccountPrivacySectionLinkShare": "Bilgilerinizi kimlerle paylaşıyoruz?",
+      "@myAccountPrivacySectionLinkShare": {
+        "description": "Clickable link title to Sharing section"
+      },
+      "myAccountPrivacySectionLinkSecurity": "Veri Güvenliği Tedbirleri",
+      "@myAccountPrivacySectionLinkSecurity": {
+        "description": "Clickable link title to Security section"
+      },
+      "myAccountPrivacySectionLinkRights": "Bilgilerinizle ilgili haklarınız",
+      "@myAccountPrivacySectionLinkRights": {
+        "description": "Clickable link title to Rights section"
+      },
+      "myAccountPrivacySectionLinkMarketing": "Pazarlama ve Promosyon İletişimi",
+      "@myAccountPrivacySectionLinkMarketing": {
+        "description": "Clickable link title to Marketing section"
+      },
+      "myAccountPrivacySectionLinkMinors": "Reşit Olmayanlar Hakkında Bilgi",
+      "@myAccountPrivacySectionLinkMinors": {
+        "description": "Clickable link title to Minors section"
+      },
+      "myAccountPrivacySectionLinkThirdParty": "Üçüncü Taraf Bağlantıları",
+      "@myAccountPrivacySectionLinkThirdParty": {
+        "description": "Clickable link title to Third-Party Links section"
+      },
+      "myAccountPrivacySectionLinkUpdates": "Politika Güncellemeleri ve Revizyonları",
+      "@myAccountPrivacySectionLinkUpdates": {
+        "description": "Clickable link title to Updates section"
+      },
+
+      "myAccountPrivacyFooterNote": "Bu Gizlilik Politikasını periyodik olarak gözden geçirebiliriz. En güncel sürüm her zaman bu sayfada bulunacaktır.\n\nBu Politika farklı dillerde yayınlandığında ve herhangi bir tutarsızlık ortaya çıktığında, İngilizce sürüm geçerli olacaktır.",
+      "@myAccountPrivacyFooterNote": {
+        "description": "Footer note about updates and language precedence"
+      },
+
+      "myAccountPrivacySectionWhoWeAreTitle": "Biz Kimiz & Bize Nasıl Ulaşılır?",
+      "@myAccountPrivacySectionWhoWeAreTitle": {
+        "description": "Main heading for company & contact section"
+      },
+      "myAccountPrivacyWhoWeAreSubtitle": "Biz kimiz?",
+      "@myAccountPrivacyWhoWeAreSubtitle": {
+        "description": "Subheading: Who are we?"
+      },
+      "myAccountPrivacyWhoWeAreContent": "Platform, Birleşik Arap Emirlikleri'nde kayıtlı olan EMLAK BULUCU tarafından işletilmektedir. Kayıtlı adresi: Westburry Ofis Kulesi, 23. Kat, Ofis No. 2303, Business Bay, Dubai, BAE (\"Akarat\", \"biz\", \"bize\", \"bizim\").",
+      "@myAccountPrivacyWhoWeAreContent": {
+        "description": "Company description and registration info"
+      },
+      "myAccountPrivacyContactSubtitle": "Bize nasıl ulaşılır?",
+      "@myAccountPrivacyContactSubtitle": {
+        "description": "Subheading: How to contact us?"
+      },
+      "myAccountPrivacyContactContent": "Bu Gizlilik Politikası ile ilgili herhangi bir sorunuz için info@akarat.com adresinden bizimle iletişime geçebilirsiniz.",
+      "@myAccountPrivacyContactContent": {
+        "description": "Contact instruction text"
+      },
+
+      "myAccountPrivacySectionTypesTitle": "Topladığımız Bilgiler & Nasıl Kullanıyoruz",
+      "@myAccountPrivacySectionTypesTitle": {
+        "description": "Main heading for data collection section"
+      },
+      "myAccountPrivacyTypesIntro": "Sizden doğrudan topladığımız Kişisel Veri kategorileri aşağıda açıklanmıştır.",
+      "@myAccountPrivacyTypesIntro": {
+        "description": "Intro sentence before personal data explanation"
+      },
+      "myAccountPrivacyPersonalDataDefinition": "\"Kişisel Veri\", sizi tanımlayan veya makul olarak sizi tanımlamak için kullanılabilecek herhangi bir bilgiyi ifade eder. Bu, sizi tanımlayamayan anonimleştirilmiş veya toplu verileri kapsamaz. Fotoğraflar, fiyatlar, açıklamalar ve özellikler gibi mülk ilan detayları Kişisel Veri sayılmaz, çünkü bunlar mülklerle ilgilidir ve bireyleri tanımlamaz.",
+      "@myAccountPrivacyPersonalDataDefinition": {
+        "description": "Definition of Personal Data and exclusion of listing details"
+      },
+      "myAccountPrivacyTypesCollectedIntro": "Toplayabileceğimiz Kişisel Veri türleri şunlardır:",
+      "@myAccountPrivacyTypesCollectedIntro": {
+        "description": "Intro before the list of data categories"
+      },
+      "myAccountPrivacyTypesList": "→ Kullanıcı Bilgileri\n→ Ajans Bilgileri\n→ Acente Bilgileri\n→ Mülk Oluşturma Bilgileri\n→ Sohbet Verileri\n→ Teknik Veriler\n→ Pazarlama Verileri",
+      "@myAccountPrivacyTypesList": {
+        "description": "Bullet list of main data categories"
+      },
+
+      "myAccountPrivacyUserInfoTitle": "→ Kullanıcı Bilgileri (Kayıt ve Giriş için)",
+      "@myAccountPrivacyUserInfoTitle": {
+        "description": "Subsection title: User Information"
+      },
+      "myAccountPrivacyUserInfoPurpose": "Akarat.com'a kaydolduğunuzda hesabınızı oluşturmak ve yönetmek, kimliğinizi doğrulamak ve Platform'daki deneyiminizi kişiselleştirmek için belirli kişisel bilgileri toplarız.",
+      "@myAccountPrivacyUserInfoPurpose": {
+        "description": "Purpose of collecting user registration data"
+      },
+      "myAccountPrivacyUserInfoCollectedTitle": "Topladığımız Hesap ve Kimlik Detayları:",
+      "@myAccountPrivacyUserInfoCollectedTitle": {
+        "description": "Subheading for list of user details"
+      },
+      "myAccountPrivacyUserInfoCollectedList": "• Tam Ad (Ad ve Soyad)\n• E-posta Adresi\n• Cep Telefon Numarası (ülke kodu dahil)\n• WhatsApp Numarası\n• Şifre ve giriş bilgileri\n• Google ile Devam Et seçeneği kullanıldığında Google oturum açma detayları\n• Hesap kurulumu, giriş veya güvenlik kontrolleri için kullanılan doğrulama kodları veya OTP'ler",
+      "@myAccountPrivacyUserInfoCollectedList": {
+        "description": "List of user registration fields collected"
+      },
+
+      "myAccountPrivacyAgencyInfoTitle": "→ Ajans Bilgileri",
+      "@myAccountPrivacyAgencyInfoTitle": {
+        "description": "Subsection title: Agency Information"
+      },
+      "myAccountPrivacyAgencyInfoList": "• Ajans Adı ve Emirliği\n• Ulusal Kimlik ve mülk konumu\n• Ajansın kayıtlı lisans numarası\n• Ajansın kayıtlı logosu\n• Kayıtlı şirket lisans belgesi\n• Kayıtlı ofis kayıt numarası",
+      "@myAccountPrivacyAgencyInfoList": {
+        "description": "List of agency registration fields"
+      },
+      "myAccountPrivacyAgencyPurpose": "İşletmenin meşruiyetini doğrulamak ve lisans gerekliliklerine uyumu sağlamak için ajans verilerini toplarız. Bu bilgiler, Akarat.com'da doğrulanmış ajans profili oluşturup göstermemizi, kullanıcılar ile kayıtlı ajanslar arasında şeffaf iletişim sağlamamızı ve mülk ilanlarını ve ilgili acenteleri verimli bir şekilde yönetmemizi sağlar.",
+      "@myAccountPrivacyAgencyPurpose": {
+        "description": "Purpose of collecting agency data"
+      },
+      "myAccountPrivacyAgencyPublicDisplayTitle": "Akarat şunları kamuya açık olarak gösterebilir:",
+      "@myAccountPrivacyAgencyPublicDisplayTitle": {
+        "description": "Subheading for public display items"
+      },
+      "myAccountPrivacyAgencyPublicDisplayList": "• Ajans adı, logosu, ORN ve iletişim bilgileri\n• Ofis adresi ve bağlı acenteler\n• Kamuya açık olarak listelenen mülkler (görüntülenmeler, ilanlar)\n\nHassas kayıt veya lisans belgeleri katı bir şekilde gizli tutulur.",
+      "@myAccountPrivacyAgencyPublicDisplayList": {
+        "description": "What is shown publicly for agencies"
+      },
+
+      "myAccountPrivacyAgentInfoTitle": "→ Acente Bilgileri",
+      "@myAccountPrivacyAgentInfoTitle": {
+        "description": "Subsection title: Agent Information"
+      },
+      "myAccountPrivacyAgentInfoList": "• Acente adı ve Emirliği\n• Kayıtlı Acente Lisans Numarası\n• Acente Ulusal Kimlik\n• Acente profil fotoğrafı\n• Cep telefonu numarası ve WhatsApp numarası\n• Milliyet",
+      "@myAccountPrivacyAgentInfoList": {
+        "description": "List of agent registration fields"
+      },
+      "myAccountPrivacyAgentPurpose": "RERA/DLD yönergelerine göre mesleki kimliklerini ve yetkilerini doğrulamak, Akarat.com'da doğrulanmış acente profilleri göstermek ve acenteler ile potansiyel müşteriler arasında iletişimi kolaylaştırmak için acente verilerini toplarız. Yalnızca sınırlı bilgiler kamuya açık olarak gösterilir: acentenin adı, profil fotoğrafı, bağlı ajans adı ve logosu, aktif mülk ilanları.\n\nEmirates kimlik fotokopileri dahil hassas belgeler asla kamuya açıklanmaz.",
+      "@myAccountPrivacyAgentPurpose": {
+        "description": "Purpose and public display rules for agents"
+      },
+
+      "myAccountPrivacyPropertyInfoTitle": "→ Mülk Oluşturma Bilgileri",
+      "@myAccountPrivacyPropertyInfoTitle": {
+        "description": "Subsection title: Property Creation Information"
+      },
+      "myAccountPrivacyPropertyPurpose": "Akarat.com'da mülk listelediğinizde veya yönettiğinizde, ilanınızın eksiksiz, doğru ve uyumlu olmasını sağlamak için belirli detayları toplarız.",
+      "@myAccountPrivacyPropertyPurpose": {
+        "description": "Intro to property listing data collection"
+      },
+      "myAccountPrivacyPropertyCollectedTitle": "Toplanan Bilgiler:",
+      "@myAccountPrivacyPropertyCollectedTitle": {
+        "description": "Subheading for property data list"
+      },
+      "myAccountPrivacyPropertyCollectedList": "• Emirlik ve Trakheesi lisans detayları\n• Mülk Başlığı ve Açıklama\n• Mülk türü (ör. daire, villa, ofis, arsa)\n• Konum ve harita koordinatları\n• Ödeme detayları ve kira süresi\n• Alan büyüklüğü, yatak odası ve banyo sayısı\n• Özellikler ve döşeme detayları\n• Mülkün müsaitlik durumu\n• Tüm proje ile ilgili detaylar\n• Yüklenen medya (Fotoğraflar, Kat Planları, YouTube Bağlantısı)",
+      "@myAccountPrivacyPropertyCollectedList": {
+        "description": "List of property listing fields collected"
+      },
+      "myAccountPrivacyTrakheesiNote": "Trakheesi lisansı, Dubai Arazi Dairesi (DLD) tarafından RERA aracılığıyla verilen zorunlu bir izindir ve Dubai'deki tüm gayrimenkul reklamlarını düzenler. İlanların meşru, izlenebilir ve uyumlu olmasını sağlar.\n\nMülk ilan bilgilerini potansiyel alıcılara veya kiracılara göstermek, doğruluğunu teyit etmek, arama doğruluğunu artırmak ve BAE'de reklam uyumluluğunu sağlamak için toplarız.",
+
+      "myAccountPrivacyChatDataTitle": "→ Sohbet Verileri",
+      "@myAccountPrivacyChatDataTitle": {
+        "description": "Subsection title: Chat Data"
+      },
+      "myAccountPrivacyChatDataContent": "Sohbet Verileri, Platform üzerinden değiştirdiğiniz mesajları ifade eder. Bu, gönderilen veya alınan tüm metinleri içerir. Bu verileri kullanıcılar ile acenteler arasındaki iletişimi kolaylaştırmak, sorulara yanıt vermek, destek sağlamak, etkileşim kayıtlarını tutmak ve hizmetlerimizi geliştirmek için kullanırız.\n\nSohbet Verileri gizlidir ve bu Gizlilik Politikasına uygun olarak güvenli bir şekilde saklanır.",
+
+      "myAccountPrivacyTechnicalDataTitle": "→ Teknik Veriler",
+      "@myAccountPrivacyTechnicalDataTitle": {
+        "description": "Subsection title: Technical Data"
+      },
+      "myAccountPrivacyTechnicalDataList": "• IP Adresi\n• Giriş Verileri\n• Tarayıcı türü ve sürümü\n• İşletim sistemi ve platform\n• Cihaz bilgileri\n• Saat dilimi ayarları",
+      "@myAccountPrivacyTechnicalDataList": {
+        "description": "List of technical / device data points"
+      },
+      "myAccountPrivacyTechnicalPurpose": "Kullanıcıların Platform ile nasıl etkileşime girdiğini anlamak, sorunları teşhis etmek, performansı ve işlevselliği iyileştirmek, güvenliği artırmak ve kullanıcı deneyimini optimize etmek için teknik verileri toplarız. Bu veriler ayrıca analiz, dolandırıcılık tespiti ve düzenleyici uyumluluk için kullanılabilir.",
+
+      "myAccountPrivacyMarketingDataTitle": "→ Pazarlama Verileri",
+      "@myAccountPrivacyMarketingDataTitle": {
+        "description": "Subsection title: Marketing Data"
+      },
+      "myAccountPrivacyMarketingContent": "Yeni mülk uyarıları, hesap durumu güncellemeleri, sorgu bildirimleri veya promosyonel mesajlar almak isteyip istemediğiniz dahil pazarlama tercihleriniz hakkında bilgi toplayabilir ve saklayabiliriz. Bu, iletişimleri ilgi alanlarınıza göre uyarlamamıza yardımcı olur.\n\nPazarlama tercihlerinizi istediğiniz zaman hesap ayarlarınızdan güncelleyebilir veya info@akarat.com adresinden bizimle iletişime geçerek geri çekebilirsiniz. Geri çekilme Platform'u kullanma yeteneğinizi etkilemez.",
+
+      "myAccountPrivacyRefusalTitle": "Gerekli Kişisel Verileri sağlamayı reddederseniz ne olur?",
+      "@myAccountPrivacyRefusalTitle": {
+        "description": "Heading: What if user refuses to provide data"
+      },
+      "myAccountPrivacyRefusalContent": "Bize Kişisel Veri sağlamak zorunda değilsiniz. Ancak Platform'a erişim veya yasal gereklilikler için belirli veriler gerekliyse ve bunları sağlamazsanız erişim sağlayamayabiliriz. Örneğin, Akarat.com'da hesap oluşturmak için e-posta adresiniz gereklidir.",
+
+      "myAccountPrivacySectionLegalTitle": "İşlemenin Yasal Dayanağı",
+      "@myAccountPrivacySectionLegalTitle": {
+        "description": "Main heading: Legal Basis for Processing"
+      },
+      "myAccountPrivacyLegalIntro": "Geçerli gizlilik yasalarına göre, Kişisel Verilerinizi kullandığımız her amaç için geçerli bir yasal dayanak olması gerekir. Çoğu durumda aşağıdaki dayanaklardan birine güveniriz:",
+      "@myAccountPrivacyLegalIntro": {
+        "description": "Introduction to legal bases"
+      },
+      "myAccountPrivacyLegalBases": "• Sözleşmesel Gereklilik – Kişisel Verilerinizi sizinle yaptığımız sözleşmeyi yerine getirmek için işlemenin gerektiği durumlarda (örneğin Platform'a erişiminizi sağlamak).\n\n• Yasal Uyum – Yasal veya düzenleyici gereklilikleri karşılamak için Kişisel Verilerinizi işlemenin zorunlu olduğu durumlarda.\n\n• Onay – Kişisel Verilerinizi belirli bir amaç için işlememize açıkça izin verdiğiniz durumlarda.",
+
+      "myAccountPrivacySectionShareTitle": "Bilgilerinizi Kimlerle Paylaşıyoruz?",
+      "@myAccountPrivacySectionShareTitle": {
+        "description": "Main heading: Sharing information"
+      },
+      "myAccountPrivacyShareContent": "Kişisel Verilerinizi alan tüm tarafların, politikalarımız ve geçerli veri koruma yükümlülükleriyle uyumlu uygun güvenlik önlemleri uygulamasını talep ederiz. Adımıza Kişisel Veri işleyen üçüncü taraf hizmet sağlayıcıların bu verileri kendi amaçları için kullanmasına izin vermeyiz. Yalnızca bizim tanımladığımız belirli amaçlar için ve yalnızca talimatlarımıza tam olarak uygun şekilde işlemelerine izin verilir.\n\nPlatform'un diğer kullanıcılarıyla işlem yapmaya karar verdiğinizde belirli Kişisel Verileri onlarla paylaşmamız gerekebilir. Örneğin, bir Acente tarafından listelenen bir mülke ilgi gösterdiğinizde, o Acente'nin ilgili temsilcileri Kişisel Verilerinize erişim talep edebilir.",
+
+      "myAccountPrivacySectionSecurityTitle": "Verilerinizi Nasıl Güvende Tutuyoruz",
+      "@myAccountPrivacySectionSecurityTitle": {
+        "description": "Main heading: Data security"
+      },
+      "myAccountPrivacySecurityContent": "Kişisel Verilerinizi kazara kayıp, değişiklik, yetkisiz erişim veya kötüye kullanımdan korumak için uygun güvenlik önlemleri uygulamaktayız.\n\nKişisel Verilerinize erişim, meşru iş amaçları için buna ihtiyaç duyan çalışanlar ve yetkili personelle sınırlıdır. Bu erişime sahip tüm kişiler gizlilik yükümlülüklerine tabidir.\n\nAyrıca herhangi bir gerçek veya şüpheli Kişisel Veri ihlalini tespit etmek, yönetmek ve yanıtlamak için güçlü prosedürler sürdürürüz. Böyle durumlarda gizliliğiniz üzerindeki olası etkiyi en aza indirmek için derhal adım atarız ve gerektiğinde ilgili düzenleyici makamlarla iş birliği yaparız.",
+
+      "myAccountPrivacySectionRightsTitle": "Haklarınız",
+      "@myAccountPrivacySectionRightsTitle": {
+        "description": "Main heading: User rights"
+      },
+      "myAccountPrivacyRightsIntro": "Geçerli veri koruma yasalarına ve Kişisel Verilerinizin kontrolümüz altında olduğu yere bağlı olarak aşağıdaki haklara sahip olabilirsiniz:",
+      "@myAccountPrivacyRightsIntro": {
+        "description": "Intro to list of rights"
+      },
+      "myAccountPrivacyRightsList": "• Erişim — Hakkınızda tuttuğumuz Kişisel Verilerin bir kopyasını talep etme.\n• Düzeltme — Yanlış veya eksik bilgileri güncelleme veya düzeltme talebinde bulunma.\n• Silme — Artık orijinal amacı için gerekli olmadığında Kişisel Verilerin silinmesini talep etme.\n• İşlemeyi Kısıtlama — Verilerinizin tamamının veya bir kısmının geçici veya kalıcı olarak işlenmesini durdurmamızı isteme.\n• İtiraz — Meşru menfaatlerimize dayalı işlemeye veya doğrudan pazarlamaya itiraz etme.\n• Veri Taşınabilirliği — Kişisel Verilerinizin yapılandırılmış, makine tarafından okunabilir bir kopyasını talep etme.\n• Onayın Geri Çekilmesi — İşleme izninize dayanıyorsa onayı geri çekme.\n\nBu haklardan herhangi birini kullanmak isterseniz lütfen bizimle iletişime geçin.",
+
+      "myAccountPrivacySectionMarketingTitle": "Pazarlama İletişimi",
+      "@myAccountPrivacySectionMarketingTitle": {
+        "description": "Main heading: Marketing communications"
+      },
+      "myAccountPrivacyMarketingContent": "Yeni mülk uyarıları, hesap durumu güncellemeleri, sorgu bildirimleri veya promosyonel mesajlar almak isteyip istemediğiniz dahil pazarlama tercihleriniz hakkında bilgi toplayabilir ve saklayabiliriz. Bu, iletişimleri ilgi alanlarınıza göre uyarlamamıza yardımcı olur.\n\nHerhangi bir pazarlama e-postasındaki \"Abonelikten Çık\" bağlantısına tıklayarak veya info@akarat.com adresinden bizimle iletişime geçerek istediğiniz zaman vazgeçebilirsiniz. Vazgeçmek Platform'u kullanma yeteneğinizi etkilemez.",
+
+      "myAccountPrivacySectionMinorsTitle": "Reşit Olmayanlar İçin Gizliliğimiz",
+      "@myAccountPrivacySectionMinorsTitle": {
+        "description": "Main heading: Minors protection"
+      },
+      "myAccountPrivacyMinorsContent": "Bu Platform 18 yaşından küçük kişiler için tasarlanmamıştır. Reşit olmayanlardan bilerek veri toplamayız veya kullanıcı yaşını doğrulamayız. Bir reşit olmayanın Platform'u kullandığını düşünüyorsanız, lütfen info@akarat.com adresinden bizi bilgilendirin; böylece ilgili Kişisel Verileri kaldırabilir ve daha fazla erişimi engelleyebiliriz.",
+
+      "myAccountPrivacySectionThirdPartyTitle": "Üçüncü Taraf Bağlantıları",
+      "@myAccountPrivacySectionThirdPartyTitle": {
+        "description": "Main heading: Third-party links"
+      },
+      "myAccountPrivacyThirdPartyContent": "Platform üçüncü taraf web sitelerine veya hizmetlere bağlantılar içerebilir. Akarat, harici sitelerin içeriği, kullanılabilirliği veya gizlilik uygulamalarından sorumlu değildir. Platform'dan ayrıldığınızda, ziyaret ettiğiniz her sitenin gizlilik politikalarını incelemenizi öneririz.",
+
+      "myAccountPrivacySectionUpdatesTitle": "Gizlilik Politikasında Değişiklikler",
+      "@myAccountPrivacySectionUpdatesTitle": {
+        "description": "Main heading: Policy updates"
+      },
+      "myAccountPrivacyUpdatesContent": "Bu Gizlilik Politikasını herhangi bir zamanda, önceden haber vermeksizin güncelleyebiliriz. Güncellemeler olduğunda bu sayfayı revize edeceğiz ve bazı durumlarda sizi doğrudan bilgilendirebiliriz (örneğin e-posta ile). Tüm değişiklikler yayınlandığı anda yürürlüğe girer."
+
+
 
 
 
