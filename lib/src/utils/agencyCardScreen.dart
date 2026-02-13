@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../features/agency/data/models/agency_model.dart';
 import '../screen/about_agency.dart';
 import '../screen/shimmer.dart';
@@ -15,6 +16,8 @@ class Agencycardscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.sizeOf(context);
+
+    final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: () {
@@ -92,7 +95,7 @@ class Agencycardscreen extends StatelessWidget {
                           border: Border.all(color: Colors.blueAccent),
                         ),
                         child: Text(
-                          "${agencyModel.propertiesCount} Properties",
+                          l10n.propertiesCountLabel(agencyModel.propertiesCount ?? 0),
                           style: const TextStyle(
                             fontSize: 11,
                             color: Colors.blueAccent,

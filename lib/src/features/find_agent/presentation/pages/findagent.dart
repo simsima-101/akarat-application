@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../../../../../l10n/app_localizations.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/utils/language.dart';
 import '../../../../core/utils/secure_storage.dart';
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: FindAgentDemo(),
@@ -540,6 +542,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
     }*/
 
   Future<Nationality> fetchNationalities() async {
+
+    final l10n = AppLocalizations.of(context)!;
     // If no cache or cache is expired, fetch from API
     // final response = await http.get(
     //   ApiService.buildUri('agents/nationalities'),
@@ -554,11 +558,13 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
       return Nationality.fromJson(json.decode(responseBody));
     } else {
-      throw Exception('Failed to load nationalities');
+      throw Exception(l10n.failedToLoadNationalities);
     }
   }
 
   Future<Language> fetchLanguageData() async {
+
+    final l10n = AppLocalizations.of(context)!;
     // // Otherwise, fetch from API
     // final response = await http.get(
     //   ApiService.buildUri('agents/languages'),
@@ -571,7 +577,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
       return Language.fromJson(json.decode(responseBody));
     } else {
-      throw Exception('Failed to load languages');
+      throw Exception(l10n.failedToLoadLanguages);
     }
   }
 
@@ -579,6 +585,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Size screenSize = MediaQuery.sizeOf(context);
     return DefaultTabController(
       length: 2,
@@ -588,9 +595,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
         ),
         backgroundColor: Colors.white, // Light grey background
         appBar: AppBar(
-          title: const Text("Find My Agent",
+          title: Text(l10n.findAgentTitle,
               style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.red),
             onPressed: () async {
@@ -636,9 +643,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                 await agencyfetch();
               },
               icon: const Icon(Icons.refresh, color: Colors.red, size: 20),
-              label: const Text(
-                'Reset',
-                style: TextStyle(color: Colors.red, fontSize: 14),
+              label: Text(
+               l10n.resetFilters,
+                style: const TextStyle(color: Colors.red, fontSize: 14),
               ),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.red,
@@ -721,8 +728,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                   labelColor: Colors.lightBlueAccent,
                   unselectedLabelColor: Colors.grey,
                   tabs: [
-                    Tab(child: Text('Agents', style: TextStyle(fontSize: 16))),
-                    Tab(child: Text('Agency', style: TextStyle(fontSize: 16))),
+                    Tab(child: Text( l10n.agentsTab, style: TextStyle(fontSize: 16))),
+                    Tab(child: Text( l10n.agencyTab, style: TextStyle(fontSize: 16))),
                   ],
                 ),
               ),
@@ -766,7 +773,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                         () {}); // just to refresh clear icon
                                   },
                                   decoration: InputDecoration(
-                                    hintText: "Enter location or agent name",
+                                    hintText: l10n.searchAgentHint,
                                     hintStyle: const TextStyle(
                                         color: Colors.grey, fontSize: 15),
                                     filled: true,
@@ -810,10 +817,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                     _agentSearchController.text
                                         .trim()
                                         .isNotEmpty)
-                                  const Center(
+                                  Center(
                                     child: Text(
-                                      "No agents found",
-                                      style: TextStyle(
+                                      l10n.noAgentsFound,
+                                      style: const TextStyle(
                                         color: Colors.red,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -833,7 +840,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 15.0),
                             child: Text(
-                              "Featured Agents",
+                             l10n.featuredAgents,
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
@@ -841,10 +848,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                           const SizedBox(height: 10),
 
                           // Description
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: Text(
-                                "Explore agents with a proven track record of high response rates and authentic listings."),
+                                l10n.featuredAgentsDescription),
                           ),
 
                           const SizedBox(height: 10),
@@ -884,7 +891,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                               padding: EdgeInsets.all(16),
                               child: Center(
                                 child: Text(
-                                  "No Results",
+                                  l10n.noResults,
                                   style: TextStyle(
                                     color: Colors.red,
                                     fontSize: 16,
@@ -906,22 +913,22 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
                         // Spacing & headings
                         const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                        const SliverToBoxAdapter(
+                        SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: Text(
-                              "Featured Agencies",
-                              style: TextStyle(
+                              l10n.featuredAgencies,
+                              style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
                         const SliverToBoxAdapter(child: SizedBox(height: 10)),
-                        const SliverToBoxAdapter(
+                        SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: Text(
-                              "Explore agencies with a proven track record of high response rates and authentic listings.",
+                              l10n.featuredAgenciesDescription,
                             ),
                           ),
                         ),
@@ -954,13 +961,13 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 
                         //   Empty state (shows only when no results and not loading)
                         if (!isAgencyLoading && agencyList.isEmpty)
-                          const SliverToBoxAdapter(
+                          SliverToBoxAdapter(
                             child: Padding(
-                              padding: EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(16),
                               child: Center(
                                 child: Text(
-                                  "No Results",
-                                  style: TextStyle(
+                                  l10n.noResults,
+                                  style: const TextStyle(
                                     color: Colors.red,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -982,6 +989,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
   }
 
   Widget _agencyFiltersBox(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(15),
       margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 12),
@@ -1007,7 +1016,7 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
               setState(() {}); // refresh clear icon
             },
             decoration: InputDecoration(
-              hintText: "Enter location or agencies name",
+              hintText: l10n.searchAgencyHint,
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 15),
               filled: true,
               fillColor: Colors.grey.shade100,
@@ -1046,10 +1055,10 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
           if (agencyList.isEmpty &&
               !isAgencyLoading &&
               _agencySearchController.text.trim().isNotEmpty)
-            const Center(
+            Center(
               child: Text(
-                "No agencies found",
-                style: TextStyle(
+               l10n.noAgenciesFound,
+                style: const TextStyle(
                   color: Colors.red,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1133,6 +1142,8 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
 // }
 
   Container buildMyNavBar(BuildContext context) {
+
+
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -1158,25 +1169,30 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
             ),
           ),
           IconButton(
+
             enableFeedback: false,
             onPressed: () async {
               final token = await SecureStorage.getToken();
 
               if (token == null || token.isEmpty) {
+
+                final l10n = AppLocalizations.of(context)!;
+
+
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required",
-                        style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.",
-                        style: TextStyle(color: Colors.black)),
+                    title: Text(l10n.loginRequiredTitle,
+                        style: const TextStyle(color: Colors.black)),
+                    content: Text(l10n.loginToAccessFavorites,
+                        style: const TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
+                        child: Text(
+                          l10n.cancel,
+                          style: const TextStyle(color: Colors.red), // red text
                         ),
                       ),
                       TextButton(
@@ -1188,9 +1204,9 @@ class _FindAgentDemoState extends State<FindAgentDemo> {
                                 builder: (_) => const LoginDemo()),
                           );
                         },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
+                        child: Text(
+                        l10n.login,
+                          style: const TextStyle(color: Colors.red), // red text
                         ),
                       ),
                     ],

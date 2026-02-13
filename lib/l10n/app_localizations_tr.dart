@@ -140,6 +140,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'İletişime geçilen ilanları görmek için lütfen giriş yapın.';
 
   @override
+  String get loginToEditProfile =>
+      'Profilinizi düzenlemek için lütfen giriş yapın.';
+
+  @override
   String get notLoggedInForAction => 'Giriş yapmadınız';
 
   @override
@@ -184,10 +188,6 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get homeSortPriceHigh => 'Fiyat (Yüksek)';
-
-  @override
-  String get loginToEditProfile =>
-      'Profilinizi düzenlemek için lütfen giriş yapın.';
 
   @override
   String get myAccountSupportTitle => 'Bize Ulaşın';
@@ -242,6 +242,134 @@ class AppLocalizationsTr extends AppLocalizations {
       'Lütfen geçerli bir e-posta girin';
 
   @override
+  String get myAccountTermsAndConditionsAppBarTitle => 'Şartlar ve Koşullar';
+
+  @override
+  String get findAgentTitle => 'Acentemi Bul';
+
+  @override
+  String get agentsTab => 'Acentalar';
+
+  @override
+  String get agencyTab => 'Emlak Ofisleri';
+
+  @override
+  String get searchAgentHint => 'Konum veya acenta adı girin';
+
+  @override
+  String get searchAgencyHint => 'Konum veya emlak ofisi adı girin';
+
+  @override
+  String get featuredAgents => 'Öne Çıkan Acentalar';
+
+  @override
+  String get featuredAgencies => 'Öne Çıkan Emlak Ofisleri';
+
+  @override
+  String get featuredAgentsDescription =>
+      'Yüksek yanıt oranları ve gerçek ilanlarla kanıtlanmış geçmişe sahip acentaları keşfedin.';
+
+  @override
+  String get featuredAgenciesDescription =>
+      'Yüksek yanıt oranları ve gerçek ilanlarla kanıtlanmış geçmişe sahip emlak ofislerini keşfedin.';
+
+  @override
+  String get noAgentsFound => 'Acenta bulunamadı';
+
+  @override
+  String get noAgenciesFound => 'Emlak ofisi bulunamadı';
+
+  @override
+  String get noResults => 'Sonuç Yok';
+
+  @override
+  String get resetFilters => 'Sıfırla';
+
+  @override
+  String get failedToLoadNationalities => 'Uyruklar yüklenemedi';
+
+  @override
+  String get failedToLoadLanguages => 'Diller yüklenemedi';
+
+  @override
+  String get agentAboutTitle => 'Hakkında';
+
+  @override
+  String get agentDescriptionLabel => 'Açıklama';
+
+  @override
+  String get agentNoDescription => 'Açıklama mevcut değil';
+
+  @override
+  String get agentExpertiseLabel => 'Uzmanlık';
+
+  @override
+  String get agentServiceAreasLabel => 'Hizmet Alanları';
+
+  @override
+  String get agentLanguagesLabel => 'Dil(ler)';
+
+  @override
+  String get agentExperienceLabel => 'Deneyim';
+
+  @override
+  String get agentExperienceYears => 'Yıl';
+
+  @override
+  String get agentBrnLabel => 'BRN';
+
+  @override
+  String get agentReviewsTitle => 'Yorumlar';
+
+  @override
+  String get comingSoonTitle => 'Yakında';
+
+  @override
+  String get agentReviewsComingSoonMessage =>
+      'Acente yorumları yakında burada olacak';
+
+  @override
+  String get agentContactEmail => 'E-posta';
+
+  @override
+  String get agentContactCall => 'Ara';
+
+  @override
+  String get agentContactWhatsApp => 'WhatsApp';
+
+  @override
+  String get propertiesTab => 'İlanlar';
+
+  @override
+  String get reviewTab => 'Yorumlar';
+
+  @override
+  String get agentSpeaksLabel => 'Konuştuğu diller: ';
+
+  @override
+  String agentSaleTag(Object count) {
+    return '$count Satılık';
+  }
+
+  @override
+  String agentRentTag(Object count) {
+    return '$count Kiralık';
+  }
+
+  @override
+  String get notAvailable => 'Mevcut Değil';
+
+  @override
+  String agentPropertiesCount(Object count) {
+    return '$count İlan';
+  }
+
+  @override
+  String propertiesCountLabel(Object count) {
+    return '$count Mülk';
+  }
+
+  @override
   String get registerTitle => 'Hesap Oluştur';
 
   @override
@@ -290,10 +418,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get and => ' ve ';
 
   @override
-  String get alreadyHaveAccount => 'Zaten bir hesabınız var mı?  ';
+  String get alreadyHaveAccount => 'Zaten bir hesabınız var mı? ';
 
   @override
   String get loginHere => 'Buradan Giriş Yapın';
+
+  @override
+  String get searchCountryHint => 'Ülke ara';
 
   @override
   String get errorFirstNameRequired => 'Lütfen adınızı girin';
@@ -347,9 +478,6 @@ class AppLocalizationsTr extends AppLocalizations {
       'Çok fazla deneme. Lütfen bir dakika bekleyip tekrar deneyin.';
 
   @override
-  String get searchCountryHint => 'Ülke ara';
-
-  @override
   String get googleSignInNotSupported =>
       'Bu platform Google ile girişi desteklemiyor';
 
@@ -373,17 +501,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get nonJsonFromLoginGoogle =>
       'Sunucudan geçersiz yanıt alındı. Lütfen daha sonra tekrar deneyin.';
 
-  @override
-  String googleLoginFailedWithCode(Object code) {
-    return 'Google ile giriş başarısız (hata $code). Lütfen tekrar deneyin.';
-  }
 
-  @override
-  String get googleSignInFailedGeneric =>
-      'Google ile giriş başarısız oldu. Lütfen tekrar deneyin.';
-
-  @override
-  String get myAccountTermsAndConditionsAppBarTitle => 'Şartlar ve Koşullar';
 
   @override
   String get myAccountTermsSectionIntroductionTitle => 'Giriş';

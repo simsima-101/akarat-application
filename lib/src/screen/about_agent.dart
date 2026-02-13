@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../device_id.dart';
+import '../../l10n/app_localizations.dart';
 import '../common/widgets/property_card.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
@@ -610,6 +611,8 @@ class _AboutAgentState extends State<AboutAgent> {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     Size screenSize = MediaQuery.sizeOf(context);
 
     // 👉 This check must be OUTSIDE the "if (agentDetail == null)"
@@ -678,15 +681,15 @@ class _AboutAgentState extends State<AboutAgent> {
                       color: const Color(0xFFE3F2FD),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.email_outlined,
+                        const Icon(Icons.email_outlined,
                             size: 20, color: Colors.blue),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
-                          'Email',
-                          style: TextStyle(
+                         l10n.agentContactEmail,
+                          style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -715,14 +718,14 @@ class _AboutAgentState extends State<AboutAgent> {
                       color: const Color(0xFFFFEBEE),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.call_outlined, size: 20, color: Colors.red),
-                        SizedBox(width: 6),
+                        const Icon(Icons.call_outlined, size: 20, color: Colors.red),
+                        const SizedBox(width: 6),
                         Text(
-                          'Call',
-                          style: TextStyle(
+                            l10n.agentContactCall,
+                          style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -761,9 +764,9 @@ class _AboutAgentState extends State<AboutAgent> {
                       children: [
                         Image.asset("assets/images/whats.png", height: 20),
                         const SizedBox(width: 6),
-                        const Text(
-                          'WhatsApp',
-                          style: TextStyle(
+                        Text(
+                         l10n.agentContactWhatsApp,
+                          style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -915,7 +918,7 @@ class _AboutAgentState extends State<AboutAgent> {
                     ],
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text('About', textAlign: TextAlign.center),
+                  child: Text(l10n.agentAboutTitle, textAlign: TextAlign.center),
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 10),
@@ -1007,16 +1010,16 @@ class _AboutAgentState extends State<AboutAgent> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10.0),
                                   child: Row(
-                                    children: const [
+                                    children: [
                                       Text(
-                                        "Description",
-                                        style: TextStyle(
+                                        l10n.agentDescriptionLabel,
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           color: Colors.grey,
                                           letterSpacing: 0.5,
                                         ),
                                       ),
-                                      Text(""),
+                                      const Text(""),
                                     ],
                                   ),
                                 ),
@@ -1048,12 +1051,12 @@ class _AboutAgentState extends State<AboutAgent> {
                                               fontWeight: FontWeight.w600),
                                         ),
                                       )
-                                    : const Padding(
-                                        padding: EdgeInsets.symmetric(
+                                    : Padding(
+                                        padding: const EdgeInsets.symmetric(
                                             horizontal: 15.0),
                                         child: Text(
-                                          "No description available",
-                                          style: TextStyle(
+                                          l10n.agentNoDescription,
+                                          style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.black54,
                                             fontStyle: FontStyle.italic,
@@ -1070,16 +1073,16 @@ class _AboutAgentState extends State<AboutAgent> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 10.0),
                                         child: Row(
-                                          children: const [
+                                          children: [
                                             Text(
-                                              "Expertise",
-                                              style: TextStyle(
+                                            l10n.agentExpertiseLabel,
+                                              style: const TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.grey,
                                                 letterSpacing: 0.5,
                                               ),
                                             ),
-                                            Text(""),
+                                            const Text(""),
                                           ],
                                         ),
                                       ),
@@ -1112,16 +1115,16 @@ class _AboutAgentState extends State<AboutAgent> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 10.0),
                                         child: Row(
-                                          children: const [
+                                          children: [
                                             Text(
-                                              "Services Area",
-                                              style: TextStyle(
+                                              l10n.agentServiceAreasLabel,
+                                              style: const TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.grey,
                                                 letterSpacing: 0.5,
                                               ),
                                             ),
-                                            Text(""),
+                                            const Text(""),
                                           ],
                                         ),
                                       ),
@@ -1163,7 +1166,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Language(s)",
+                                       l10n.agentLanguagesLabel,
                                         style: TextStyle(
                                           fontSize: 16,
                                           color: Colors.grey,
@@ -1187,16 +1190,16 @@ class _AboutAgentState extends State<AboutAgent> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 10.0),
                                   child: Row(
-                                    children: const [
+                                    children: [
                                       Text(
-                                        "Experience",
-                                        style: TextStyle(
+                                       l10n.agentExperienceLabel,
+                                        style: const TextStyle(
                                           fontSize: 15,
                                           color: Colors.grey,
                                           letterSpacing: 0.5,
                                         ),
                                       ),
-                                      Text(""),
+                                      const Text(""),
                                     ],
                                   ),
                                 ),
@@ -1207,7 +1210,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                   child: Row(
                                     children: [
                                       Text(
-                                        "${agentDetail!.experience} Years",
+                                        "${agentDetail!.experience} l10n.agentExperienceYears",
                                         style: const TextStyle(
                                           fontSize: 15,
                                           color: Colors.black,
@@ -1227,7 +1230,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "BRN",
+                                        l10n.agentBrnLabel,
                                         textAlign: TextAlign.start,
                                         style: TextStyle(
                                           fontSize: 15,
@@ -1320,9 +1323,8 @@ class _AboutAgentState extends State<AboutAgent> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Reviews",
-                            style: TextStyle(
+                          Text( l10n.agentReviewsTitle,
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -1342,7 +1344,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  "Coming Soon",
+                                  l10n.comingSoonTitle,
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
@@ -1352,7 +1354,7 @@ class _AboutAgentState extends State<AboutAgent> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  "Agent reviews will be available here soon",
+                                 l10n.agentReviewsComingSoonMessage,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,

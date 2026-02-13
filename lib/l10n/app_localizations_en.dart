@@ -137,6 +137,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please login to view contacted properties.';
 
   @override
+  String get loginToEditProfile => 'Please login to edit your profile.';
+
+  @override
   String get notLoggedInForAction => 'You are not logged in';
 
   @override
@@ -181,9 +184,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeSortPriceHigh => 'Price (High)';
-
-  @override
-  String get loginToEditProfile => 'Please login to edit your profile.';
 
   @override
   String get myAccountSupportTitle => 'Contact Us';
@@ -238,6 +238,134 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please enter a valid email';
 
   @override
+  String get myAccountTermsAndConditionsAppBarTitle => 'Terms & Conditions';
+
+  @override
+  String get findAgentTitle => 'Find My Agent';
+
+  @override
+  String get agentsTab => 'Agents';
+
+  @override
+  String get agencyTab => 'Agencies';
+
+  @override
+  String get searchAgentHint => 'Enter location or agent name';
+
+  @override
+  String get searchAgencyHint => 'Enter location or agency name';
+
+  @override
+  String get featuredAgents => 'Featured Agents';
+
+  @override
+  String get featuredAgencies => 'Featured Agencies';
+
+  @override
+  String get featuredAgentsDescription =>
+      'Explore agents with a proven track record of high response rates and authentic listings.';
+
+  @override
+  String get featuredAgenciesDescription =>
+      'Explore agencies with a proven track record of high response rates and authentic listings.';
+
+  @override
+  String get noAgentsFound => 'No agents found';
+
+  @override
+  String get noAgenciesFound => 'No agencies found';
+
+  @override
+  String get noResults => 'No Results';
+
+  @override
+  String get resetFilters => 'Reset';
+
+  @override
+  String get failedToLoadNationalities => 'Failed to load nationalities';
+
+  @override
+  String get failedToLoadLanguages => 'Failed to load languages';
+
+  @override
+  String get agentAboutTitle => 'About';
+
+  @override
+  String get agentDescriptionLabel => 'Description';
+
+  @override
+  String get agentNoDescription => 'No description available';
+
+  @override
+  String get agentExpertiseLabel => 'Expertise';
+
+  @override
+  String get agentServiceAreasLabel => 'Service Areas';
+
+  @override
+  String get agentLanguagesLabel => 'Languages';
+
+  @override
+  String get agentExperienceLabel => 'Experience';
+
+  @override
+  String get agentExperienceYears => 'Years';
+
+  @override
+  String get agentBrnLabel => 'BRN';
+
+  @override
+  String get agentReviewsTitle => 'Reviews';
+
+  @override
+  String get comingSoonTitle => 'Coming Soon';
+
+  @override
+  String get agentReviewsComingSoonMessage =>
+      'Agent reviews will be available here soon';
+
+  @override
+  String get agentContactEmail => 'Email';
+
+  @override
+  String get agentContactCall => 'Call';
+
+  @override
+  String get agentContactWhatsApp => 'WhatsApp';
+
+  @override
+  String get propertiesTab => 'Properties';
+
+  @override
+  String get reviewTab => 'Review';
+
+  @override
+  String get agentSpeaksLabel => 'Speaks: ';
+
+  @override
+  String agentSaleTag(Object count) {
+    return '$count Sale';
+  }
+
+  @override
+  String agentRentTag(Object count) {
+    return '$count Rent';
+  }
+
+  @override
+  String get notAvailable => 'Not Available';
+
+  @override
+  String agentPropertiesCount(Object count) {
+    return '$count Properties';
+  }
+
+  @override
+  String propertiesCountLabel(Object count) {
+    return '$count Properties';
+  }
+
+  @override
   String get registerTitle => 'Create Account';
 
   @override
@@ -253,7 +381,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lastNameHint => 'Last Name';
 
   @override
-  String get emailHint => 'E-mail';
+  String get emailHint => 'Email';
 
   @override
   String get phoneHint => 'Phone';
@@ -280,34 +408,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerButton => 'Register';
 
   @override
-  String get bySigningUpAgreeTo => 'By Signing up I agree to the ';
+  String get bySigningUpAgreeTo => 'By signing up, you agree to our ';
 
   @override
   String get and => ' and ';
 
   @override
-  String get alreadyHaveAccount => 'Already have an account?  ';
+  String get alreadyHaveAccount => 'Already have an account? ';
 
   @override
-  String get loginHere => 'Login Here';
+  String get loginHere => 'Login here';
 
   @override
-  String get errorFirstNameRequired => 'Please enter first name';
+  String get searchCountryHint => 'Search country';
 
   @override
-  String get errorLastNameRequired => 'Please enter last name';
+  String get errorFirstNameRequired => 'Please enter your first name';
 
   @override
-  String get errorEmailRequired => 'Please enter email';
+  String get errorLastNameRequired => 'Please enter your last name';
+
+  @override
+  String get errorEmailRequired => 'Please enter your email';
 
   @override
   String get errorInvalidEmail => 'Invalid email';
 
   @override
-  String get errorPhoneRequired => 'Please enter phone';
+  String get errorPhoneRequired => 'Please enter your phone number';
 
   @override
-  String get errorInvalidPhoneDigits => 'Enter a valid number';
+  String get errorInvalidPhoneDigits => 'Please enter a valid number';
 
   @override
   String errorPhoneLength(Object length, Object countryCode) {
@@ -315,13 +446,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get errorPasswordRequired => 'Please enter password';
+  String get errorPasswordRequired => 'Please enter a password';
 
   @override
-  String get errorPasswordRequirements => 'Password doesn’t meet requirements';
+  String get errorPasswordRequirements => 'Password does not meet requirements';
 
   @override
-  String get errorConfirmPasswordRequired => 'Please confirm password';
+  String get errorConfirmPasswordRequired => 'Please confirm your password';
 
   @override
   String get errorPasswordsNotMatch => 'Passwords do not match';
@@ -335,18 +466,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered =>
-      'This email is already registered. Please Login or use Forgot Password.';
+      'This email is already registered. Please login or use Forgot Password.';
 
   @override
   String get tooManyAttempts =>
       'Too many attempts. Please wait a minute and try again.';
 
   @override
-  String get searchCountryHint => 'Search Country';
-
-  @override
   String get googleSignInNotSupported =>
-      'This platform does not support authenticate()';
+      'Google Sign-In is not supported on this platform';
 
   @override
   String get firebaseUserNullAfterSignIn =>
@@ -354,31 +482,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToGetFirebaseIdToken =>
-      'Failed to retrieve authentication token.';
+      'Failed to get authentication token.';
 
   @override
   String get accountDeletedOrInactiveContactSupport =>
-      'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email';
+      'This account has been deleted or deactivated.\nPlease contact support to reactivate or use a different email.';
 
   @override
   String get accountDeletedOrTokenMissing =>
-      'This account has been deleted or token missing.';
+      'This account has been deleted or token is missing.';
 
   @override
   String get nonJsonFromLoginGoogle =>
       'Invalid response from server. Please try again later.';
 
-  @override
-  String googleLoginFailedWithCode(Object code) {
-    return 'Google login failed (error $code). Please try again.';
-  }
 
-  @override
-  String get googleSignInFailedGeneric =>
-      'Google Sign-In failed. Please try again.';
-
-  @override
-  String get myAccountTermsAndConditionsAppBarTitle => 'Terms & Conditions';
 
   @override
   String get myAccountTermsSectionIntroductionTitle => 'Introduction';
@@ -888,6 +1006,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get myAccountPrivacyUpdatesContent =>
       'We may update this Privacy Policy at any time, with or without prior notice. When updates occur, we will revise this page and may notify you directly in certain cases (for example, by email). All changes become effective immediately once posted.';
+
 
   @override
   String get aboutUs_hero_title => 'About Akarat';

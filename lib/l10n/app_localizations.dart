@@ -124,7 +124,7 @@ abstract class AppLocalizations {
   /// **'Hello'**
   String get hello;
 
-  /// Menu item for changing app language
+  /// No description provided for @language.
   ///
   /// In en, this message translates to:
   /// **'Language'**
@@ -148,7 +148,7 @@ abstract class AppLocalizations {
   /// **'Find off-plan development and everything you need to know to invest in UAE\'s real estate market'**
   String get newProjectsSubtitle;
 
-  /// Message shown when latest project in Dubai
+  /// Title for latest projects section (usually Dubai focused)
   ///
   /// In en, this message translates to:
   /// **'Latest Projects in Dubai'**
@@ -220,7 +220,7 @@ abstract class AppLocalizations {
   /// **'Project Information'**
   String get projectInformation;
 
-  /// Title for the project detail screen/app bar
+  /// Title for the project detail screen / app bar
   ///
   /// In en, this message translates to:
   /// **'Project Detail'**
@@ -232,7 +232,7 @@ abstract class AppLocalizations {
   /// **'No data available'**
   String get noData;
 
-  /// Title of the dialog that appears when user tries to access favorites without being logged in
+  /// Dialog title when authentication is required
   ///
   /// In en, this message translates to:
   /// **'Login Required'**
@@ -244,13 +244,13 @@ abstract class AppLocalizations {
   /// **'Please login to access your favorites.'**
   String get loginToAccessFavorites;
 
-  /// Button text to close/cancel the login dialog
+  /// Button text to close / cancel dialogs
   ///
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
 
-  /// Button text that takes the user to the login screen
+  /// Button / link text that takes user to login screen
   ///
   /// In en, this message translates to:
   /// **'Login'**
@@ -262,13 +262,13 @@ abstract class AppLocalizations {
   /// **'Welcome! Login / Sign up'**
   String get welcomeLoginSignUp;
 
-  /// Label for user profile (e.g., in header or menu)
+  /// Label for user profile (e.g. in header or menu)
   ///
   /// In en, this message translates to:
   /// **'My Profile'**
   String get myProfile;
 
-  /// Menu item to find agent page
+  /// Menu item / screen title for Find My Agent page
   ///
   /// In en, this message translates to:
   /// **'Find My Agent'**
@@ -298,7 +298,7 @@ abstract class AppLocalizations {
   /// **'About Us'**
   String get aboutUs;
 
-  /// Menu item for support/contact page
+  /// Menu item for support / contact page
   ///
   /// In en, this message translates to:
   /// **'Support'**
@@ -352,7 +352,13 @@ abstract class AppLocalizations {
   /// **'Please login to view contacted properties.'**
   String get loginToViewContacted;
 
-  /// Shown when user tries to delete account or perform authenticated action without being logged in
+  /// Message shown when user tries to edit profile without being logged in
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to edit your profile.'**
+  String get loginToEditProfile;
+
+  /// Shown when user tries authenticated action without login
   ///
   /// In en, this message translates to:
   /// **'You are not logged in'**
@@ -370,173 +376,401 @@ abstract class AppLocalizations {
   /// **'Deletion failed'**
   String get deletionFailed;
 
-  /// Hint text for the search field on the home screen
+  /// Hint text for the search field on home screen
   ///
   /// In en, this message translates to:
   /// **'Search for a locality, area or city'**
   String get homeSearchLocationHint;
 
-  /// Label for property for rent
+  /// Label for property for rent section
   ///
   /// In en, this message translates to:
   /// **'Property For Rent'**
   String get homePropertyForRent;
 
-  /// Label for property for sale
+  /// Label for property for sale section
   ///
   /// In en, this message translates to:
   /// **'Property For Sale'**
   String get homePropertyForSale;
 
-  /// Label for off-plan properties
+  /// Label for off-plan properties section
   ///
   /// In en, this message translates to:
   /// **'Off-Plan Properties'**
   String get homeOffPlanProperties;
 
-  /// Label for commercial properties
+  /// Label for commercial properties section
   ///
   /// In en, this message translates to:
   /// **'Commercial'**
   String get homeCommercial;
 
-  /// Label for villas
+  /// Label for villas section
   ///
   /// In en, this message translates to:
   /// **'Villas'**
   String get homeVilla;
 
-  /// Label for apartments
+  /// Label for apartments section
   ///
   /// In en, this message translates to:
   /// **'Apartments'**
   String get homeApartment;
 
-  /// Subtitle text shown in the Home screen New Projects section
+  /// Subtitle in Home screen New Projects area
   ///
   /// In en, this message translates to:
   /// **'Discover more about the UAE real estate market'**
   String get homeDiscoverUaeRealEstate;
 
-  /// Dropdown value shown in the Home screen sorting filter
+  /// Sorting option – newest first
   ///
   /// In en, this message translates to:
   /// **'Newest'**
   String get homeSortNewest;
 
-  /// Dropdown value shown in the Home screen sorting filter
+  /// Sorting option – featured listings
   ///
   /// In en, this message translates to:
   /// **'Featured'**
   String get homeSortFeatured;
 
-  /// Dropdown value shown in the Home screen sorting filter
+  /// Sorting option – price low to high
   ///
   /// In en, this message translates to:
   /// **'Price (Low)'**
   String get homeSortPriceLow;
 
-  /// Dropdown value shown in the Home screen sorting filter
+  /// Sorting option – price high to low
   ///
   /// In en, this message translates to:
   /// **'Price (High)'**
   String get homeSortPriceHigh;
 
-  /// Message shown when user tries to edit profile without being logged in
-  ///
-  /// In en, this message translates to:
-  /// **'Please login to edit your profile.'**
-  String get loginToEditProfile;
-
-  /// This text is displayed in the support screen app bar title of the My Account screen
+  /// App bar title on the support screen
   ///
   /// In en, this message translates to:
   /// **'Contact Us'**
   String get myAccountSupportTitle;
 
-  /// this is the sub title show in teh support screen in the my screen.
+  /// Subtitle shown on the support screen
   ///
   /// In en, this message translates to:
   /// **'Ask us anything?'**
   String get myAccountSupportSubTitle;
 
-  /// Label text for the name input field on the support screen in the My Account screen
+  /// Label for name input field on support screen
   ///
   /// In en, this message translates to:
   /// **'Name'**
   String get myAccountSupportNameLabel;
 
-  /// Label text for the email input field on the support screen in the My Account screen
+  /// Label for email input field on support screen
   ///
   /// In en, this message translates to:
   /// **'Email Address'**
   String get myAccountSupportEmailLabel;
 
-  /// Label text for the phone number input field on the support screen in the My Account screen
+  /// Label for phone input field on support screen
   ///
   /// In en, this message translates to:
   /// **'Phone Number'**
   String get myAccountSupportPhoneLabel;
 
-  /// Label text for the subject input field on the support screen in the My Account screen
+  /// Label for subject input field on support screen
   ///
   /// In en, this message translates to:
   /// **'Subject'**
   String get myAccountSupportSubjectLabel;
 
-  /// Label text for the message input field on the support screen in the My Account screen
+  /// Label for message input field on support screen
   ///
   /// In en, this message translates to:
   /// **'Message'**
   String get myAccountSupportMessageLabel;
 
-  /// Text for the submit button on the support form in the My Account screen
+  /// Text on the submit button of support form
   ///
   /// In en, this message translates to:
   /// **'Submit'**
   String get myAccountSupportSubmitButtonText;
 
-  /// Validation message shown on the My Account support screen when a required text field is empty
+  /// Generic prefix for empty required field validation
   ///
   /// In en, this message translates to:
   /// **'Please enter'**
   String get myAccountSupportValidationEnterText;
 
-  /// Validation message shown on the My Account support screen when the phone number field is empty
+  /// Validation when phone field is empty
   ///
   /// In en, this message translates to:
   /// **'Please enter Phone Number'**
   String get myAccountSupportValidationEnterPhone;
 
-  /// Validation message shown on the My Account support screen when the phone number contains non-numeric characters
+  /// Validation when phone contains non-digits
   ///
   /// In en, this message translates to:
   /// **'Phone number must contain digits only'**
   String get myAccountSupportValidationPhoneDigitsOnly;
 
-  /// Validation message shown on the My Account support screen when the phone number length is invalid for the selected country; {length} and {country} are dynamic values
+  /// Validation for incorrect phone length; {length} and {country} are placeholders
   ///
   /// In en, this message translates to:
   /// **'Phone number must be {length} digits for {country}'**
   String myAccountSupportValidationPhoneLength(Object country, Object length);
 
-  /// Validation error on the My Account > Support screen when a required text field is empty. {label} is the field name.
+  /// Generic required field error. {label} = field name
   ///
   /// In en, this message translates to:
   /// **'Please enter {label}'**
   String myAccountSupportValidationRequired(Object label);
 
-  /// Validation error on the My Account > Support screen when the Email text field is empty.
+  /// Validation when email field is empty
   ///
   /// In en, this message translates to:
   /// **'Please enter Email'**
   String get myAccountSupportValidationEmailRequired;
 
-  /// Validation error on the My Account > Support screen when the Email text field has an invalid format.
+  /// Validation when email format is invalid
   ///
   /// In en, this message translates to:
   /// **'Please enter a valid email'**
   String get myAccountSupportValidationEmailInvalid;
+
+  /// App bar title text shown on the Terms & Conditions screen in the My Account section
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & Conditions'**
+  String get myAccountTermsAndConditionsAppBarTitle;
+
+  /// AppBar title of Find Agent screen
+  ///
+  /// In en, this message translates to:
+  /// **'Find My Agent'**
+  String get findAgentTitle;
+
+  /// Tab label for individual agents
+  ///
+  /// In en, this message translates to:
+  /// **'Agents'**
+  String get agentsTab;
+
+  /// Tab label for real estate agencies/companies
+  ///
+  /// In en, this message translates to:
+  /// **'Agencies'**
+  String get agencyTab;
+
+  /// Hint in agent search field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter location or agent name'**
+  String get searchAgentHint;
+
+  /// Hint in agency search field
+  ///
+  /// In en, this message translates to:
+  /// **'Enter location or agency name'**
+  String get searchAgencyHint;
+
+  /// Section title above featured agents list
+  ///
+  /// In en, this message translates to:
+  /// **'Featured Agents'**
+  String get featuredAgents;
+
+  /// Section title above featured agencies list
+  ///
+  /// In en, this message translates to:
+  /// **'Featured Agencies'**
+  String get featuredAgencies;
+
+  /// Description text below Featured Agents title
+  ///
+  /// In en, this message translates to:
+  /// **'Explore agents with a proven track record of high response rates and authentic listings.'**
+  String get featuredAgentsDescription;
+
+  /// Description text below Featured Agencies title
+  ///
+  /// In en, this message translates to:
+  /// **'Explore agencies with a proven track record of high response rates and authentic listings.'**
+  String get featuredAgenciesDescription;
+
+  /// Message when agent search returns empty
+  ///
+  /// In en, this message translates to:
+  /// **'No agents found'**
+  String get noAgentsFound;
+
+  /// Message when agency search returns empty
+  ///
+  /// In en, this message translates to:
+  /// **'No agencies found'**
+  String get noAgenciesFound;
+
+  /// General empty state message when list is empty
+  ///
+  /// In en, this message translates to:
+  /// **'No Results'**
+  String get noResults;
+
+  /// Button label to clear all filters and search
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetFilters;
+
+  /// Error message when fetching list of nationalities fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load nationalities'**
+  String get failedToLoadNationalities;
+
+  /// Error message when fetching list of supported languages fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load languages'**
+  String get failedToLoadLanguages;
+
+  /// Title of the About tab in agent detail screen
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get agentAboutTitle;
+
+  /// Label above agent description text
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get agentDescriptionLabel;
+
+  /// Shown when agent has no about text
+  ///
+  /// In en, this message translates to:
+  /// **'No description available'**
+  String get agentNoDescription;
+
+  /// Label for agent's expertise section
+  ///
+  /// In en, this message translates to:
+  /// **'Expertise'**
+  String get agentExpertiseLabel;
+
+  /// Label for agent's service areas
+  ///
+  /// In en, this message translates to:
+  /// **'Service Areas'**
+  String get agentServiceAreasLabel;
+
+  /// Label for agent's languages
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get agentLanguagesLabel;
+
+  /// Label for agent's years of experience
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get agentExperienceLabel;
+
+  /// Suffix after number of years in experience
+  ///
+  /// In en, this message translates to:
+  /// **'Years'**
+  String get agentExperienceYears;
+
+  /// Label for Broker Registration Number
+  ///
+  /// In en, this message translates to:
+  /// **'BRN'**
+  String get agentBrnLabel;
+
+  /// Title of Reviews tab in agent detail
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get agentReviewsTitle;
+
+  /// Placeholder title for not-yet-implemented features
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get comingSoonTitle;
+
+  /// Message shown in reviews tab under Coming Soon
+  ///
+  /// In en, this message translates to:
+  /// **'Agent reviews will be available here soon'**
+  String get agentReviewsComingSoonMessage;
+
+  /// Label on email button in agent detail bottom bar
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get agentContactEmail;
+
+  /// Label on call button in agent detail bottom bar
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get agentContactCall;
+
+  /// Label on WhatsApp button in agent detail bottom bar
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get agentContactWhatsApp;
+
+  /// Tab label for agent's listed properties
+  ///
+  /// In en, this message translates to:
+  /// **'Properties'**
+  String get propertiesTab;
+
+  /// Tab label for agent reviews
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get reviewTab;
+
+  /// Label before agent's languages list
+  ///
+  /// In en, this message translates to:
+  /// **'Speaks: '**
+  String get agentSpeaksLabel;
+
+  /// Tag showing number of sale properties
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Sale'**
+  String agentSaleTag(Object count);
+
+  /// Tag showing number of rent properties
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Rent'**
+  String agentRentTag(Object count);
+
+  /// Fallback when data is missing (e.g. languages)
+  ///
+  /// In en, this message translates to:
+  /// **'Not Available'**
+  String get notAvailable;
+
+  /// Text showing number of properties an agent has
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Properties'**
+  String agentPropertiesCount(Object count);
+
+  /// Label showing number of properties for an agency
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Properties'**
+  String propertiesCountLabel(Object count);
 
   /// Title of the registration screen app bar
   ///
@@ -571,7 +805,7 @@ abstract class AppLocalizations {
   /// Hint for email field
   ///
   /// In en, this message translates to:
-  /// **'E-mail'**
+  /// **'Email'**
   String get emailHint;
 
   /// Hint for phone number field
@@ -592,25 +826,25 @@ abstract class AppLocalizations {
   /// **'Confirm Password'**
   String get confirmPasswordHint;
 
-  /// Password rule - length
+  /// Password rule - minimum length
   ///
   /// In en, this message translates to:
   /// **'At least 8 characters'**
   String get atLeast8Characters;
 
-  /// Password rule - uppercase
+  /// Password rule - uppercase required
   ///
   /// In en, this message translates to:
   /// **'One uppercase letter'**
   String get oneUppercaseLetter;
 
-  /// Password rule - digit
+  /// Password rule - digit required
   ///
   /// In en, this message translates to:
   /// **'One number'**
   String get oneNumber;
 
-  /// Password rule - special char
+  /// Password rule - special character required
   ///
   /// In en, this message translates to:
   /// **'One special character'**
@@ -625,7 +859,7 @@ abstract class AppLocalizations {
   /// Start of terms/privacy agreement sentence
   ///
   /// In en, this message translates to:
-  /// **'By Signing up I agree to the '**
+  /// **'By signing up, you agree to our '**
   String get bySigningUpAgreeTo;
 
   /// Conjunction in terms/privacy sentence
@@ -637,31 +871,37 @@ abstract class AppLocalizations {
   /// Text before login link
   ///
   /// In en, this message translates to:
-  /// **'Already have an account?  '**
+  /// **'Already have an account? '**
   String get alreadyHaveAccount;
 
   /// Login link text
   ///
   /// In en, this message translates to:
-  /// **'Login Here'**
+  /// **'Login here'**
   String get loginHere;
+
+  /// Hint text in country code picker search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search country'**
+  String get searchCountryHint;
 
   /// Validation error - missing first name
   ///
   /// In en, this message translates to:
-  /// **'Please enter first name'**
+  /// **'Please enter your first name'**
   String get errorFirstNameRequired;
 
   /// Validation error - missing last name
   ///
   /// In en, this message translates to:
-  /// **'Please enter last name'**
+  /// **'Please enter your last name'**
   String get errorLastNameRequired;
 
   /// Validation error - missing email
   ///
   /// In en, this message translates to:
-  /// **'Please enter email'**
+  /// **'Please enter your email'**
   String get errorEmailRequired;
 
   /// Validation error - bad email format
@@ -673,13 +913,13 @@ abstract class AppLocalizations {
   /// Validation error - missing phone
   ///
   /// In en, this message translates to:
-  /// **'Please enter phone'**
+  /// **'Please enter your phone number'**
   String get errorPhoneRequired;
 
   /// Validation error - invalid phone characters
   ///
   /// In en, this message translates to:
-  /// **'Enter a valid number'**
+  /// **'Please enter a valid number'**
   String get errorInvalidPhoneDigits;
 
   /// Validation error - wrong phone length
@@ -691,19 +931,19 @@ abstract class AppLocalizations {
   /// Validation error - missing password
   ///
   /// In en, this message translates to:
-  /// **'Please enter password'**
+  /// **'Please enter a password'**
   String get errorPasswordRequired;
 
   /// Validation error - password too weak
   ///
   /// In en, this message translates to:
-  /// **'Password doesn’t meet requirements'**
+  /// **'Password does not meet requirements'**
   String get errorPasswordRequirements;
 
   /// Validation error - missing confirmation
   ///
   /// In en, this message translates to:
-  /// **'Please confirm password'**
+  /// **'Please confirm your password'**
   String get errorConfirmPasswordRequired;
 
   /// Validation error - passwords mismatch
@@ -712,7 +952,7 @@ abstract class AppLocalizations {
   /// **'Passwords do not match'**
   String get errorPasswordsNotMatch;
 
-  /// Success message after registration
+  /// Success message after sending OTP / registration
   ///
   /// In en, this message translates to:
   /// **'OTP sent. Please check your email.'**
@@ -724,10 +964,10 @@ abstract class AppLocalizations {
   /// **'Registration timed out. Please try again.'**
   String get registrationTimedOut;
 
-  /// Error when email is taken
+  /// Error when email is already taken
   ///
   /// In en, this message translates to:
-  /// **'This email is already registered. Please Login or use Forgot Password.'**
+  /// **'This email is already registered. Please login or use Forgot Password.'**
   String get emailAlreadyRegistered;
 
   /// Rate limit error message
@@ -736,40 +976,34 @@ abstract class AppLocalizations {
   /// **'Too many attempts. Please wait a minute and try again.'**
   String get tooManyAttempts;
 
-  /// Search for Country
+  /// Error when platform does not support Google auth
   ///
   /// In en, this message translates to:
-  /// **'Search Country'**
-  String get searchCountryHint;
-
-  /// This platform does not support authenticate()
-  ///
-  /// In en, this message translates to:
-  /// **'This platform does not support authenticate()'**
+  /// **'Google Sign-In is not supported on this platform'**
   String get googleSignInNotSupported;
 
-  /// Error when Firebase returns no user after Google credential sign-in
+  /// Firebase returned no user after credential sign-in
   ///
   /// In en, this message translates to:
   /// **'Sign-in failed. No user account was created.'**
   String get firebaseUserNullAfterSignIn;
 
-  /// Error when Firebase ID token cannot be obtained
+  /// Error getting Firebase ID token
   ///
   /// In en, this message translates to:
-  /// **'Failed to retrieve authentication token.'**
+  /// **'Failed to get authentication token.'**
   String get failedToGetFirebaseIdToken;
 
   /// User-facing error when account is deleted/inactive after Google sign-in
   ///
   /// In en, this message translates to:
-  /// **'This account has been deleted or is inactive.\nPlease contact support to reactivate it or use a different email'**
+  /// **'This account has been deleted or deactivated.\nPlease contact support to reactivate or use a different email.'**
   String get accountDeletedOrInactiveContactSupport;
 
-  /// Technical error when backend token is null/empty or account is deleted
+  /// Technical error when backend token is null/empty or account deleted
   ///
   /// In en, this message translates to:
-  /// **'This account has been deleted or token missing.'**
+  /// **'This account has been deleted or token is missing.'**
   String get accountDeletedOrTokenMissing;
 
   /// User-friendly message when /login-google returns HTML instead of JSON
@@ -778,23 +1012,7 @@ abstract class AppLocalizations {
   /// **'Invalid response from server. Please try again later.'**
   String get nonJsonFromLoginGoogle;
 
-  /// Generic Google login failure with status code
-  ///
-  /// In en, this message translates to:
-  /// **'Google login failed (error {code}). Please try again.'**
-  String googleLoginFailedWithCode(Object code);
 
-  /// Fallback generic error for any Google Sign-In issue
-  ///
-  /// In en, this message translates to:
-  /// **'Google Sign-In failed. Please try again.'**
-  String get googleSignInFailedGeneric;
-
-  /// App bar title text shown on the Terms & Conditions screen in the My Account section
-  ///
-  /// In en, this message translates to:
-  /// **'Terms & Conditions'**
-  String get myAccountTermsAndConditionsAppBarTitle;
 
   /// Section title for the introduction
   ///
@@ -2056,6 +2274,7 @@ abstract class AppLocalizations {
   /// **'Akarat'**
   String get aboutUs_hero_brand_name;
 }
+
 
 class _AppLocalizationsDelegate
     extends LocalizationsDelegate<AppLocalizations> {

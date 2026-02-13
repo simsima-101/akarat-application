@@ -138,6 +138,9 @@ class AppLocalizationsAr extends AppLocalizations {
       'يرجى تسجيل الدخول لعرض العقارات التي تم التواصل بشأنها.';
 
   @override
+  String get loginToEditProfile => 'يرجى تسجيل الدخول لتعديل ملفك الشخصي.';
+
+  @override
   String get notLoggedInForAction => 'أنت غير مسجل الدخول';
 
   @override
@@ -182,9 +185,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get homeSortPriceHigh => 'السعر (مرتفع)';
-
-  @override
-  String get loginToEditProfile => 'يرجى تسجيل الدخول لتعديل ملفك الشخصي.';
 
   @override
   String get myAccountSupportTitle => 'اتصل بنا';
@@ -239,6 +239,134 @@ class AppLocalizationsAr extends AppLocalizations {
       'يرجى إدخال بريد إلكتروني صالح';
 
   @override
+  String get myAccountTermsAndConditionsAppBarTitle => 'الشروط والأحكام';
+
+  @override
+  String get findAgentTitle => 'ابحث عن وكيلي';
+
+  @override
+  String get agentsTab => 'الوكلاء';
+
+  @override
+  String get agencyTab => 'الشركات';
+
+  @override
+  String get searchAgentHint => 'أدخل الموقع أو اسم الوكيل';
+
+  @override
+  String get searchAgencyHint => 'أدخل الموقع أو اسم الشركة';
+
+  @override
+  String get featuredAgents => 'الوكلاء المميزون';
+
+  @override
+  String get featuredAgencies => 'الشركات المميزة';
+
+  @override
+  String get featuredAgentsDescription =>
+      'استكشف الوكلاء ذوي السجل المثبت في معدلات الرد العالية والإعلانات الأصلية.';
+
+  @override
+  String get featuredAgenciesDescription =>
+      'استكشف الشركات ذات السجل المثبت في معدلات الرد العالية والإعلانات الأصلية.';
+
+  @override
+  String get noAgentsFound => 'لم يتم العثور على وكلاء';
+
+  @override
+  String get noAgenciesFound => 'لم يتم العثور على شركات';
+
+  @override
+  String get noResults => 'لا توجد نتائج';
+
+  @override
+  String get resetFilters => 'إعادة تعيين';
+
+  @override
+  String get failedToLoadNationalities => 'فشل تحميل الجنسيات';
+
+  @override
+  String get failedToLoadLanguages => 'فشل تحميل اللغات';
+
+  @override
+  String get agentAboutTitle => 'حول';
+
+  @override
+  String get agentDescriptionLabel => 'الوصف';
+
+  @override
+  String get agentNoDescription => 'لا يوجد وصف متاح';
+
+  @override
+  String get agentExpertiseLabel => 'التخصص';
+
+  @override
+  String get agentServiceAreasLabel => 'مناطق الخدمة';
+
+  @override
+  String get agentLanguagesLabel => 'اللغات';
+
+  @override
+  String get agentExperienceLabel => 'الخبرة';
+
+  @override
+  String get agentExperienceYears => 'سنوات';
+
+  @override
+  String get agentBrnLabel => 'BRN';
+
+  @override
+  String get agentReviewsTitle => 'التعليقات';
+
+  @override
+  String get comingSoonTitle => 'قريباً';
+
+  @override
+  String get agentReviewsComingSoonMessage =>
+      'تعليقات الوكلاء ستكون متاحة هنا قريباً';
+
+  @override
+  String get agentContactEmail => 'البريد الإلكتروني';
+
+  @override
+  String get agentContactCall => 'اتصال';
+
+  @override
+  String get agentContactWhatsApp => 'واتساب';
+
+  @override
+  String get propertiesTab => 'العقارات';
+
+  @override
+  String get reviewTab => 'التعليقات';
+
+  @override
+  String get agentSpeaksLabel => 'يتحدث: ';
+
+  @override
+  String agentSaleTag(Object count) {
+    return '$count للبيع';
+  }
+
+  @override
+  String agentRentTag(Object count) {
+    return '$count للإيجار';
+  }
+
+  @override
+  String get notAvailable => 'غير متاح';
+
+  @override
+  String agentPropertiesCount(Object count) {
+    return '$count عقار';
+  }
+
+  @override
+  String propertiesCountLabel(Object count) {
+    return '$count عقار';
+  }
+
+  @override
   String get registerTitle => 'إنشاء حساب';
 
   @override
@@ -266,7 +394,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get confirmPasswordHint => 'تأكيد كلمة المرور';
 
   @override
-  String get atLeast8Characters => 'على الأقل 8 أحرف';
+  String get atLeast8Characters => '8 أحرف على الأقل';
 
   @override
   String get oneUppercaseLetter => 'حرف كبير واحد';
@@ -281,42 +409,45 @@ class AppLocalizationsAr extends AppLocalizations {
   String get registerButton => 'تسجيل';
 
   @override
-  String get bySigningUpAgreeTo => 'بالتسجيل أوافق على ';
+  String get bySigningUpAgreeTo => 'بالتسجيل فإنك توافق على ';
 
   @override
   String get and => ' و ';
 
   @override
-  String get alreadyHaveAccount => 'لديك حساب بالفعل؟  ';
+  String get alreadyHaveAccount => 'هل لديك حساب بالفعل؟ ';
 
   @override
-  String get loginHere => 'تسجيل الدخول هنا';
+  String get loginHere => 'سجل الدخول هنا';
 
   @override
-  String get errorFirstNameRequired => 'يرجى إدخال الاسم الأول';
+  String get searchCountryHint => 'ابحث عن دولة';
 
   @override
-  String get errorLastNameRequired => 'يرجى إدخال الاسم الأخير';
+  String get errorFirstNameRequired => 'يرجى إدخال اسمك الأول';
 
   @override
-  String get errorEmailRequired => 'يرجى إدخال البريد الإلكتروني';
+  String get errorLastNameRequired => 'يرجى إدخال اسمك الأخير';
+
+  @override
+  String get errorEmailRequired => 'يرجى إدخال بريدك الإلكتروني';
 
   @override
   String get errorInvalidEmail => 'بريد إلكتروني غير صالح';
 
   @override
-  String get errorPhoneRequired => 'يرجى إدخال رقم الهاتف';
+  String get errorPhoneRequired => 'يرجى إدخال رقم هاتفك';
 
   @override
-  String get errorInvalidPhoneDigits => 'أدخل رقمًا صالحًا';
+  String get errorInvalidPhoneDigits => 'يرجى إدخال رقم صحيح';
 
   @override
   String errorPhoneLength(Object length, Object countryCode) {
-    return 'يجب أن يتكون رقم الهاتف من $length أرقام لـ $countryCode';
+    return 'يجب أن يكون رقم الهاتف $length أرقام لـ $countryCode';
   }
 
   @override
-  String get errorPasswordRequired => 'يرجى إدخال كلمة المرور';
+  String get errorPasswordRequired => 'يرجى إدخال كلمة مرور';
 
   @override
   String get errorPasswordRequirements => 'كلمة المرور لا تلبي المتطلبات';
@@ -329,7 +460,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get otpSentMessage =>
-      'تم إرسال رمز التحقق. يرجى التحقق من بريدك الإلكتروني.';
+      'تم إرسال رمز OTP. يرجى التحقق من بريدك الإلكتروني.';
 
   @override
   String get registrationTimedOut =>
@@ -337,49 +468,37 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered =>
-      'هذا البريد الإلكتروني مسجل مسبقًا. يرجى تسجيل الدخول أو استخدام نسيت كلمة المرور.';
+      'هذا البريد الإلكتروني مسجل مسبقاً. يرجى تسجيل الدخول أو استخدام نسيت كلمة المرور.';
 
   @override
   String get tooManyAttempts =>
-      'محاولات كثيرة جدًا. يرجى الانتظار دقيقة وإعادة المحاولة.';
-
-  @override
-  String get searchCountryHint => 'ابحث عن الدولة';
+      'محاولات كثيرة جداً. يرجى الانتظار دقيقة وإعادة المحاولة.';
 
   @override
   String get googleSignInNotSupported =>
-      'هذه المنصة لا تدعم تسجيل الدخول عبر جوجل';
+      'تسجيل الدخول عبر جوجل غير مدعوم على هذه المنصة';
 
   @override
   String get firebaseUserNullAfterSignIn =>
       'فشل تسجيل الدخول. لم يتم إنشاء حساب مستخدم.';
 
   @override
-  String get failedToGetFirebaseIdToken => 'فشل في استرجاع رمز المصادقة.';
+  String get failedToGetFirebaseIdToken => 'فشل الحصول على رمز المصادقة.';
 
   @override
   String get accountDeletedOrInactiveContactSupport =>
-      'تم حذف هذا الحساب أو أنه غير نشط.\nيرجى التواصل مع الدعم لإعادة تفعيله أو استخدام بريد إلكتروني آخر';
+      'تم حذف هذا الحساب أو تعطيله.\nيرجى التواصل مع الدعم لإعادة التفعيل أو استخدام بريد إلكتروني آخر.';
 
   @override
   String get accountDeletedOrTokenMissing =>
-      'تم حذف هذا الحساب أو أن التوكن مفقود.';
+      'تم حذف هذا الحساب أو الرمز مفقود.';
 
   @override
   String get nonJsonFromLoginGoogle =>
-      'استجابة غير صالحة من الخادم. يرجى المحاولة لاحقًا.';
+      'تم استلام رد غير صالح من الخادم. يرجى المحاولة لاحقاً.';
 
-  @override
-  String googleLoginFailedWithCode(Object code) {
-    return 'فشل تسجيل الدخول عبر جوجل (خطأ $code). يرجى المحاولة مرة أخرى.';
-  }
 
-  @override
-  String get googleSignInFailedGeneric =>
-      'فشل تسجيل الدخول عبر جوجل. يرجى المحاولة مرة أخرى.';
 
-  @override
-  String get myAccountTermsAndConditionsAppBarTitle => 'الشروط والأحكام';
 
   @override
   String get myAccountTermsSectionIntroductionTitle => 'المقدمة';
