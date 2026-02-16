@@ -894,4 +894,264 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get myAccountPrivacyUpdatesContent =>
       'Bu Gizlilik Politikasını herhangi bir zamanda, önceden haber vermeksizin güncelleyebiliriz. Güncellemeler olduğunda bu sayfayı revize edeceğiz ve bazı durumlarda sizi doğrudan bilgilendirebiliriz (örneğin e-posta ile). Tüm değişiklikler yayınlandığı anda yürürlüğe girer.';
+
+  @override
+  String get aboutUs_hero_title => 'Akarat Hakkında';
+
+  @override
+  String get aboutUs_hero_subtitle =>
+      'Güven İçin İnşa Edildi. Gelecek İçin Tasarlandı.';
+
+  @override
+  String get aboutUs_intro_paragraph_1 =>
+      'Akarat sadece bir emlak platformu değil — BAE\'deki insanları mülklerle bağlamanın daha akıllı bir yoludur.';
+
+  @override
+  String get aboutUs_intro_paragraph_2 =>
+      'Doğrulanmış ilanları, güçlü teknolojiyi ve kullanıcı odaklı yaklaşımı bir araya getirerek herkesin güvenle başarılı olmasına yardımcı oluyoruz.';
+
+  @override
+  String get aboutUs_get_started_button => 'Başlayın';
+
+  @override
+  String get aboutUs_features_heading_part1 => 'Biz Ne';
+
+  @override
+  String get aboutUs_features_heading_part2 => 'Sunuyoruz';
+
+  @override
+  String get aboutUs_features_subtitle =>
+      'Emlak başarısı için özel olarak hazırlanmış akıllı araçlar ve doğrulanmış ilanlar.';
+
+  @override
+  String get aboutUs_feature_verified_listings_title => 'Doğrulanmış İlanlar';
+
+  @override
+  String get aboutUs_feature_verified_listings_desc =>
+      'Güven ve şeffaflık oluşturmak için %100 doğrulanmış mülkler.';
+
+  @override
+  String get aboutUs_feature_smart_filters_title => 'Akıllı Filtreler';
+
+  @override
+  String get aboutUs_feature_smart_filters_desc =>
+      'Aramanızı daraltmak için gelişmiş konum ve yaşam tarzı filtreleri.';
+
+  @override
+  String get aboutUs_feature_agent_dashboard_title => 'Danışman Paneli';
+
+  @override
+  String get aboutUs_feature_agent_dashboard_desc =>
+      'İlan görüntülemelerini, potansiyel müşterileri ve pazarlama performansını takip edin.';
+
+  @override
+  String get aboutUs_feature_offplan_projects_title =>
+      'Proje Halindeki Yatırımlar';
+
+  @override
+  String get aboutUs_feature_offplan_projects_desc =>
+      'Özel görünürlük ile gelecekteki gelişmeleri sergileyin.';
+
+  @override
+  String get aboutUs_feature_web_app_access_title => 'Web ve Uygulama Erişimi';
+
+  @override
+  String get aboutUs_feature_web_app_access_desc =>
+      'Çevrimiçi ve mobil cihazlarda kesintisiz tarama deneyimi.';
+
+  @override
+  String get aboutUs_feature_growth_tools_title => 'Büyüme Araçları';
+
+  @override
+  String get aboutUs_feature_growth_tools_desc =>
+      'Markanızı ve erişiminizi artırmak için pazarlama ve veri içgörüleri.';
+
+  @override
+  String get aboutUs_audience_heading => 'Hedef Kitlemiz';
+
+  @override
+  String get aboutUs_audience_subtitle =>
+      'Tüm emlak ekosistemine gururla hizmet ediyoruz';
+
+  @override
+  String get aboutUs_audience_pill_investors => '💼 Emlak Yatırımcıları';
+
+  @override
+  String get aboutUs_audience_pill_agents =>
+      '👨‍💼 Emlak Danışmanları & Ajanslar';
+
+  @override
+  String get aboutUs_audience_pill_relocation => '🚚 Taşınma Hizmetleri';
+
+  @override
+  String get aboutUs_audience_pill_developers =>
+      '🏗️ Geliştiriciler & Aracılar';
+
+  @override
+  String get aboutUs_audience_pill_buyers => '🏠 Ev Alıcıları & Kiracılar';
+
+  @override
+  String get aboutUs_story_heading => 'Hikayemiz';
+
+  @override
+  String get aboutUs_story_main_title => 'Akarat\'ı tek bir amaçla başlattık';
+
+  @override
+  String get aboutUs_story_paragraph_1 =>
+      'Gerçek ilanlar, gerçek araçlar ve gerçek sonuçlar sunarak emlak arayışı ve pazarlamadaki hayal kırıklığını ortadan kaldırmak.';
+
+  @override
+  String get aboutUs_story_paragraph_2 =>
+      'Netlik ve güven getirme misyonu olarak başlayan şey, BAE genelinde güvenilen tam özellikli bir platforma dönüştü.';
+
+  @override
+  String get aboutUs_story_stat_clients_number => '600 +';
+
+  @override
+  String get aboutUs_story_stat_clients_label => 'Uluslararası Müşteri';
+
+  @override
+  String get aboutUs_story_stat_offices_number => '40 +';
+
+  @override
+  String get aboutUs_story_stat_offices_label => 'Dünya Çapında Ofis';
+
+  @override
+  String get aboutUs_explore_heading_part1 =>
+      'Akarat\'ın En İyi Özelliklerini Keşfedin';
+
+  @override
+  String get aboutUs_services_heading => 'Hizmetlerimiz';
+
+  @override
+  String get aboutUs_services_subheading => 'Kime Hizmet Veriyoruz';
+
+  @override
+  String get aboutUs_services_intro =>
+      'Doğruluğu ve güveni sağlamak için gerçek zamanlı güncellenen doğrulanmış ilanlarımız aracılığıyla ideal evinizi bulun.';
+
+  @override
+  String get aboutUs_explore_verified_listings_title => 'Doğrulanmış İlanlar';
+
+  @override
+  String get aboutUs_explore_verified_listings_desc =>
+      'Her ilan, gerçeklik, fiyat doğruluğu ve müsaitlik açısından manuel olarak incelenir ve doğrulanır.';
+
+  @override
+  String get aboutUs_explore_smart_location_title => 'Akıllı Konum Arama';
+
+  @override
+  String get aboutUs_explore_smart_location_desc =>
+      'Akıllı filtrelerimizle bölge, topluluk, simge yapı veya yaşam tarzı tercihine göre mülk keşfedin.';
+
+  @override
+  String get aboutUs_explore_agent_dashboard_title => 'Danışman Paneli';
+
+  @override
+  String get aboutUs_explore_agent_dashboard_desc =>
+      'Ajanslar ve danışmanlar potansiyel müşterileri, görüntülemeleri ve mülk performansını takip etmek için özel bir arka uç elde eder.';
+
+  @override
+  String get aboutUs_service_card_buyers_title => 'Ev Alıcıları & Kiracılar';
+
+  @override
+  String get aboutUs_service_card_buyers_desc =>
+      'Gerçek zamanlı güncellemelerle doğrulanmış ilanları keşfedin';
+
+  @override
+  String get aboutUs_service_card_agents_title =>
+      'Emlak Danışmanları & Ajanslar';
+
+  @override
+  String get aboutUs_service_card_agents_desc =>
+      'Potansiyel müşteri kazanın, ilanları tanıtın ve markanızı oluşturun';
+
+  @override
+  String get aboutUs_service_card_developers_title => 'Geliştiriciler';
+
+  @override
+  String get aboutUs_service_card_developers_desc =>
+      'Zengin medya ve öne çıkan promosyonlarla proje halindeki mülkleri sergileyin';
+
+  @override
+  String get aboutUs_service_card_investors_title => 'Yatırımcılar';
+
+  @override
+  String get aboutUs_service_card_investors_desc =>
+      'Yeni projeleri ve kârlı fırsatları keşfedin';
+
+  @override
+  String get aboutUs_service_card_providers_title => 'Hizmet Sağlayıcılar';
+
+  @override
+  String get aboutUs_service_card_providers_desc =>
+      'Taşınma, dekorasyon, mortgage ve hukuki hizmetleri tanıtın';
+
+  @override
+  String get aboutUs_footer_email => 'info@akarat.com';
+
+  @override
+  String get aboutUs_start_project_button => 'Bir Projeye Başla';
+
+  @override
+  String get aboutUs_login_dialog_title => 'Giriş Gereklidir';
+
+  @override
+  String get aboutUs_login_dialog_message =>
+      'Favorilere erişmek için lütfen giriş yapın.';
+
+  @override
+  String get aboutUs_login_dialog_cancel => 'İptal';
+
+  @override
+  String get aboutUs_login_dialog_login => 'Giriş Yap';
+
+  @override
+  String get aboutUs_services_whoWeServe_title => 'Kime Hizmet Veriyoruz';
+
+  @override
+  String get aboutUs_explore_verified_title => 'Doğrulanmış İlanlar';
+
+  @override
+  String get aboutUs_explore_verified_desc =>
+      'Her ilan, gerçeklik, fiyat doğruluğu ve müsaitlik açısından manuel olarak incelenir ve doğrulanır.';
+
+  @override
+  String get aboutUs_service_buyers_renters_title => 'Ev Alıcıları & Kiracılar';
+
+  @override
+  String get aboutUs_service_buyers_renters_desc =>
+      'Gerçek zamanlı güncellemelerle doğrulanmış ilanları keşfedin';
+
+  @override
+  String get aboutUs_service_agents_agencies_title =>
+      'Emlak Danışmanları & Ajanslar';
+
+  @override
+  String get aboutUs_service_agents_agencies_desc =>
+      'Potansiyel müşteri kazanın, ilanları tanıtın ve markanızı oluşturun';
+
+  @override
+  String get aboutUs_service_developers_title => 'Geliştiriciler';
+
+  @override
+  String get aboutUs_service_developers_desc =>
+      'Zengin medya ve öne çıkan promosyonlarla proje halindeki mülkleri sergileyin';
+
+  @override
+  String get aboutUs_service_investors_title => 'Yatırımcılar';
+
+  @override
+  String get aboutUs_service_investors_desc =>
+      'Yeni projeleri ve kârlı fırsatları keşfedin';
+
+  @override
+  String get aboutUs_service_providers_title => 'Hizmet Sağlayıcılar';
+
+  @override
+  String get aboutUs_service_providers_desc =>
+      'Taşınma, dekorasyon, mortgage ve hukuki hizmetleri tanıtın';
+
+  @override
+  String get aboutUs_hero_brand_name => 'Akarat';
 }

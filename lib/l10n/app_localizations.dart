@@ -1605,6 +1605,456 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We may update this Privacy Policy at any time, with or without prior notice. When updates occur, we will revise this page and may notify you directly in certain cases (for example, by email). All changes become effective immediately once posted.'**
   String get myAccountPrivacyUpdatesContent;
+
+  /// Main large heading at the top of the page
+  ///
+  /// In en, this message translates to:
+  /// **'About Akarat'**
+  String get aboutUs_hero_title;
+
+  /// Tagline / subtitle shown right below the hero title (usually in red)
+  ///
+  /// In en, this message translates to:
+  /// **'Built for Trust. Designed for the Future.'**
+  String get aboutUs_hero_subtitle;
+
+  /// First paragraph in the introduction section
+  ///
+  /// In en, this message translates to:
+  /// **'Akarat is not just a real estate platform — it\'s a smarter way to connect people with properties in the UAE.'**
+  String get aboutUs_intro_paragraph_1;
+
+  /// Second paragraph in the introduction section
+  ///
+  /// In en, this message translates to:
+  /// **'We bring together verified listings, powerful tech, and a user-first approach to help everyone succeed with confidence.'**
+  String get aboutUs_intro_paragraph_2;
+
+  /// Label on the prominent blue button after the main image
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get aboutUs_get_started_button;
+
+  /// First part of 'What We Offer' heading (black)
+  ///
+  /// In en, this message translates to:
+  /// **'What We'**
+  String get aboutUs_features_heading_part1;
+
+  /// Second part of 'What We Offer' heading (red)
+  ///
+  /// In en, this message translates to:
+  /// **'Offer'**
+  String get aboutUs_features_heading_part2;
+
+  /// Small description under the 'What We Offer' heading
+  ///
+  /// In en, this message translates to:
+  /// **'Smart tools and verified listings tailored for real estate success.'**
+  String get aboutUs_features_subtitle;
+
+  /// Title of Verified Listings feature card in grid
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Listings'**
+  String get aboutUs_feature_verified_listings_title;
+
+  /// Short description for Verified Listings feature card
+  ///
+  /// In en, this message translates to:
+  /// **'100% verified properties to build trust and transparency.'**
+  String get aboutUs_feature_verified_listings_desc;
+
+  /// Title of Smart Filters feature card in grid
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Filters'**
+  String get aboutUs_feature_smart_filters_title;
+
+  /// Short description for Smart Filters feature card
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced location & lifestyle filters to refine your search.'**
+  String get aboutUs_feature_smart_filters_desc;
+
+  /// Title of Agent Dashboard feature card in grid
+  ///
+  /// In en, this message translates to:
+  /// **'Agent Dashboard'**
+  String get aboutUs_feature_agent_dashboard_title;
+
+  /// Short description for Agent Dashboard feature card
+  ///
+  /// In en, this message translates to:
+  /// **'Track listing views, leads, and marketing performance.'**
+  String get aboutUs_feature_agent_dashboard_desc;
+
+  /// Title of Off-plan Projects feature card in grid
+  ///
+  /// In en, this message translates to:
+  /// **'Off-plan Projects'**
+  String get aboutUs_feature_offplan_projects_title;
+
+  /// Short description for Off-plan Projects feature card
+  ///
+  /// In en, this message translates to:
+  /// **'Showcase upcoming developments with dedicated visibility.'**
+  String get aboutUs_feature_offplan_projects_desc;
+
+  /// Title of Web & App Access feature card in grid
+  ///
+  /// In en, this message translates to:
+  /// **'Web & App Access'**
+  String get aboutUs_feature_web_app_access_title;
+
+  /// Short description for Web & App Access feature card
+  ///
+  /// In en, this message translates to:
+  /// **'Seamless browsing experience online and via mobile.'**
+  String get aboutUs_feature_web_app_access_desc;
+
+  /// Title of Growth Tools feature card in grid
+  ///
+  /// In en, this message translates to:
+  /// **'Growth Tools'**
+  String get aboutUs_feature_growth_tools_title;
+
+  /// Short description for Growth Tools feature card
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing and data insights to boost your brand and reach.'**
+  String get aboutUs_feature_growth_tools_desc;
+
+  /// Main heading of the audience section
+  ///
+  /// In en, this message translates to:
+  /// **'Our Audience'**
+  String get aboutUs_audience_heading;
+
+  /// Subtitle under Our Audience heading
+  ///
+  /// In en, this message translates to:
+  /// **'We proudly serve the full real estate ecosystem'**
+  String get aboutUs_audience_subtitle;
+
+  /// Pill / chip for property investors
+  ///
+  /// In en, this message translates to:
+  /// **'💼 Property Investors'**
+  String get aboutUs_audience_pill_investors;
+
+  /// Pill / chip for agents and agencies
+  ///
+  /// In en, this message translates to:
+  /// **'👨‍💼 Agents & Agencies'**
+  String get aboutUs_audience_pill_agents;
+
+  /// Pill / chip for relocation services
+  ///
+  /// In en, this message translates to:
+  /// **'🚚 Relocation Services'**
+  String get aboutUs_audience_pill_relocation;
+
+  /// Pill / chip for developers and brokers
+  ///
+  /// In en, this message translates to:
+  /// **'🏗️ Developers & Brokers'**
+  String get aboutUs_audience_pill_developers;
+
+  /// Pill / chip for home buyers and tenants
+  ///
+  /// In en, this message translates to:
+  /// **'🏠 Home Buyers & Tenants'**
+  String get aboutUs_audience_pill_buyers;
+
+  /// Red title above the Our Story section
+  ///
+  /// In en, this message translates to:
+  /// **'Our Story'**
+  String get aboutUs_story_heading;
+
+  /// Large centered title in Our Story section
+  ///
+  /// In en, this message translates to:
+  /// **'We started Akarat with one goal'**
+  String get aboutUs_story_main_title;
+
+  /// First paragraph in Our Story
+  ///
+  /// In en, this message translates to:
+  /// **'To remove the frustration from property search and marketing by delivering real listings, real tools, and real results.'**
+  String get aboutUs_story_paragraph_1;
+
+  /// Second paragraph in Our Story
+  ///
+  /// In en, this message translates to:
+  /// **'What began as a mission to bring clarity and trust to the real estate market has grown into a fully-featured platform trusted across the UAE.'**
+  String get aboutUs_story_paragraph_2;
+
+  /// Big number for international clients statistic
+  ///
+  /// In en, this message translates to:
+  /// **'600 +'**
+  String get aboutUs_story_stat_clients_number;
+
+  /// Label below clients statistic number
+  ///
+  /// In en, this message translates to:
+  /// **'International clients'**
+  String get aboutUs_story_stat_clients_label;
+
+  /// Big number for offices statistic
+  ///
+  /// In en, this message translates to:
+  /// **'40 +'**
+  String get aboutUs_story_stat_offices_number;
+
+  /// Label below offices statistic number
+  ///
+  /// In en, this message translates to:
+  /// **'Offices around the world'**
+  String get aboutUs_story_stat_offices_label;
+
+  /// First part of rich text heading before explore cards
+  ///
+  /// In en, this message translates to:
+  /// **'Explore the Top Features of'**
+  String get aboutUs_explore_heading_part1;
+
+  /// Red title above Who We Serve section
+  ///
+  /// In en, this message translates to:
+  /// **'Our services'**
+  String get aboutUs_services_heading;
+
+  /// Large title above service cards
+  ///
+  /// In en, this message translates to:
+  /// **'Who We Serve'**
+  String get aboutUs_services_subheading;
+
+  /// Intro text before the list of service cards
+  ///
+  /// In en, this message translates to:
+  /// **'Find your ideal home through our verified listings, updated in real time to ensure accuracy and trust.'**
+  String get aboutUs_services_intro;
+
+  /// Title of first longer explore card
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Listings'**
+  String get aboutUs_explore_verified_listings_title;
+
+  /// Description of first longer explore card
+  ///
+  /// In en, this message translates to:
+  /// **'Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.'**
+  String get aboutUs_explore_verified_listings_desc;
+
+  /// Title of second explore card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Location Search'**
+  String get aboutUs_explore_smart_location_title;
+
+  /// Description of second explore card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Discover properties by area, community, landmark, or lifestyle preference using our intelligent filters.'**
+  String get aboutUs_explore_smart_location_desc;
+
+  /// Title of third explore card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Agent Dashboard'**
+  String get aboutUs_explore_agent_dashboard_title;
+
+  /// Description of third explore card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Agencies and agents get a dedicated backend to track leads, views, and property performance.'**
+  String get aboutUs_explore_agent_dashboard_desc;
+
+  /// Title of first animated service card
+  ///
+  /// In en, this message translates to:
+  /// **'Home Buyers & Renters'**
+  String get aboutUs_service_card_buyers_title;
+
+  /// Description of first service card
+  ///
+  /// In en, this message translates to:
+  /// **'Explore verified listings with real-time updates'**
+  String get aboutUs_service_card_buyers_desc;
+
+  /// Title of second animated service card
+  ///
+  /// In en, this message translates to:
+  /// **'Real Estate Agents & Agencies'**
+  String get aboutUs_service_card_agents_title;
+
+  /// Description of second service card
+  ///
+  /// In en, this message translates to:
+  /// **'Get leads, promote listings, and build your brand'**
+  String get aboutUs_service_card_agents_desc;
+
+  /// Title of third animated service card
+  ///
+  /// In en, this message translates to:
+  /// **'Developers'**
+  String get aboutUs_service_card_developers_title;
+
+  /// Description of third service card
+  ///
+  /// In en, this message translates to:
+  /// **'Showcase off-plan properties with rich media and featured promotions'**
+  String get aboutUs_service_card_developers_desc;
+
+  /// Title of fourth animated service card
+  ///
+  /// In en, this message translates to:
+  /// **'Investors'**
+  String get aboutUs_service_card_investors_title;
+
+  /// Description of fourth service card
+  ///
+  /// In en, this message translates to:
+  /// **'Discover new projects and profitable opportunities'**
+  String get aboutUs_service_card_investors_desc;
+
+  /// Title of fifth animated service card
+  ///
+  /// In en, this message translates to:
+  /// **'Service Providers'**
+  String get aboutUs_service_card_providers_title;
+
+  /// Description of fifth service card
+  ///
+  /// In en, this message translates to:
+  /// **'Advertise moving, interior, mortgage & legal services'**
+  String get aboutUs_service_card_providers_desc;
+
+  /// Email address shown in the dark footer at the bottom
+  ///
+  /// In en, this message translates to:
+  /// **'info@akarat.com'**
+  String get aboutUs_footer_email;
+
+  /// Label on red button inside explore cards
+  ///
+  /// In en, this message translates to:
+  /// **'Start a project'**
+  String get aboutUs_start_project_button;
+
+  /// Title of dialog shown when tapping favorites without login
+  ///
+  /// In en, this message translates to:
+  /// **'Login Required'**
+  String get aboutUs_login_dialog_title;
+
+  /// Main message in the login required dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to access favorites.'**
+  String get aboutUs_login_dialog_message;
+
+  /// Cancel button in login dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get aboutUs_login_dialog_cancel;
+
+  /// Login button in login dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get aboutUs_login_dialog_login;
+
+  /// Large bold title text above the service cards section in About Us screen, reads 'Who We Serve'
+  ///
+  /// In en, this message translates to:
+  /// **'Who We Serve'**
+  String get aboutUs_services_whoWeServe_title;
+
+  /// Title of first explore card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Listings'**
+  String get aboutUs_explore_verified_title;
+
+  /// Description of first explore card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.'**
+  String get aboutUs_explore_verified_desc;
+
+  /// Title of first service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Home Buyers & Renters'**
+  String get aboutUs_service_buyers_renters_title;
+
+  /// Description of first service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Explore verified listings with real-time updates'**
+  String get aboutUs_service_buyers_renters_desc;
+
+  /// Title of second service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Real Estate Agents & Agencies'**
+  String get aboutUs_service_agents_agencies_title;
+
+  /// Description of second service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Get leads, promote listings, and build your brand'**
+  String get aboutUs_service_agents_agencies_desc;
+
+  /// Title of third service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Developers'**
+  String get aboutUs_service_developers_title;
+
+  /// Description of third service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Showcase off-plan properties with rich media and featured promotions'**
+  String get aboutUs_service_developers_desc;
+
+  /// Title of fourth service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Investors'**
+  String get aboutUs_service_investors_title;
+
+  /// Description of fourth service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Discover new projects and profitable opportunities'**
+  String get aboutUs_service_investors_desc;
+
+  /// Title of fifth service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Service Providers'**
+  String get aboutUs_service_providers_title;
+
+  /// Description of fifth service card in About Us screen
+  ///
+  /// In en, this message translates to:
+  /// **'Advertise moving, interior, mortgage & legal services'**
+  String get aboutUs_service_providers_desc;
+
+  /// Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)
+  ///
+  /// In en, this message translates to:
+  /// **'Akarat'**
+  String get aboutUs_hero_brand_name;
 }
 
 class _AppLocalizationsDelegate

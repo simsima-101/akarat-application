@@ -1061,7 +1061,344 @@
 "myAccountPrivacyUpdatesContent": "قد نحدث سياسة الخصوصية هذه في أي وقت، مع أو بدون إشعار مسبق. عند حدوث تحديثات، سنراجع هذه الصفحة وقد نُخطرك مباشرة في حالات معينة (مثلاً عبر البريد الإلكتروني). تصبح جميع التغييرات سارية المفعول فور نشرها.",
 "@myAccountPrivacyUpdatesContent": {
   "description": "Text about policy change procedure"
-}
+},
+
+"@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
+
+
+"aboutUs_appBar_title": "من نحن",
+  "@aboutUs_appBar_title": {
+    "description": "Title shown in the AppBar at the top of the About Us screen"
+  },
+  "aboutUs_hero_title": "عن أكارت",
+  "@aboutUs_hero_title": {
+    "description": "Main large heading at the top of the page"
+  },
+  "aboutUs_hero_subtitle": "مبني على الثقة. مصمم للمستقبل.",
+  "@aboutUs_hero_subtitle": {
+    "description": "Tagline / subtitle shown right below the hero title (usually in red)"
+  },
+  "aboutUs_intro_paragraph_1": "أكارت ليست مجرد منصة عقارية — إنها طريقة أذكى لربط الناس بالعقارات في الإمارات.",
+  "@aboutUs_intro_paragraph_1": {
+    "description": "First paragraph in the introduction section"
+  },
+  "aboutUs_intro_paragraph_2": "نجمع بين القوائم الموثقة والتقنية القوية ونهج يركز على المستخدم لمساعدة الجميع على النجاح بثقة.",
+  "@aboutUs_intro_paragraph_2": {
+    "description": "Second paragraph in the introduction section"
+  },
+  "aboutUs_get_started_button": "ابدأ الآن",
+  "@aboutUs_get_started_button": {
+    "description": "Label on the prominent blue button after the main image"
+  },
+  "aboutUs_features_heading_part1": "ما الذي",
+  "@aboutUs_features_heading_part1": {
+    "description": "First part of 'What We Offer' heading (black)"
+  },
+  "aboutUs_features_heading_part2": "نقدمه",
+  "@aboutUs_features_heading_part2": {
+    "description": "Second part of 'What We Offer' heading (red)"
+  },
+  "aboutUs_features_subtitle": "أدوات ذكية وقوائم موثقة مصممة خصيصًا للنجاح العقاري.",
+  "@aboutUs_features_subtitle": {
+    "description": "Small description under the 'What We Offer' heading"
+  },
+  "aboutUs_feature_verified_listings_title": "إعلانات موثقة",
+  "@aboutUs_feature_verified_listings_title": {
+    "description": "Title of Verified Listings feature card in grid"
+  },
+  "aboutUs_feature_verified_listings_desc": "عقارات موثقة 100% لبناء الثقة والشفافية.",
+  "@aboutUs_feature_verified_listings_desc": {
+    "description": "Short description for Verified Listings feature card"
+  },
+  "aboutUs_feature_smart_filters_title": "فلاتر ذكية",
+  "@aboutUs_feature_smart_filters_title": {
+    "description": "Title of Smart Filters feature card in grid"
+  },
+  "aboutUs_feature_smart_filters_desc": "فلاتر متقدمة للموقع وأسلوب الحياة لتضييق نطاق البحث.",
+  "@aboutUs_feature_smart_filters_desc": {
+    "description": "Short description for Smart Filters feature card"
+  },
+  "aboutUs_feature_agent_dashboard_title": "لوحة تحكم الوكيل",
+  "@aboutUs_feature_agent_dashboard_title": {
+    "description": "Title of Agent Dashboard feature card in grid"
+  },
+  "aboutUs_feature_agent_dashboard_desc": "تتبع مشاهدات الإعلانات والعملاء المحتملين وأداء التسويق.",
+  "@aboutUs_feature_agent_dashboard_desc": {
+    "description": "Short description for Agent Dashboard feature card"
+  },
+  "aboutUs_feature_offplan_projects_title": "مشاريع على الخارطة",
+  "@aboutUs_feature_offplan_projects_title": {
+    "description": "Title of Off-plan Projects feature card in grid"
+  },
+  "aboutUs_feature_offplan_projects_desc": "عرض التطورات القادمة مع رؤية مخصصة.",
+  "@aboutUs_feature_offplan_projects_desc": {
+    "description": "Short description for Off-plan Projects feature card"
+  },
+  "aboutUs_feature_web_app_access_title": "الوصول عبر الويب والتطبيق",
+  "@aboutUs_feature_web_app_access_title": {
+    "description": "Title of Web & App Access feature card in grid"
+  },
+  "aboutUs_feature_web_app_access_desc": "تجربة تصفح سلسة عبر الإنترنت وعبر الهاتف.",
+  "@aboutUs_feature_web_app_access_desc": {
+    "description": "Short description for Web & App Access feature card"
+  },
+  "aboutUs_feature_growth_tools_title": "أدوات النمو",
+  "@aboutUs_feature_growth_tools_title": {
+    "description": "Title of Growth Tools feature card in grid"
+  },
+  "aboutUs_feature_growth_tools_desc": "رؤى تسويقية وبيانات لتعزيز علامتك التجارية والوصول.",
+  "@aboutUs_feature_growth_tools_desc": {
+    "description": "Short description for Growth Tools feature card"
+  },
+  "aboutUs_audience_heading": "جمهورنا",
+  "@aboutUs_audience_heading": {
+    "description": "Main heading of the audience section"
+  },
+  "aboutUs_audience_subtitle": "نخدم بفخر منظومة العقارات الكاملة",
+  "@aboutUs_audience_subtitle": {
+    "description": "Subtitle under Our Audience heading"
+  },
+  "aboutUs_audience_pill_investors": "💼 المستثمرون العقاريون",
+  "@aboutUs_audience_pill_investors": {
+    "description": "Pill / chip for property investors"
+  },
+  "aboutUs_audience_pill_agents": "👨‍💼 الوكلاء والشركات",
+  "@aboutUs_audience_pill_agents": {
+    "description": "Pill / chip for agents and agencies"
+  },
+  "aboutUs_audience_pill_relocation": "🚚 خدمات الانتقال",
+  "@aboutUs_audience_pill_relocation": {
+    "description": "Pill / chip for relocation services"
+  },
+  "aboutUs_audience_pill_developers": "🏗️ المطورون والوسطاء",
+  "@aboutUs_audience_pill_developers": {
+    "description": "Pill / chip for developers and brokers"
+  },
+  "aboutUs_audience_pill_buyers": "🏠 المشترون والمستأجرون",
+  "@aboutUs_audience_pill_buyers": {
+    "description": "Pill / chip for home buyers and tenants"
+  },
+  "aboutUs_story_heading": "قصتنا",
+  "@aboutUs_story_heading": {
+    "description": "Red title above the Our Story section"
+  },
+  "aboutUs_story_main_title": "بدأنا أكارت بهدف واحد",
+  "@aboutUs_story_main_title": {
+    "description": "Large centered title in Our Story section"
+  },
+  "aboutUs_story_paragraph_1": "لإزالة الإحباط من البحث العقاري والتسويق من خلال تقديم إعلانات حقيقية وأدوات حقيقية ونتائج حقيقية.",
+  "@aboutUs_story_paragraph_1": {
+    "description": "First paragraph in Our Story"
+  },
+  "aboutUs_story_paragraph_2": "ما بدأ كمهمة لجلب الوضوح والثقة إلى سوق العقارات نما ليصبح منصة كاملة المواصفات موثوقة في جميع أنحاء الإمارات.",
+  "@aboutUs_story_paragraph_2": {
+    "description": "Second paragraph in Our Story"
+  },
+  "aboutUs_story_stat_clients_number": "أكثر من 600",
+  "@aboutUs_story_stat_clients_number": {
+    "description": "Big number for international clients statistic"
+  },
+  "aboutUs_story_stat_clients_label": "عملاء دوليون",
+  "@aboutUs_story_stat_clients_label": {
+    "description": "Label below clients statistic number"
+  },
+  "aboutUs_story_stat_offices_number": "أكثر من 40",
+  "@aboutUs_story_stat_offices_number": {
+    "description": "Big number for offices statistic"
+  },
+  "aboutUs_story_stat_offices_label": "مكتب حول العالم",
+  "@aboutUs_story_stat_offices_label": {
+    "description": "Label below offices statistic number"
+  },
+  "aboutUs_explore_heading_part1": "استكشف أبرز مميزات",
+  "@aboutUs_explore_heading_part1": {
+    "description": "First part of rich text heading before explore cards"
+  },
+  "aboutUs_services_heading": "خدماتنا",
+  "@aboutUs_services_heading": {
+    "description": "Red title above Who We Serve section"
+  },
+  "aboutUs_services_subheading": "من نخدم",
+  "@aboutUs_services_subheading": {
+    "description": "Large title above service cards"
+  },
+  "aboutUs_services_intro": "ابحث عن منزلك المثالي من خلال إعلاناتنا الموثقة المحدثة في الوقت الفعلي لضمان الدقة والثقة.",
+  "@aboutUs_services_intro": {
+    "description": "Intro text before the list of service cards"
+  },
+  "aboutUs_explore_verified_listings_title": "إعلانات موثقة",
+  "@aboutUs_explore_verified_listings_title": {
+    "description": "Title of first longer explore card"
+  },
+  "aboutUs_explore_verified_listings_desc": "يتم مراجعة كل إعلان يدويًا والتحقق من صحته ودقة السعر وتوافره.",
+  "@aboutUs_explore_verified_listings_desc": {
+    "description": "Description of first longer explore card"
+  },
+  "aboutUs_explore_smart_location_title": "بحث الموقع الذكي",
+  "@aboutUs_explore_smart_location_title": {
+    "description": "Title of second longer explore card"
+  },
+  "aboutUs_explore_smart_location_desc": "اكتشف العقارات حسب المنطقة أو المجتمع أو المعلم أو تفضيل نمط الحياة باستخدام فلاترنا الذكية.",
+  "@aboutUs_explore_smart_location_desc": {
+    "description": "Description of second longer explore card"
+  },
+  "aboutUs_explore_agent_dashboard_title": "لوحة تحكم الوكيل",
+  "@aboutUs_explore_agent_dashboard_title": {
+    "description": "Title of third longer explore card"
+  },
+  "aboutUs_explore_agent_dashboard_desc": "تحصل الوكالات والوكلاء على واجهة خلفية مخصصة لتتبع العملاء المحتملين والمشاهدات وأداء العقار.",
+  "@aboutUs_explore_agent_dashboard_desc": {
+    "description": "Description of third longer explore card"
+  },
+  "aboutUs_service_card_buyers_title": "مشتري المنازل والمستأجرون",
+  "@aboutUs_service_card_buyers_title": {
+    "description": "Title of first animated service card"
+  },
+  "aboutUs_service_card_buyers_desc": "استكشف الإعلانات الموثقة مع تحديثات في الوقت الفعلي",
+  "@aboutUs_service_card_buyers_desc": {
+    "description": "Description of first service card"
+  },
+  "aboutUs_service_card_agents_title": "الوكلاء العقاريون والشركات",
+  "@aboutUs_service_card_agents_title": {
+    "description": "Title of second animated service card"
+  },
+  "aboutUs_service_card_agents_desc": "احصل على عملاء محتملين، روّج الإعلانات، وابنِ علامتك التجارية",
+  "@aboutUs_service_card_agents_desc": {
+    "description": "Description of second service card"
+  },
+  "aboutUs_service_card_developers_title": "المطورون",
+  "@aboutUs_service_card_developers_title": {
+    "description": "Title of third animated service card"
+  },
+  "aboutUs_service_card_developers_desc": "اعرض المشاريع على الخارطة بوسائط غنية وترويج مميز",
+  "@aboutUs_service_card_developers_desc": {
+    "description": "Description of third service card"
+  },
+  "aboutUs_service_card_investors_title": "المستثمرون",
+  "@aboutUs_service_card_investors_title": {
+    "description": "Title of fourth animated service card"
+  },
+  "aboutUs_service_card_investors_desc": "اكتشف المشاريع الجديدة والفرص المربحة",
+  "@aboutUs_service_card_investors_desc": {
+    "description": "Description of fourth service card"
+  },
+  "aboutUs_service_card_providers_title": "مقدمو الخدمات",
+  "@aboutUs_service_card_providers_title": {
+    "description": "Title of fifth animated service card"
+  },
+  "aboutUs_service_card_providers_desc": "أعلن عن خدمات النقل والديكور والرهن العقاري والخدمات القانونية",
+  "@aboutUs_service_card_providers_desc": {
+    "description": "Description of fifth service card"
+  },
+  "aboutUs_footer_email": "info@akarat.com",
+  "@aboutUs_footer_email": {
+    "description": "Email address shown in the dark footer at the bottom"
+  },
+  "aboutUs_start_project_button": "ابدأ مشروعًا",
+  "@aboutUs_start_project_button": {
+    "description": "Label on red button inside explore cards"
+  },
+  "aboutUs_login_dialog_title": "يتطلب تسجيل الدخول",
+  "@aboutUs_login_dialog_title": {
+    "description": "Title of dialog shown when tapping favorites without login"
+  },
+  "aboutUs_login_dialog_message": "يرجى تسجيل الدخول للوصول إلى المفضلة.",
+  "@aboutUs_login_dialog_message": {
+    "description": "Main message in the login required dialog"
+  },
+  "aboutUs_login_dialog_cancel": "إلغاء",
+  "@aboutUs_login_dialog_cancel": {
+    "description": "Cancel button in login dialog"
+  },
+  "aboutUs_login_dialog_login": "تسجيل الدخول",
+  "@aboutUs_login_dialog_login": {
+    "description": "Login button in login dialog"
+  },
+    "aboutUs_services_whoWeServe_title": "من نخدم",
+    "@aboutUs_services_whoWeServe_title": {
+      "description": "Large bold title text above the service cards section in About Us screen, reads 'Who We Serve'"
+    },
+
+      "aboutUs_explore_verified_title": "إعلانات موثقة",
+      "@aboutUs_explore_verified_title": {
+        "description": "Title of first explore card in About Us screen"
+      },
+      "aboutUs_explore_verified_desc": "يتم مراجعة كل إعلان يدويًا والتحقق من صحته ودقة السعر وتوافره.",
+      "@aboutUs_explore_verified_desc": {
+        "description": "Description of first explore card in About Us screen"
+      },
+
+      "aboutUs_explore_smart_location_title": "بحث الموقع الذكي",
+      "@aboutUs_explore_smart_location_title": {
+        "description": "Title of second explore card in About Us screen"
+      },
+      "aboutUs_explore_smart_location_desc": "اكتشف العقارات حسب المنطقة أو المجتمع أو المعلم أو تفضيل نمط الحياة باستخدام فلاترنا الذكية.",
+      "@aboutUs_explore_smart_location_desc": {
+        "description": "Description of second explore card in About Us screen"
+      },
+
+      "aboutUs_explore_agent_dashboard_title": "لوحة تحكم الوكيل",
+      "@aboutUs_explore_agent_dashboard_title": {
+        "description": "Title of third explore card in About Us screen"
+      },
+      "aboutUs_explore_agent_dashboard_desc": "تحصل الوكالات والوكلاء على واجهة خلفية مخصصة لتتبع العملاء المحتملين والمشاهدات وأداء العقار.",
+      "@aboutUs_explore_agent_dashboard_desc": {
+        "description": "Description of third explore card in About Us screen"
+      },
+
+      "aboutUs_service_buyers_renters_title": "مشتري المنازل والمستأجرون",
+      "@aboutUs_service_buyers_renters_title": {
+        "description": "Title of first service card in About Us screen"
+      },
+      "aboutUs_service_buyers_renters_desc": "استكشف الإعلانات الموثقة مع تحديثات في الوقت الفعلي",
+      "@aboutUs_service_buyers_renters_desc": {
+        "description": "Description of first service card in About Us screen"
+      },
+
+      "aboutUs_service_agents_agencies_title": "الوكلاء العقاريون والشركات",
+      "@aboutUs_service_agents_agencies_title": {
+        "description": "Title of second service card in About Us screen"
+      },
+      "aboutUs_service_agents_agencies_desc": "احصل على عملاء محتملين، روّج الإعلانات، وابنِ علامتك التجارية",
+      "@aboutUs_service_agents_agencies_desc": {
+        "description": "Description of second service card in About Us screen"
+      },
+
+      "aboutUs_service_developers_title": "المطورون",
+      "@aboutUs_service_developers_title": {
+        "description": "Title of third service card in About Us screen"
+      },
+      "aboutUs_service_developers_desc": "اعرض المشاريع على الخارطة بوسائط غنية وترويج مميز",
+      "@aboutUs_service_developers_desc": {
+        "description": "Description of third service card in About Us screen"
+      },
+
+      "aboutUs_service_investors_title": "المستثمرون",
+      "@aboutUs_service_investors_title": {
+        "description": "Title of fourth service card in About Us screen"
+      },
+      "aboutUs_service_investors_desc": "اكتشف المشاريع الجديدة والفرص المربحة",
+      "@aboutUs_service_investors_desc": {
+        "description": "Description of fourth service card in About Us screen"
+      },
+
+      "aboutUs_service_providers_title": "مقدمو الخدمات",
+      "@aboutUs_service_providers_title": {
+        "description": "Title of fifth service card in About Us screen"
+      },
+      "aboutUs_service_providers_desc": "أعلن عن خدمات النقل والديكور والرهن العقاري والخدمات القانونية",
+      "@aboutUs_service_providers_desc": {
+        "description": "Description of fifth service card in About Us screen"
+      },
+        "aboutUs_hero_brand_name": "أكارت",
+        "@aboutUs_hero_brand_name": {
+          "description": "Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)"
+        },
+
+          "aboutUs_hero_brand_name": "أكارت",
+          "@aboutUs_hero_brand_name": {
+            "description": "Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)"
+          }
 
 
 

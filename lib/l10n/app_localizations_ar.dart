@@ -880,4 +880,259 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get myAccountPrivacyUpdatesContent =>
       'قد نحدث سياسة الخصوصية هذه في أي وقت، مع أو بدون إشعار مسبق. عند حدوث تحديثات، سنراجع هذه الصفحة وقد نُخطرك مباشرة في حالات معينة (مثلاً عبر البريد الإلكتروني). تصبح جميع التغييرات سارية المفعول فور نشرها.';
+
+  @override
+  String get aboutUs_hero_title => 'عن أكارت';
+
+  @override
+  String get aboutUs_hero_subtitle => 'مبني على الثقة. مصمم للمستقبل.';
+
+  @override
+  String get aboutUs_intro_paragraph_1 =>
+      'أكارت ليست مجرد منصة عقارية — إنها طريقة أذكى لربط الناس بالعقارات في الإمارات.';
+
+  @override
+  String get aboutUs_intro_paragraph_2 =>
+      'نجمع بين القوائم الموثقة والتقنية القوية ونهج يركز على المستخدم لمساعدة الجميع على النجاح بثقة.';
+
+  @override
+  String get aboutUs_get_started_button => 'ابدأ الآن';
+
+  @override
+  String get aboutUs_features_heading_part1 => 'ما الذي';
+
+  @override
+  String get aboutUs_features_heading_part2 => 'نقدمه';
+
+  @override
+  String get aboutUs_features_subtitle =>
+      'أدوات ذكية وقوائم موثقة مصممة خصيصًا للنجاح العقاري.';
+
+  @override
+  String get aboutUs_feature_verified_listings_title => 'إعلانات موثقة';
+
+  @override
+  String get aboutUs_feature_verified_listings_desc =>
+      'عقارات موثقة 100% لبناء الثقة والشفافية.';
+
+  @override
+  String get aboutUs_feature_smart_filters_title => 'فلاتر ذكية';
+
+  @override
+  String get aboutUs_feature_smart_filters_desc =>
+      'فلاتر متقدمة للموقع وأسلوب الحياة لتضييق نطاق البحث.';
+
+  @override
+  String get aboutUs_feature_agent_dashboard_title => 'لوحة تحكم الوكيل';
+
+  @override
+  String get aboutUs_feature_agent_dashboard_desc =>
+      'تتبع مشاهدات الإعلانات والعملاء المحتملين وأداء التسويق.';
+
+  @override
+  String get aboutUs_feature_offplan_projects_title => 'مشاريع على الخارطة';
+
+  @override
+  String get aboutUs_feature_offplan_projects_desc =>
+      'عرض التطورات القادمة مع رؤية مخصصة.';
+
+  @override
+  String get aboutUs_feature_web_app_access_title =>
+      'الوصول عبر الويب والتطبيق';
+
+  @override
+  String get aboutUs_feature_web_app_access_desc =>
+      'تجربة تصفح سلسة عبر الإنترنت وعبر الهاتف.';
+
+  @override
+  String get aboutUs_feature_growth_tools_title => 'أدوات النمو';
+
+  @override
+  String get aboutUs_feature_growth_tools_desc =>
+      'رؤى تسويقية وبيانات لتعزيز علامتك التجارية والوصول.';
+
+  @override
+  String get aboutUs_audience_heading => 'جمهورنا';
+
+  @override
+  String get aboutUs_audience_subtitle => 'نخدم بفخر منظومة العقارات الكاملة';
+
+  @override
+  String get aboutUs_audience_pill_investors => '💼 المستثمرون العقاريون';
+
+  @override
+  String get aboutUs_audience_pill_agents => '👨‍💼 الوكلاء والشركات';
+
+  @override
+  String get aboutUs_audience_pill_relocation => '🚚 خدمات الانتقال';
+
+  @override
+  String get aboutUs_audience_pill_developers => '🏗️ المطورون والوسطاء';
+
+  @override
+  String get aboutUs_audience_pill_buyers => '🏠 المشترون والمستأجرون';
+
+  @override
+  String get aboutUs_story_heading => 'قصتنا';
+
+  @override
+  String get aboutUs_story_main_title => 'بدأنا أكارت بهدف واحد';
+
+  @override
+  String get aboutUs_story_paragraph_1 =>
+      'لإزالة الإحباط من البحث العقاري والتسويق من خلال تقديم إعلانات حقيقية وأدوات حقيقية ونتائج حقيقية.';
+
+  @override
+  String get aboutUs_story_paragraph_2 =>
+      'ما بدأ كمهمة لجلب الوضوح والثقة إلى سوق العقارات نما ليصبح منصة كاملة المواصفات موثوقة في جميع أنحاء الإمارات.';
+
+  @override
+  String get aboutUs_story_stat_clients_number => 'أكثر من 600';
+
+  @override
+  String get aboutUs_story_stat_clients_label => 'عملاء دوليون';
+
+  @override
+  String get aboutUs_story_stat_offices_number => 'أكثر من 40';
+
+  @override
+  String get aboutUs_story_stat_offices_label => 'مكتب حول العالم';
+
+  @override
+  String get aboutUs_explore_heading_part1 => 'استكشف أبرز مميزات';
+
+  @override
+  String get aboutUs_services_heading => 'خدماتنا';
+
+  @override
+  String get aboutUs_services_subheading => 'من نخدم';
+
+  @override
+  String get aboutUs_services_intro =>
+      'ابحث عن منزلك المثالي من خلال إعلاناتنا الموثقة المحدثة في الوقت الفعلي لضمان الدقة والثقة.';
+
+  @override
+  String get aboutUs_explore_verified_listings_title => 'إعلانات موثقة';
+
+  @override
+  String get aboutUs_explore_verified_listings_desc =>
+      'يتم مراجعة كل إعلان يدويًا والتحقق من صحته ودقة السعر وتوافره.';
+
+  @override
+  String get aboutUs_explore_smart_location_title => 'بحث الموقع الذكي';
+
+  @override
+  String get aboutUs_explore_smart_location_desc =>
+      'اكتشف العقارات حسب المنطقة أو المجتمع أو المعلم أو تفضيل نمط الحياة باستخدام فلاترنا الذكية.';
+
+  @override
+  String get aboutUs_explore_agent_dashboard_title => 'لوحة تحكم الوكيل';
+
+  @override
+  String get aboutUs_explore_agent_dashboard_desc =>
+      'تحصل الوكالات والوكلاء على واجهة خلفية مخصصة لتتبع العملاء المحتملين والمشاهدات وأداء العقار.';
+
+  @override
+  String get aboutUs_service_card_buyers_title => 'مشتري المنازل والمستأجرون';
+
+  @override
+  String get aboutUs_service_card_buyers_desc =>
+      'استكشف الإعلانات الموثقة مع تحديثات في الوقت الفعلي';
+
+  @override
+  String get aboutUs_service_card_agents_title => 'الوكلاء العقاريون والشركات';
+
+  @override
+  String get aboutUs_service_card_agents_desc =>
+      'احصل على عملاء محتملين، روّج الإعلانات، وابنِ علامتك التجارية';
+
+  @override
+  String get aboutUs_service_card_developers_title => 'المطورون';
+
+  @override
+  String get aboutUs_service_card_developers_desc =>
+      'اعرض المشاريع على الخارطة بوسائط غنية وترويج مميز';
+
+  @override
+  String get aboutUs_service_card_investors_title => 'المستثمرون';
+
+  @override
+  String get aboutUs_service_card_investors_desc =>
+      'اكتشف المشاريع الجديدة والفرص المربحة';
+
+  @override
+  String get aboutUs_service_card_providers_title => 'مقدمو الخدمات';
+
+  @override
+  String get aboutUs_service_card_providers_desc =>
+      'أعلن عن خدمات النقل والديكور والرهن العقاري والخدمات القانونية';
+
+  @override
+  String get aboutUs_footer_email => 'info@akarat.com';
+
+  @override
+  String get aboutUs_start_project_button => 'ابدأ مشروعًا';
+
+  @override
+  String get aboutUs_login_dialog_title => 'يتطلب تسجيل الدخول';
+
+  @override
+  String get aboutUs_login_dialog_message =>
+      'يرجى تسجيل الدخول للوصول إلى المفضلة.';
+
+  @override
+  String get aboutUs_login_dialog_cancel => 'إلغاء';
+
+  @override
+  String get aboutUs_login_dialog_login => 'تسجيل الدخول';
+
+  @override
+  String get aboutUs_services_whoWeServe_title => 'من نخدم';
+
+  @override
+  String get aboutUs_explore_verified_title => 'إعلانات موثقة';
+
+  @override
+  String get aboutUs_explore_verified_desc =>
+      'يتم مراجعة كل إعلان يدويًا والتحقق من صحته ودقة السعر وتوافره.';
+
+  @override
+  String get aboutUs_service_buyers_renters_title =>
+      'مشتري المنازل والمستأجرون';
+
+  @override
+  String get aboutUs_service_buyers_renters_desc =>
+      'استكشف الإعلانات الموثقة مع تحديثات في الوقت الفعلي';
+
+  @override
+  String get aboutUs_service_agents_agencies_title =>
+      'الوكلاء العقاريون والشركات';
+
+  @override
+  String get aboutUs_service_agents_agencies_desc =>
+      'احصل على عملاء محتملين، روّج الإعلانات، وابنِ علامتك التجارية';
+
+  @override
+  String get aboutUs_service_developers_title => 'المطورون';
+
+  @override
+  String get aboutUs_service_developers_desc =>
+      'اعرض المشاريع على الخارطة بوسائط غنية وترويج مميز';
+
+  @override
+  String get aboutUs_service_investors_title => 'المستثمرون';
+
+  @override
+  String get aboutUs_service_investors_desc =>
+      'اكتشف المشاريع الجديدة والفرص المربحة';
+
+  @override
+  String get aboutUs_service_providers_title => 'مقدمو الخدمات';
+
+  @override
+  String get aboutUs_service_providers_desc =>
+      'أعلن عن خدمات النقل والديكور والرهن العقاري والخدمات القانونية';
+
+  @override
+  String get aboutUs_hero_brand_name => 'أكارت';
 }

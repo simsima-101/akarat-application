@@ -345,6 +345,7 @@ class _SupportState extends State<Support> {
                                     intlCountry.telephoneMaxLength;
                               });
                             },
+
                             initialSelection: 'AE', // UAE default
                             favorite: const [],
                             showDropDownButton: false,
@@ -362,7 +363,7 @@ class _SupportState extends State<Support> {
                             dialogSize: Size(double.infinity, 700),
 
                             searchDecoration: InputDecoration(
-                              hintText: 'Search country',
+                              hintText: appLocalization.searchCountryHint,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                                 borderSide:

@@ -888,4 +888,260 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get myAccountPrivacyUpdatesContent =>
       'We may update this Privacy Policy at any time, with or without prior notice. When updates occur, we will revise this page and may notify you directly in certain cases (for example, by email). All changes become effective immediately once posted.';
+
+  @override
+  String get aboutUs_hero_title => 'About Akarat';
+
+  @override
+  String get aboutUs_hero_subtitle =>
+      'Built for Trust. Designed for the Future.';
+
+  @override
+  String get aboutUs_intro_paragraph_1 =>
+      'Akarat is not just a real estate platform — it\'s a smarter way to connect people with properties in the UAE.';
+
+  @override
+  String get aboutUs_intro_paragraph_2 =>
+      'We bring together verified listings, powerful tech, and a user-first approach to help everyone succeed with confidence.';
+
+  @override
+  String get aboutUs_get_started_button => 'Get Started';
+
+  @override
+  String get aboutUs_features_heading_part1 => 'What We';
+
+  @override
+  String get aboutUs_features_heading_part2 => 'Offer';
+
+  @override
+  String get aboutUs_features_subtitle =>
+      'Smart tools and verified listings tailored for real estate success.';
+
+  @override
+  String get aboutUs_feature_verified_listings_title => 'Verified Listings';
+
+  @override
+  String get aboutUs_feature_verified_listings_desc =>
+      '100% verified properties to build trust and transparency.';
+
+  @override
+  String get aboutUs_feature_smart_filters_title => 'Smart Filters';
+
+  @override
+  String get aboutUs_feature_smart_filters_desc =>
+      'Advanced location & lifestyle filters to refine your search.';
+
+  @override
+  String get aboutUs_feature_agent_dashboard_title => 'Agent Dashboard';
+
+  @override
+  String get aboutUs_feature_agent_dashboard_desc =>
+      'Track listing views, leads, and marketing performance.';
+
+  @override
+  String get aboutUs_feature_offplan_projects_title => 'Off-plan Projects';
+
+  @override
+  String get aboutUs_feature_offplan_projects_desc =>
+      'Showcase upcoming developments with dedicated visibility.';
+
+  @override
+  String get aboutUs_feature_web_app_access_title => 'Web & App Access';
+
+  @override
+  String get aboutUs_feature_web_app_access_desc =>
+      'Seamless browsing experience online and via mobile.';
+
+  @override
+  String get aboutUs_feature_growth_tools_title => 'Growth Tools';
+
+  @override
+  String get aboutUs_feature_growth_tools_desc =>
+      'Marketing and data insights to boost your brand and reach.';
+
+  @override
+  String get aboutUs_audience_heading => 'Our Audience';
+
+  @override
+  String get aboutUs_audience_subtitle =>
+      'We proudly serve the full real estate ecosystem';
+
+  @override
+  String get aboutUs_audience_pill_investors => '💼 Property Investors';
+
+  @override
+  String get aboutUs_audience_pill_agents => '👨‍💼 Agents & Agencies';
+
+  @override
+  String get aboutUs_audience_pill_relocation => '🚚 Relocation Services';
+
+  @override
+  String get aboutUs_audience_pill_developers => '🏗️ Developers & Brokers';
+
+  @override
+  String get aboutUs_audience_pill_buyers => '🏠 Home Buyers & Tenants';
+
+  @override
+  String get aboutUs_story_heading => 'Our Story';
+
+  @override
+  String get aboutUs_story_main_title => 'We started Akarat with one goal';
+
+  @override
+  String get aboutUs_story_paragraph_1 =>
+      'To remove the frustration from property search and marketing by delivering real listings, real tools, and real results.';
+
+  @override
+  String get aboutUs_story_paragraph_2 =>
+      'What began as a mission to bring clarity and trust to the real estate market has grown into a fully-featured platform trusted across the UAE.';
+
+  @override
+  String get aboutUs_story_stat_clients_number => '600 +';
+
+  @override
+  String get aboutUs_story_stat_clients_label => 'International clients';
+
+  @override
+  String get aboutUs_story_stat_offices_number => '40 +';
+
+  @override
+  String get aboutUs_story_stat_offices_label => 'Offices around the world';
+
+  @override
+  String get aboutUs_explore_heading_part1 => 'Explore the Top Features of';
+
+  @override
+  String get aboutUs_services_heading => 'Our services';
+
+  @override
+  String get aboutUs_services_subheading => 'Who We Serve';
+
+  @override
+  String get aboutUs_services_intro =>
+      'Find your ideal home through our verified listings, updated in real time to ensure accuracy and trust.';
+
+  @override
+  String get aboutUs_explore_verified_listings_title => 'Verified Listings';
+
+  @override
+  String get aboutUs_explore_verified_listings_desc =>
+      'Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.';
+
+  @override
+  String get aboutUs_explore_smart_location_title => 'Smart Location Search';
+
+  @override
+  String get aboutUs_explore_smart_location_desc =>
+      'Discover properties by area, community, landmark, or lifestyle preference using our intelligent filters.';
+
+  @override
+  String get aboutUs_explore_agent_dashboard_title => 'Agent Dashboard';
+
+  @override
+  String get aboutUs_explore_agent_dashboard_desc =>
+      'Agencies and agents get a dedicated backend to track leads, views, and property performance.';
+
+  @override
+  String get aboutUs_service_card_buyers_title => 'Home Buyers & Renters';
+
+  @override
+  String get aboutUs_service_card_buyers_desc =>
+      'Explore verified listings with real-time updates';
+
+  @override
+  String get aboutUs_service_card_agents_title =>
+      'Real Estate Agents & Agencies';
+
+  @override
+  String get aboutUs_service_card_agents_desc =>
+      'Get leads, promote listings, and build your brand';
+
+  @override
+  String get aboutUs_service_card_developers_title => 'Developers';
+
+  @override
+  String get aboutUs_service_card_developers_desc =>
+      'Showcase off-plan properties with rich media and featured promotions';
+
+  @override
+  String get aboutUs_service_card_investors_title => 'Investors';
+
+  @override
+  String get aboutUs_service_card_investors_desc =>
+      'Discover new projects and profitable opportunities';
+
+  @override
+  String get aboutUs_service_card_providers_title => 'Service Providers';
+
+  @override
+  String get aboutUs_service_card_providers_desc =>
+      'Advertise moving, interior, mortgage & legal services';
+
+  @override
+  String get aboutUs_footer_email => 'info@akarat.com';
+
+  @override
+  String get aboutUs_start_project_button => 'Start a project';
+
+  @override
+  String get aboutUs_login_dialog_title => 'Login Required';
+
+  @override
+  String get aboutUs_login_dialog_message =>
+      'Please login to access favorites.';
+
+  @override
+  String get aboutUs_login_dialog_cancel => 'Cancel';
+
+  @override
+  String get aboutUs_login_dialog_login => 'Login';
+
+  @override
+  String get aboutUs_services_whoWeServe_title => 'Who We Serve';
+
+  @override
+  String get aboutUs_explore_verified_title => 'Verified Listings';
+
+  @override
+  String get aboutUs_explore_verified_desc =>
+      'Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.';
+
+  @override
+  String get aboutUs_service_buyers_renters_title => 'Home Buyers & Renters';
+
+  @override
+  String get aboutUs_service_buyers_renters_desc =>
+      'Explore verified listings with real-time updates';
+
+  @override
+  String get aboutUs_service_agents_agencies_title =>
+      'Real Estate Agents & Agencies';
+
+  @override
+  String get aboutUs_service_agents_agencies_desc =>
+      'Get leads, promote listings, and build your brand';
+
+  @override
+  String get aboutUs_service_developers_title => 'Developers';
+
+  @override
+  String get aboutUs_service_developers_desc =>
+      'Showcase off-plan properties with rich media and featured promotions';
+
+  @override
+  String get aboutUs_service_investors_title => 'Investors';
+
+  @override
+  String get aboutUs_service_investors_desc =>
+      'Discover new projects and profitable opportunities';
+
+  @override
+  String get aboutUs_service_providers_title => 'Service Providers';
+
+  @override
+  String get aboutUs_service_providers_desc =>
+      'Advertise moving, interior, mortgage & legal services';
+
+  @override
+  String get aboutUs_hero_brand_name => 'Akarat';
 }

@@ -1175,7 +1175,344 @@
       "@myAccountPrivacySectionUpdatesTitle": {
         "description": "Main heading: Policy updates"
       },
-      "myAccountPrivacyUpdatesContent": "Bu Gizlilik Politikasını herhangi bir zamanda, önceden haber vermeksizin güncelleyebiliriz. Güncellemeler olduğunda bu sayfayı revize edeceğiz ve bazı durumlarda sizi doğrudan bilgilendirebiliriz (örneğin e-posta ile). Tüm değişiklikler yayınlandığı anda yürürlüğe girer."
+      "myAccountPrivacyUpdatesContent": "Bu Gizlilik Politikasını herhangi bir zamanda, önceden haber vermeksizin güncelleyebiliriz. Güncellemeler olduğunda bu sayfayı revize edeceğiz ve bazı durumlarda sizi doğrudan bilgilendirebiliriz (örneğin e-posta ile). Tüm değişiklikler yayınlandığı anda yürürlüğe girer.",
+
+
+  "@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
+
+"aboutUs_appBar_title": "Hakkımızda",
+  "@aboutUs_appBar_title": {
+    "description": "Title shown in the AppBar at the top of the About Us screen"
+  },
+  "aboutUs_hero_title": "Akarat Hakkında",
+  "@aboutUs_hero_title": {
+    "description": "Main large heading at the top of the page"
+  },
+  "aboutUs_hero_subtitle": "Güven İçin İnşa Edildi. Gelecek İçin Tasarlandı.",
+  "@aboutUs_hero_subtitle": {
+    "description": "Tagline / subtitle shown right below the hero title (usually in red)"
+  },
+  "aboutUs_intro_paragraph_1": "Akarat sadece bir emlak platformu değil — BAE'deki insanları mülklerle bağlamanın daha akıllı bir yoludur.",
+  "@aboutUs_intro_paragraph_1": {
+    "description": "First paragraph in the introduction section"
+  },
+  "aboutUs_intro_paragraph_2": "Doğrulanmış ilanları, güçlü teknolojiyi ve kullanıcı odaklı yaklaşımı bir araya getirerek herkesin güvenle başarılı olmasına yardımcı oluyoruz.",
+  "@aboutUs_intro_paragraph_2": {
+    "description": "Second paragraph in the introduction section"
+  },
+  "aboutUs_get_started_button": "Başlayın",
+  "@aboutUs_get_started_button": {
+    "description": "Label on the prominent blue button after the main image"
+  },
+  "aboutUs_features_heading_part1": "Biz Ne",
+  "@aboutUs_features_heading_part1": {
+    "description": "First part of 'What We Offer' heading (black)"
+  },
+  "aboutUs_features_heading_part2": "Sunuyoruz",
+  "@aboutUs_features_heading_part2": {
+    "description": "Second part of 'What We Offer' heading (red)"
+  },
+  "aboutUs_features_subtitle": "Emlak başarısı için özel olarak hazırlanmış akıllı araçlar ve doğrulanmış ilanlar.",
+  "@aboutUs_features_subtitle": {
+    "description": "Small description under the 'What We Offer' heading"
+  },
+  "aboutUs_feature_verified_listings_title": "Doğrulanmış İlanlar",
+  "@aboutUs_feature_verified_listings_title": {
+    "description": "Title of Verified Listings feature card in grid"
+  },
+  "aboutUs_feature_verified_listings_desc": "Güven ve şeffaflık oluşturmak için %100 doğrulanmış mülkler.",
+  "@aboutUs_feature_verified_listings_desc": {
+    "description": "Short description for Verified Listings feature card"
+  },
+  "aboutUs_feature_smart_filters_title": "Akıllı Filtreler",
+  "@aboutUs_feature_smart_filters_title": {
+    "description": "Title of Smart Filters feature card in grid"
+  },
+  "aboutUs_feature_smart_filters_desc": "Aramanızı daraltmak için gelişmiş konum ve yaşam tarzı filtreleri.",
+  "@aboutUs_feature_smart_filters_desc": {
+    "description": "Short description for Smart Filters feature card"
+  },
+  "aboutUs_feature_agent_dashboard_title": "Danışman Paneli",
+  "@aboutUs_feature_agent_dashboard_title": {
+    "description": "Title of Agent Dashboard feature card in grid"
+  },
+  "aboutUs_feature_agent_dashboard_desc": "İlan görüntülemelerini, potansiyel müşterileri ve pazarlama performansını takip edin.",
+  "@aboutUs_feature_agent_dashboard_desc": {
+    "description": "Short description for Agent Dashboard feature card"
+  },
+  "aboutUs_feature_offplan_projects_title": "Proje Halindeki Yatırımlar",
+  "@aboutUs_feature_offplan_projects_title": {
+    "description": "Title of Off-plan Projects feature card in grid"
+  },
+  "aboutUs_feature_offplan_projects_desc": "Özel görünürlük ile gelecekteki gelişmeleri sergileyin.",
+  "@aboutUs_feature_offplan_projects_desc": {
+    "description": "Short description for Off-plan Projects feature card"
+  },
+  "aboutUs_feature_web_app_access_title": "Web ve Uygulama Erişimi",
+  "@aboutUs_feature_web_app_access_title": {
+    "description": "Title of Web & App Access feature card in grid"
+  },
+  "aboutUs_feature_web_app_access_desc": "Çevrimiçi ve mobil cihazlarda kesintisiz tarama deneyimi.",
+  "@aboutUs_feature_web_app_access_desc": {
+    "description": "Short description for Web & App Access feature card"
+  },
+  "aboutUs_feature_growth_tools_title": "Büyüme Araçları",
+  "@aboutUs_feature_growth_tools_title": {
+    "description": "Title of Growth Tools feature card in grid"
+  },
+  "aboutUs_feature_growth_tools_desc": "Markanızı ve erişiminizi artırmak için pazarlama ve veri içgörüleri.",
+  "@aboutUs_feature_growth_tools_desc": {
+    "description": "Short description for Growth Tools feature card"
+  },
+  "aboutUs_audience_heading": "Hedef Kitlemiz",
+  "@aboutUs_audience_heading": {
+    "description": "Main heading of the audience section"
+  },
+  "aboutUs_audience_subtitle": "Tüm emlak ekosistemine gururla hizmet ediyoruz",
+  "@aboutUs_audience_subtitle": {
+    "description": "Subtitle under Our Audience heading"
+  },
+  "aboutUs_audience_pill_investors": "💼 Emlak Yatırımcıları",
+  "@aboutUs_audience_pill_investors": {
+    "description": "Pill / chip for property investors"
+  },
+  "aboutUs_audience_pill_agents": "👨‍💼 Emlak Danışmanları & Ajanslar",
+  "@aboutUs_audience_pill_agents": {
+    "description": "Pill / chip for agents and agencies"
+  },
+  "aboutUs_audience_pill_relocation": "🚚 Taşınma Hizmetleri",
+  "@aboutUs_audience_pill_relocation": {
+    "description": "Pill / chip for relocation services"
+  },
+  "aboutUs_audience_pill_developers": "🏗️ Geliştiriciler & Aracılar",
+  "@aboutUs_audience_pill_developers": {
+    "description": "Pill / chip for developers and brokers"
+  },
+  "aboutUs_audience_pill_buyers": "🏠 Ev Alıcıları & Kiracılar",
+  "@aboutUs_audience_pill_buyers": {
+    "description": "Pill / chip for home buyers and tenants"
+  },
+  "aboutUs_story_heading": "Hikayemiz",
+  "@aboutUs_story_heading": {
+    "description": "Red title above the Our Story section"
+  },
+  "aboutUs_story_main_title": "Akarat'ı tek bir amaçla başlattık",
+  "@aboutUs_story_main_title": {
+    "description": "Large centered title in Our Story section"
+  },
+  "aboutUs_story_paragraph_1": "Gerçek ilanlar, gerçek araçlar ve gerçek sonuçlar sunarak emlak arayışı ve pazarlamadaki hayal kırıklığını ortadan kaldırmak.",
+  "@aboutUs_story_paragraph_1": {
+    "description": "First paragraph in Our Story"
+  },
+  "aboutUs_story_paragraph_2": "Netlik ve güven getirme misyonu olarak başlayan şey, BAE genelinde güvenilen tam özellikli bir platforma dönüştü.",
+  "@aboutUs_story_paragraph_2": {
+    "description": "Second paragraph in Our Story"
+  },
+  "aboutUs_story_stat_clients_number": "600 +",
+  "@aboutUs_story_stat_clients_number": {
+    "description": "Big number for international clients statistic"
+  },
+  "aboutUs_story_stat_clients_label": "Uluslararası Müşteri",
+  "@aboutUs_story_stat_clients_label": {
+    "description": "Label below clients statistic number"
+  },
+  "aboutUs_story_stat_offices_number": "40 +",
+  "@aboutUs_story_stat_offices_number": {
+    "description": "Big number for offices statistic"
+  },
+  "aboutUs_story_stat_offices_label": "Dünya Çapında Ofis",
+  "@aboutUs_story_stat_offices_label": {
+    "description": "Label below offices statistic number"
+  },
+  "aboutUs_explore_heading_part1": "Akarat'ın En İyi Özelliklerini Keşfedin",
+  "@aboutUs_explore_heading_part1": {
+    "description": "First part of rich text heading before explore cards"
+  },
+  "aboutUs_services_heading": "Hizmetlerimiz",
+  "@aboutUs_services_heading": {
+    "description": "Red title above Who We Serve section"
+  },
+  "aboutUs_services_subheading": "Kime Hizmet Veriyoruz",
+  "@aboutUs_services_subheading": {
+    "description": "Large title above service cards"
+  },
+  "aboutUs_services_intro": "Doğruluğu ve güveni sağlamak için gerçek zamanlı güncellenen doğrulanmış ilanlarımız aracılığıyla ideal evinizi bulun.",
+  "@aboutUs_services_intro": {
+    "description": "Intro text before the list of service cards"
+  },
+  "aboutUs_explore_verified_listings_title": "Doğrulanmış İlanlar",
+  "@aboutUs_explore_verified_listings_title": {
+    "description": "Title of first longer explore card"
+  },
+  "aboutUs_explore_verified_listings_desc": "Her ilan, gerçeklik, fiyat doğruluğu ve müsaitlik açısından manuel olarak incelenir ve doğrulanır.",
+  "@aboutUs_explore_verified_listings_desc": {
+    "description": "Description of first longer explore card"
+  },
+  "aboutUs_explore_smart_location_title": "Akıllı Konum Arama",
+  "@aboutUs_explore_smart_location_title": {
+    "description": "Title of second longer explore card"
+  },
+  "aboutUs_explore_smart_location_desc": "Akıllı filtrelerimizle bölge, topluluk, simge yapı veya yaşam tarzı tercihine göre mülk keşfedin.",
+  "@aboutUs_explore_smart_location_desc": {
+    "description": "Description of second longer explore card"
+  },
+  "aboutUs_explore_agent_dashboard_title": "Danışman Paneli",
+  "@aboutUs_explore_agent_dashboard_title": {
+    "description": "Title of third longer explore card"
+  },
+  "aboutUs_explore_agent_dashboard_desc": "Ajanslar ve danışmanlar potansiyel müşterileri, görüntülemeleri ve mülk performansını takip etmek için özel bir arka uç elde eder.",
+  "@aboutUs_explore_agent_dashboard_desc": {
+    "description": "Description of third longer explore card"
+  },
+  "aboutUs_service_card_buyers_title": "Ev Alıcıları & Kiracılar",
+  "@aboutUs_service_card_buyers_title": {
+    "description": "Title of first animated service card"
+  },
+  "aboutUs_service_card_buyers_desc": "Gerçek zamanlı güncellemelerle doğrulanmış ilanları keşfedin",
+  "@aboutUs_service_card_buyers_desc": {
+    "description": "Description of first service card"
+  },
+  "aboutUs_service_card_agents_title": "Emlak Danışmanları & Ajanslar",
+  "@aboutUs_service_card_agents_title": {
+    "description": "Title of second animated service card"
+  },
+  "aboutUs_service_card_agents_desc": "Potansiyel müşteri kazanın, ilanları tanıtın ve markanızı oluşturun",
+  "@aboutUs_service_card_agents_desc": {
+    "description": "Description of second service card"
+  },
+  "aboutUs_service_card_developers_title": "Geliştiriciler",
+  "@aboutUs_service_card_developers_title": {
+    "description": "Title of third animated service card"
+  },
+  "aboutUs_service_card_developers_desc": "Zengin medya ve öne çıkan promosyonlarla proje halindeki mülkleri sergileyin",
+  "@aboutUs_service_card_developers_desc": {
+    "description": "Description of third service card"
+  },
+  "aboutUs_service_card_investors_title": "Yatırımcılar",
+  "@aboutUs_service_card_investors_title": {
+    "description": "Title of fourth animated service card"
+  },
+  "aboutUs_service_card_investors_desc": "Yeni projeleri ve kârlı fırsatları keşfedin",
+  "@aboutUs_service_card_investors_desc": {
+    "description": "Description of fourth service card"
+  },
+  "aboutUs_service_card_providers_title": "Hizmet Sağlayıcılar",
+  "@aboutUs_service_card_providers_title": {
+    "description": "Title of fifth animated service card"
+  },
+  "aboutUs_service_card_providers_desc": "Taşınma, dekorasyon, mortgage ve hukuki hizmetleri tanıtın",
+  "@aboutUs_service_card_providers_desc": {
+    "description": "Description of fifth service card"
+  },
+  "aboutUs_footer_email": "info@akarat.com",
+  "@aboutUs_footer_email": {
+    "description": "Email address shown in the dark footer at the bottom"
+  },
+  "aboutUs_start_project_button": "Bir Projeye Başla",
+  "@aboutUs_start_project_button": {
+    "description": "Label on red button inside explore cards"
+  },
+  "aboutUs_login_dialog_title": "Giriş Gereklidir",
+  "@aboutUs_login_dialog_title": {
+    "description": "Title of dialog shown when tapping favorites without login"
+  },
+  "aboutUs_login_dialog_message": "Favorilere erişmek için lütfen giriş yapın.",
+  "@aboutUs_login_dialog_message": {
+    "description": "Main message in the login required dialog"
+  },
+  "aboutUs_login_dialog_cancel": "İptal",
+  "@aboutUs_login_dialog_cancel": {
+    "description": "Cancel button in login dialog"
+  },
+  "aboutUs_login_dialog_login": "Giriş Yap",
+  "@aboutUs_login_dialog_login": {
+    "description": "Login button in login dialog"
+  },
+
+    "aboutUs_services_whoWeServe_title": "Kime Hizmet Veriyoruz",
+    "@aboutUs_services_whoWeServe_title": {
+      "description": "Large bold title text above the service cards section in About Us screen, reads 'Who We Serve'"
+    },
+      "aboutUs_explore_verified_title": "Doğrulanmış İlanlar",
+      "@aboutUs_explore_verified_title": {
+        "description": "Title of first explore card in About Us screen"
+      },
+      "aboutUs_explore_verified_desc": "Her ilan, gerçeklik, fiyat doğruluğu ve müsaitlik açısından manuel olarak incelenir ve doğrulanır.",
+      "@aboutUs_explore_verified_desc": {
+        "description": "Description of first explore card in About Us screen"
+      },
+
+      "aboutUs_explore_smart_location_title": "Akıllı Konum Arama",
+      "@aboutUs_explore_smart_location_title": {
+        "description": "Title of second explore card in About Us screen"
+      },
+      "aboutUs_explore_smart_location_desc": "Akıllı filtrelerimizle bölge, topluluk, simge yapı veya yaşam tarzı tercihine göre mülk keşfedin.",
+      "@aboutUs_explore_smart_location_desc": {
+        "description": "Description of second explore card in About Us screen"
+      },
+
+      "aboutUs_explore_agent_dashboard_title": "Danışman Paneli",
+      "@aboutUs_explore_agent_dashboard_title": {
+        "description": "Title of third explore card in About Us screen"
+      },
+      "aboutUs_explore_agent_dashboard_desc": "Ajanslar ve danışmanlar potansiyel müşterileri, görüntülemeleri ve mülk performansını takip etmek için özel bir arka uç elde eder.",
+      "@aboutUs_explore_agent_dashboard_desc": {
+        "description": "Description of third explore card in About Us screen"
+      },
+
+      "aboutUs_service_buyers_renters_title": "Ev Alıcıları & Kiracılar",
+      "@aboutUs_service_buyers_renters_title": {
+        "description": "Title of first service card in About Us screen"
+      },
+      "aboutUs_service_buyers_renters_desc": "Gerçek zamanlı güncellemelerle doğrulanmış ilanları keşfedin",
+      "@aboutUs_service_buyers_renters_desc": {
+        "description": "Description of first service card in About Us screen"
+      },
+
+      "aboutUs_service_agents_agencies_title": "Emlak Danışmanları & Ajanslar",
+      "@aboutUs_service_agents_agencies_title": {
+        "description": "Title of second service card in About Us screen"
+      },
+      "aboutUs_service_agents_agencies_desc": "Potansiyel müşteri kazanın, ilanları tanıtın ve markanızı oluşturun",
+      "@aboutUs_service_agents_agencies_desc": {
+        "description": "Description of second service card in About Us screen"
+      },
+
+      "aboutUs_service_developers_title": "Geliştiriciler",
+      "@aboutUs_service_developers_title": {
+        "description": "Title of third service card in About Us screen"
+      },
+      "aboutUs_service_developers_desc": "Zengin medya ve öne çıkan promosyonlarla proje halindeki mülkleri sergileyin",
+      "@aboutUs_service_developers_desc": {
+        "description": "Description of third service card in About Us screen"
+      },
+
+      "aboutUs_service_investors_title": "Yatırımcılar",
+      "@aboutUs_service_investors_title": {
+        "description": "Title of fourth service card in About Us screen"
+      },
+      "aboutUs_service_investors_desc": "Yeni projeleri ve kârlı fırsatları keşfedin",
+      "@aboutUs_service_investors_desc": {
+        "description": "Description of fourth service card in About Us screen"
+      },
+
+      "aboutUs_service_providers_title": "Hizmet Sağlayıcılar",
+      "@aboutUs_service_providers_title": {
+        "description": "Title of fifth service card in About Us screen"
+      },
+      "aboutUs_service_providers_desc": "Taşınma, dekorasyon, mortgage ve hukuki hizmetleri tanıtın",
+      "@aboutUs_service_providers_desc": {
+        "description": "Description of fifth service card in About Us screen"
+      },
+        "aboutUs_hero_brand_name": "Akarat",
+        "@aboutUs_hero_brand_name": {
+          "description": "Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)"
+        },
+
+          "aboutUs_hero_brand_name": "Akarat",
+          "@aboutUs_hero_brand_name": {
+            "description": "Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)"
+          }
 
 
 

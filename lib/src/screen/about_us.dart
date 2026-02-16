@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../core/utils/secure_storage.dart';
-import '../screen/home.dart';
-
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
+import '../screen/home.dart';
 import '../utils/fav_logout.dart';
 import '../utils/shared_preference_manager.dart';
 import 'ContactFormScreen.dart';
@@ -41,59 +41,57 @@ class _About_UsState extends State<About_Us> {
 
   int? selectedIndex = -1;
 
-  final List<ExploreModel> exploreList = [
-    ExploreModel(
-      title: "Verified Listings",
-      des:
-          "Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.",
-      assetIcon: 'assets/images/verified_icon.png',
-      iconPadding: 5,
-      color: Colors.green,
-    ),
-    ExploreModel(
-      title: "Smart Location Search",
-      des:
-          "Discover properties by area, community, landmark, or lifestyle preference using our intelligent filters.",
-      assetIcon: "assets/images/smart_location_icon.png",
-      iconPadding: 8,
-      color: Colors.yellow,
-    ),
-    ExploreModel(
-      title: "Agent Dashboard",
-      des:
-          "Agencies and agents get a dedicated backend to track leads, views, and property performance.",
-      assetIcon: 'assets/images/dashboard_icon.png',
-      iconPadding: 11,
-      color: Colors.blue,
-    ),
-  ];
-
-  List<ServiceModel> serviceList = [
-    ServiceModel(
-        title: "Home Buyers & Renters",
-        des: "Explore verified listings with real-time updates",
-        assetIcon: "assets/images/service_1.png"),
-    ServiceModel(
-        title: "Real Estate Agents & Agencies",
-        des: "Get leads, promote listings, and build your brand",
-        assetIcon: "assets/images/service_2.png"),
-    ServiceModel(
-        title: "Developers",
-        des:
-            "Showcase off-plan properties with rich media and featured promotions",
-        assetIcon: "assets/images/servce_3.png"),
-    ServiceModel(
-        title: "Investors",
-        des: "Discover new projects and profitable opportunities",
-        assetIcon: "assets/images/service_4.png"),
-    ServiceModel(
-        title: "Service Providers",
-        des: "Advertise moving, interior, mortgage & legal services",
-        assetIcon: "assets/images/service_5.png"),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
+    final List<ExploreModel> exploreList = [
+      ExploreModel(
+        title: l.aboutUs_explore_verified_title,
+        des: l.aboutUs_explore_verified_desc,
+        assetIcon: 'assets/images/verified_icon.png',
+        iconPadding: 5,
+        color: Colors.green,
+      ),
+      ExploreModel(
+        title: l.aboutUs_explore_smart_location_title,
+        des: l.aboutUs_explore_smart_location_desc,
+        assetIcon: "assets/images/smart_location_icon.png",
+        iconPadding: 8,
+        color: Colors.yellow,
+      ),
+      ExploreModel(
+        title: l.aboutUs_explore_agent_dashboard_title,
+        des: l.aboutUs_explore_agent_dashboard_desc,
+        assetIcon: 'assets/images/dashboard_icon.png',
+        iconPadding: 11,
+        color: Colors.blue,
+      ),
+    ];
+
+    List<ServiceModel> serviceList = [
+      ServiceModel(
+          title: l.aboutUs_service_buyers_renters_title,
+          des: l.aboutUs_service_buyers_renters_desc,
+          assetIcon: "assets/images/service_1.png"),
+      ServiceModel(
+          title: l.aboutUs_service_agents_agencies_title,
+          des: l.aboutUs_service_agents_agencies_desc,
+          assetIcon: "assets/images/service_2.png"),
+      ServiceModel(
+          title: l.aboutUs_service_developers_title,
+          des: l.aboutUs_service_developers_desc,
+          assetIcon: "assets/images/servce_3.png"),
+      ServiceModel(
+          title: l.aboutUs_service_investors_title,
+          des: l.aboutUs_service_investors_desc,
+          assetIcon: "assets/images/service_4.png"),
+      ServiceModel(
+          title: l.aboutUs_service_providers_title,
+          des: l.aboutUs_service_providers_desc,
+          assetIcon: "assets/images/service_5.png"),
+    ];
+
     return WillPopScope(
       onWillPop: () async => true,
       child: Scaffold(
@@ -102,7 +100,7 @@ class _About_UsState extends State<About_Us> {
           child: buildMyNavBar(context),
         ),
         appBar: AppBar(
-          title: const Text("About Us",
+          title: Text(l.aboutUs,
               style:
                   TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
           centerTitle: true,
@@ -110,7 +108,6 @@ class _About_UsState extends State<About_Us> {
           elevation: 1,
           iconTheme: const IconThemeData(color: Colors.red),
         ),
-        // bottomNavigationBar: SafeArea(child: buildMyNavBar(context)),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,16 +119,16 @@ class _About_UsState extends State<About_Us> {
                     const SizedBox(height: 20),
 
                     // Hero Title
-                    const Text(
-                      "About Akarat",
-                      style: TextStyle(
+                    Text(
+                      l.aboutUs_hero_title,
+                      style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87),
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      "Built for Trust. Designed for the Future.",
+                      l.aboutUs_hero_subtitle,
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -141,13 +138,13 @@ class _About_UsState extends State<About_Us> {
 
                     // Main Paragraphs
                     Text(
-                      "Akarat is not just a real estate platform — it's a smarter way to connect people with properties in the UAE.",
+                      l.aboutUs_intro_paragraph_1,
                       style: TextStyle(
                           fontSize: 16, height: 1.7, color: Colors.grey[800]),
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      "We bring together verified listings, powerful tech, and a user-first approach to help everyone succeed with confidence.",
+                      l.aboutUs_intro_paragraph_2,
                       style: TextStyle(
                           fontSize: 16, height: 1.7, color: Colors.grey[800]),
                     ),
@@ -173,8 +170,8 @@ class _About_UsState extends State<About_Us> {
                         onPressed: () => Navigator.pushReplacement(context,
                             MaterialPageRoute(builder: (_) => const Home())),
                         icon: const Icon(Icons.arrow_forward, size: 20),
-                        label: const Text("Get Started",
-                            style: TextStyle(fontSize: 16)),
+                        label: Text(l.aboutUs_get_started_button,
+                            style: const TextStyle(fontSize: 16)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
@@ -193,18 +190,18 @@ class _About_UsState extends State<About_Us> {
                       child: Column(
                         children: [
                           RichText(
-                            text: const TextSpan(
+                            text: TextSpan(
                               children: [
                                 TextSpan(
-                                  text: "What We ",
-                                  style: TextStyle(
+                                  text: "${l.aboutUs_features_heading_part1} ",
+                                  style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 26,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: "Offer",
+                                  text: l.aboutUs_features_heading_part2,
                                   style: TextStyle(
                                     color: Colors.red,
                                     fontSize: 26,
@@ -215,8 +212,7 @@ class _About_UsState extends State<About_Us> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                              "Smart tools and verified listings tailored for real estate success.",
+                          Text(l.aboutUs_features_subtitle,
                               style: TextStyle(
                                   fontSize: 16, color: Colors.grey[600]),
                               textAlign: TextAlign.center),
@@ -236,38 +232,38 @@ class _About_UsState extends State<About_Us> {
                       mainAxisSpacing: 10,
                       children: [
                         _featureCard(
-                            "Verified Listings",
-                            "100% verified properties to build trust and transparency.",
+                            l.aboutUs_feature_verified_listings_title,
+                            l.aboutUs_feature_verified_listings_desc,
                             'assets/images/verified_icon.png',
                             Colors.green,
                             5),
                         _featureCard(
-                            "Smart Filters",
-                            "Advanced location & lifestyle filters to refine your search.",
+                            l.aboutUs_feature_smart_filters_title,
+                            l.aboutUs_feature_smart_filters_desc,
                             'assets/images/filters_icon.png',
                             Colors.purple,
                             9),
                         _featureCard(
-                            "Agent Dashboard",
-                            "Track listing views, leads, and marketing performance.",
+                            l.aboutUs_feature_agent_dashboard_title,
+                            l.aboutUs_feature_agent_dashboard_desc,
                             'assets/images/dashboard_icon.png',
                             Colors.blue,
                             11),
                         _featureCard(
-                            "Off-plan Projects",
-                            "Showcase upcoming developments with dedicated visibility.",
+                            l.aboutUs_feature_offplan_projects_title,
+                            l.aboutUs_feature_offplan_projects_desc,
                             'assets/images/offplan_projects.png',
                             Colors.orange,
                             9),
                         _featureCard(
-                            "Web & App Access",
-                            "Seamless browsing experience online and via mobile.",
+                            l.aboutUs_feature_web_app_access_title,
+                            l.aboutUs_feature_web_app_access_desc,
                             'assets/images/web_access_icon.png',
                             Colors.teal,
                             10),
                         _featureCard(
-                            "Growth Tools",
-                            "Marketing and data insights to boost your brand and reach.",
+                            l.aboutUs_feature_growth_tools_title,
+                            l.aboutUs_feature_growth_tools_desc,
                             'assets/images/growth_icon.png',
                             Colors.red,
                             6),
@@ -280,12 +276,11 @@ class _About_UsState extends State<About_Us> {
                     Center(
                       child: Column(
                         children: [
-                          const Text("Our Audience",
-                              style: TextStyle(
+                          Text(l.aboutUs_audience_heading,
+                              style: const TextStyle(
                                   fontSize: 28, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
-                          Text(
-                              "We proudly serve the full real estate ecosystem",
+                          Text(l.aboutUs_audience_subtitle,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 16, color: Colors.grey[600])),
@@ -297,11 +292,11 @@ class _About_UsState extends State<About_Us> {
                     Column(
                       spacing: 14,
                       children: [
-                        _pill("💼 Property Investors"),
-                        _pill("👨‍💼 Agents & Agencies"),
-                        _pill("🚚 Relocation Services"),
-                        _pill("🏗️ Developers & Brokers"),
-                        _pill("🏠 Home Buyers & Tenants"),
+                        _pill(l.aboutUs_audience_pill_investors),
+                        _pill(l.aboutUs_audience_pill_agents),
+                        _pill(l.aboutUs_audience_pill_relocation),
+                        _pill(l.aboutUs_audience_pill_developers),
+                        _pill(l.aboutUs_audience_pill_buyers),
                       ],
                     ),
 
@@ -322,27 +317,25 @@ class _About_UsState extends State<About_Us> {
                     // Our Story
                     Column(
                       children: [
-                        Text("Our Story",
+                        Text(l.aboutUs_story_heading,
                             style: TextStyle(
                                 fontSize: 22,
                                 color: Colors.red.shade700,
                                 fontWeight: FontWeight.bold)),
                         const SizedBox(height: 12),
-                        const Text("We started Akarat with one goal",
-                            style: TextStyle(
+                        Text(l.aboutUs_story_main_title,
+                            style: const TextStyle(
                                 fontSize: 26, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center),
                         const SizedBox(height: 16),
-                        Text(
-                            "To remove the frustration from property search and marketing by delivering real listings, real tools, and real results.",
+                        Text(l.aboutUs_story_paragraph_1,
                             style: TextStyle(
                                 fontSize: 16,
                                 height: 1.7,
                                 color: Colors.grey[800]),
                             textAlign: TextAlign.center),
                         const SizedBox(height: 16),
-                        Text(
-                            "What began as a mission to bring clarity and trust to the real estate market has grown into a fully-featured platform trusted across the UAE.",
+                        Text(l.aboutUs_story_paragraph_2,
                             style: TextStyle(
                                 fontSize: 16,
                                 height: 1.7,
@@ -353,11 +346,12 @@ class _About_UsState extends State<About_Us> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             _bigNumber(
-                              "600 +",
-                              "International clients",
+                              l.aboutUs_story_stat_clients_number,
+                              l.aboutUs_story_stat_clients_label,
                             ),
                             const SizedBox(width: 50),
-                            _bigNumber("40 +", "Offices around the world"),
+                            _bigNumber(l.aboutUs_story_stat_offices_number,
+                                l.aboutUs_story_stat_offices_label),
                           ],
                         ),
                       ],
@@ -365,21 +359,21 @@ class _About_UsState extends State<About_Us> {
 
                     const SizedBox(height: 60),
 
-                    // What We Offer
+                    // Explore the Top Features of Akarat
                     RichText(
                       textAlign: TextAlign.center,
-                      text: const TextSpan(
+                      text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "Explore the Top Features of ",
-                            style: TextStyle(
+                            text: "${l.aboutUs_explore_heading_part1} ",
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           TextSpan(
-                            text: "Akarat",
+                            text: l.aboutUs_hero_brand_name,
                             style: TextStyle(
                               color: Colors.red,
                               fontSize: 26,
@@ -404,6 +398,7 @@ class _About_UsState extends State<About_Us> {
                           exploreModel.assetIcon,
                           exploreModel.color,
                           exploreModel.iconPadding,
+                          context,
                         );
                       },
                     ),
@@ -413,21 +408,21 @@ class _About_UsState extends State<About_Us> {
                     Center(
                       child: Column(
                         children: [
-                          Text("Our services",
+                          Text(l.aboutUs_services_heading,
                               // textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 22,
                                   color: Colors.red.shade700,
                                   fontWeight: FontWeight.bold)),
                           const SizedBox(height: 12),
-                          const Text(
-                            "Who We Serve",
+                          Text(
+                            l.aboutUs_services_whoWeServe_title,
                             style: TextStyle(
                                 fontSize: 26, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "Find your ideal home through our verified listings, updated in real time to ensure accuracy and trust.",
+                            l.aboutUs_services_intro,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 fontSize: 16,
@@ -496,7 +491,7 @@ class _About_UsState extends State<About_Us> {
                             await launchUrlSafe(
                                 "https://www.instagram.com/akarat.uae/");
                           },
-                        ), // Replace with LinkedIn icon
+                        ),
                         const SizedBox(width: 18),
                         _socialCircle(
                           "assets/images/linkedin.png",
@@ -505,7 +500,7 @@ class _About_UsState extends State<About_Us> {
                             await launchUrlSafe(
                                 "https://www.linkedin.com/company/akarat-uae/");
                           },
-                        ), // Replace with Instagram icon
+                        ),
                         const SizedBox(width: 18),
                         _socialCircle(
                           "assets/images/youtube.png",
@@ -514,13 +509,13 @@ class _About_UsState extends State<About_Us> {
                             await launchUrlSafe(
                                 "https://www.youtube.com/@akaratuae");
                           },
-                        ), // YouTube
+                        ),
                       ],
                     ),
                     Gap(12),
                     SelectionArea(
                       child: Text(
-                        "info@akarat.com",
+                        l.aboutUs_footer_email,
                         style: TextStyle(color: Colors.white),
                       ),
                     )
@@ -583,9 +578,6 @@ class _About_UsState extends State<About_Us> {
           CircleAvatar(
             radius: 25,
             backgroundColor: color.withOpacity(0.1),
-
-            // Image.network('assets/images/verified_icon.png').image,
-            // child: Icon(icon, size: 29, color: color)
             child: Padding(
               padding: EdgeInsets.all(iconPadding),
               child: Image.asset(icon),
@@ -624,7 +616,6 @@ class _About_UsState extends State<About_Us> {
         Text(number,
             style: const TextStyle(
                 fontSize: 30, fontWeight: FontWeight.bold, color: Colors.red)),
-        // const SizedBox(height: 4),
         Text(label,
             style: TextStyle(color: Colors.grey[600], fontSize: 14),
             textAlign: TextAlign.center),
@@ -638,6 +629,7 @@ class _About_UsState extends State<About_Us> {
     String icon,
     Color color,
     double iconPadding,
+    BuildContext ctx,
   ) {
     return Container(
       margin: EdgeInsets.only(top: 15),
@@ -669,19 +661,21 @@ class _About_UsState extends State<About_Us> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               textAlign: TextAlign.left),
           const SizedBox(height: 8),
-          Text(desc,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              textAlign: TextAlign.left),
+          Text(
+            desc,
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: () => Navigator.pushReplacement(
                 context, MaterialPageRoute(builder: (_) => const Home())),
-            label: const Text("Start a project",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                )),
+            label:
+                Text(AppLocalizations.of(context)!.aboutUs_start_project_button,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    )),
             iconAlignment: IconAlignment.end,
             icon: const Icon(
               Icons.arrow_forward,
@@ -690,7 +684,6 @@ class _About_UsState extends State<About_Us> {
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              // foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
@@ -702,6 +695,8 @@ class _About_UsState extends State<About_Us> {
   }
 
   Container buildMyNavBar(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -712,8 +707,7 @@ class _About_UsState extends State<About_Us> {
         ),
       ),
       child: Row(
-        mainAxisAlignment:
-            MainAxisAlignment.spaceBetween, // ✅ distributes space correctly
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
@@ -733,17 +727,17 @@ class _About_UsState extends State<About_Us> {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: Colors.white, // white container
-                    title: const Text("Login Required",
-                        style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.",
-                        style: TextStyle(color: Colors.black)),
+                    backgroundColor: Colors.white,
+                    title: Text(l.aboutUs_login_dialog_title,
+                        style: const TextStyle(color: Colors.black)),
+                    content: Text(l.aboutUs_login_dialog_message,
+                        style: const TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Cancel",
-                          style: TextStyle(color: Colors.red), // red text
+                        child: Text(
+                          l.aboutUs_login_dialog_cancel,
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ),
                       TextButton(
@@ -755,21 +749,19 @@ class _About_UsState extends State<About_Us> {
                                 builder: (_) => const LoginDemo()),
                           );
                         },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(color: Colors.red), // red text
+                        child: Text(
+                          l.aboutUs_login_dialog_login,
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ),
                     ],
                   ),
                 );
               } else {
-                // ✅ Logged in – go to favorites
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const Fav_Logout()),
                 ).then((_) async {
-                  // 🔁 Re-sync when coming back
                   final updatedFavorites =
                       await FavoriteService.fetchApiFavorites(token);
                   setState(() {
@@ -787,8 +779,7 @@ class _About_UsState extends State<About_Us> {
             onPressed: () => showHomeContactDialog(context),
           ),
           Padding(
-            padding: const EdgeInsets.only(
-                right: 20.0), // consistent spacing from right edge
+            padding: const EdgeInsets.only(right: 20.0),
             child: IconButton(
               enableFeedback: false,
               onPressed: () {
