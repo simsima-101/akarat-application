@@ -230,6 +230,7 @@ class _About_UsState extends State<About_Us> {
                       // childAspectRatio: 1.35,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
+                      childAspectRatio: 1 / 1.1,
                       children: [
                         _featureCard(
                             l.aboutUs_feature_verified_listings_title,
