@@ -21,6 +21,7 @@ import '../core/utils/secure_storage.dart';
 import '../core/utils/session_manager.dart';
 import 'home.dart';
 import 'login.dart';
+import 'otp_verification.dart';
 import 'terms_condition.dart';
 
 const String _IOS_CLIENT_ID =
@@ -118,10 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     }
 
-    // Optional UAE mobile prefix check (only when length is correct)
-    if (selectedCountryCode == '+971' && !value.startsWith('5')) {
-      return 'UAE mobile numbers usually start with 5';
-    }
+
 
     return null;
   }
@@ -203,7 +201,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         final regToken = _extractTokenFromAny(reg) ?? '';
 
-        final emailFromApi = (reg['email'] ?? email).toString().trim();
+        String emailFromApi = (reg['email'] as String?)?.trim().toLowerCase() ?? '';
+        if (emailFromApi.isEmpty) {
+          emailFromApi = email.trim().toLowerCase();  // input email as ultimate fallback
+        }
+
+        debugPrint('Navigating to OTP with emailFromApi: "$emailFromApi" (original input: "$email")');
         final serverUser = ((reg['user'] ?? reg['name']) ?? '').toString().trim();
 
         final fullName = serverUser.isNotEmpty
@@ -218,22 +221,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
           SnackBar(content: Text(loc.otpSentMessage)),
         );
 
-        Navigator.of(context, rootNavigator: true).pushNamed(
-          '/verify-otp',
-          arguments: {
-            'mode': 'register',
-            'email': emailFromApi,
-            'firstName': first,
-            'lastName': last,
-            'name': fullName,
-            'password': pwd,
-            'phone': phone,
-            'phoneCode': selectedCountryCode,
-            'expiresIn': expiresIn,
-            'resendAfter': resendAfter,
-            if (devOtp.isNotEmpty) 'devOtp': devOtp,
-            if (regToken.isNotEmpty) 'token': regToken,
-          },
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(
+            builder: (context) => const OtpVerificationScreen(),
+            settings: RouteSettings(
+              name: '/verify-otp', // optional – keeps route name for debugging
+              arguments: {
+                'mode': 'register',
+                'email': emailFromApi,
+                'firstName': first,
+                'lastName': last,
+                'name': fullName,
+                'password': pwd,
+                'phone': phone,
+                'phoneCode': selectedCountryCode,
+                'expiresIn': expiresIn,
+                'resendAfter': resendAfter,
+                if (devOtp.isNotEmpty) 'devOtp': devOtp,
+                if (regToken.isNotEmpty) 'token': regToken,
+              },
+            ),
+          ),
         );
         return;
       }
@@ -280,33 +288,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String password,
     required String passwordConfirmation,
   }) async {
+    // Helper: safe value picker with root-level priority
     String? _pick(Map<String, dynamic> map, List<String> paths) {
-      for (final p in paths) {
-        dynamic cur = map;
-        for (final k in p.split('.')) {
-          if (cur is Map && cur.containsKey(k)) {
-            cur = cur[k];
+      // 1. Direct root-level check (most common in your API responses)
+      if (map.containsKey('email')) {
+        final val = map['email']?.toString()?.trim();
+        if (val != null && val.isNotEmpty) return val.toLowerCase();
+      }
+
+      // 2. Nested paths
+      for (final path in paths) {
+        dynamic current = map;
+        final keys = path.split('.');
+        bool found = true;
+
+        for (final key in keys) {
+          if (current is Map<String, dynamic> && current.containsKey(key)) {
+            current = current[key];
           } else {
-            cur = null;
+            found = false;
             break;
           }
         }
-        if (cur == null) continue;
-        if (cur is String && cur.trim().isNotEmpty) return cur.trim();
-        if (cur is num) return cur.toString();
+
+        if (found && current is String && current.trim().isNotEmpty) {
+          return current.trim().toLowerCase();
+        }
       }
+
       return null;
     }
 
+    // Helper: integer picker
     int? _pickInt(Map<String, dynamic> map, List<String> paths) {
       final v = _pick(map, paths);
-      if (v == null) return null;
-      return int.tryParse(v);
+      return v != null ? int.tryParse(v) : null;
     }
 
+    // Helper: first validation error message
     String? _firstErr(Map<String, dynamic> data) {
       final errs = data['errors'];
-      if (errs is Map) {
+      if (errs is Map<String, dynamic>) {
         for (final entry in errs.entries) {
           final val = entry.value;
           if (val is List && val.isNotEmpty) return val.first.toString();
@@ -318,10 +340,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return null;
     }
 
+    // Prepare phone country code
     final cc = phoneCountryCode.trim().startsWith('+')
         ? phoneCountryCode.trim()
         : '+${phoneCountryCode.trim()}';
 
+    // Make the API call
     final resp = await _postForm('/register', {
       'first_name': firstName.trim(),
       'last_name': lastName.trim(),
@@ -332,30 +356,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'password_confirmation': passwordConfirmation,
     });
 
-    if (_looksHtml(resp)) {
-      throw Exception(
-        'Non-JSON from /register. Check API_BASE_URL (QA/PROD) and route mapping.',
-      );
-    }
+    // Early declaration + safe fallback
+    Map<String, dynamic> data = <String, dynamic>{};
 
-    final data = _decodeMap(resp.body);
+    try {
+      data = _decodeMap(resp.body);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to decode register response: $e\nBody: ${resp.body}');
+      }
+      // data remains empty map → safe
+    }
 
     if (kDebugMode) {
       print(
-          '[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}');
+        '[POST-FORM] ${resp.request?.url} -> ${resp.statusCode} ${resp.body}',
+      );
     }
 
     if (resp.statusCode >= 200 && resp.statusCode < 300) {
+      // Extract values with fallback
       final otp = _pick(data, ['otp', 'data.otp', 'meta.otp']);
-      final emailOut = _pick(data, ['email', 'data.email', 'user.email']) ??
-          email.trim().toLowerCase();
-      final expiresIn =
-          _pickInt(data, ['expires_in', 'meta.expires_in']) ?? 300;
+      final expiresIn = _pickInt(data, ['expires_in', 'meta.expires_in']) ?? 300;
       final resendAfter =
           _pickInt(data, ['resend_after', 'meta.resend_after']) ?? 60;
-      final nameOut =
-          _pick(data, ['user', 'name', 'data.name']) ?? '$firstName $lastName';
+
+      // Email: prefer API → fallback to input email
+      final emailOut = _pick(data, [
+        'email',
+        'data.email',
+        'user.email',
+        'data.user.email',
+      ]) ??
+          email.trim().toLowerCase();
+
+      final nameOut = _pick(data, [
+        'user',
+        'name',
+        'data.name',
+        'data.user.name',
+      ]) ??
+          '$firstName $lastName'.trim();
+
       final tokenOut = extractToken(data);
+
+      // Debug log to confirm extraction
+      if (kDebugMode) {
+        print('Extracted emailFromApi in registerStart: "$emailOut" '
+            '(fallback input: "${email.trim().toLowerCase()}")');
+      }
 
       return {
         '__status': resp.statusCode,
@@ -370,6 +419,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       };
     }
 
+    // Error handling
     if (resp.statusCode == 422 || resp.statusCode == 409) {
       final msg = _firstErr(data) ??
           'This email is already registered or the data is invalid.';
@@ -392,9 +442,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final resp = await ApiService.post(
       endpoint,
       body: fields,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+
     ).timeout(const Duration(seconds: 25));
 
     if (kDebugMode) {

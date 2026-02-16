@@ -301,12 +301,6 @@
     "description": "Validation when email format is invalid"
   },
 
-  "@_my_account_terms_section": "================= MY ACCOUNT → TERMS & CONDITIONS SCREEN =================",
-
-  "myAccountTermsAndConditionsAppBarTitle": "Terms & Conditions",
-  "@myAccountTermsAndConditionsAppBarTitle": {
-    "description": "App bar title text shown on the Terms & Conditions screen in the My Account section"
-  },
 
   "@_find_agent_section": "================= FIND AGENT =================",
 
@@ -1120,335 +1114,842 @@
     "description": "Text about policy change procedure"
   },
 
-   "@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
 
-  "aboutUs_hero_title": "About Akarat",
-    "@aboutUs_hero_title": {
-      "description": "Main large heading at the top of the page"
-    },
-    "aboutUs_hero_subtitle": "Built for Trust. Designed for the Future.",
-    "@aboutUs_hero_subtitle": {
-      "description": "Tagline / subtitle shown right below the hero title (usually in red)"
-    },
-    "aboutUs_intro_paragraph_1": "Akarat is not just a real estate platform — it's a smarter way to connect people with properties in the UAE.",
-    "@aboutUs_intro_paragraph_1": {
-      "description": "First paragraph in the introduction section"
-    },
-    "aboutUs_intro_paragraph_2": "We bring together verified listings, powerful tech, and a user-first approach to help everyone succeed with confidence.",
-    "@aboutUs_intro_paragraph_2": {
-      "description": "Second paragraph in the introduction section"
-    },
-    "aboutUs_get_started_button": "Get Started",
-    "@aboutUs_get_started_button": {
-      "description": "Label on the prominent blue button after the main image"
-    },
-    "aboutUs_features_heading_part1": "What We",
-    "@aboutUs_features_heading_part1": {
-      "description": "First part of 'What We Offer' heading (black)"
-    },
-    "aboutUs_features_heading_part2": "Offer",
-    "@aboutUs_features_heading_part2": {
-      "description": "Second part of 'What We Offer' heading (red)"
-    },
-    "aboutUs_features_subtitle": "Smart tools and verified listings tailored for real estate success.",
-    "@aboutUs_features_subtitle": {
-      "description": "Small description under the 'What We Offer' heading"
-    },
-    "aboutUs_feature_verified_listings_title": "Verified Listings",
-    "@aboutUs_feature_verified_listings_title": {
-      "description": "Title of Verified Listings feature card in grid"
-    },
-    "aboutUs_feature_verified_listings_desc": "100% verified properties to build trust and transparency.",
-    "@aboutUs_feature_verified_listings_desc": {
-      "description": "Short description for Verified Listings feature card"
-    },
-    "aboutUs_feature_smart_filters_title": "Smart Filters",
-    "@aboutUs_feature_smart_filters_title": {
-      "description": "Title of Smart Filters feature card in grid"
-    },
-    "aboutUs_feature_smart_filters_desc": "Advanced location & lifestyle filters to refine your search.",
-    "@aboutUs_feature_smart_filters_desc": {
-      "description": "Short description for Smart Filters feature card"
-    },
-    "aboutUs_feature_agent_dashboard_title": "Agent Dashboard",
-    "@aboutUs_feature_agent_dashboard_title": {
-      "description": "Title of Agent Dashboard feature card in grid"
-    },
-    "aboutUs_feature_agent_dashboard_desc": "Track listing views, leads, and marketing performance.",
-    "@aboutUs_feature_agent_dashboard_desc": {
-      "description": "Short description for Agent Dashboard feature card"
-    },
-    "aboutUs_feature_offplan_projects_title": "Off-plan Projects",
-    "@aboutUs_feature_offplan_projects_title": {
-      "description": "Title of Off-plan Projects feature card in grid"
-    },
-    "aboutUs_feature_offplan_projects_desc": "Showcase upcoming developments with dedicated visibility.",
-    "@aboutUs_feature_offplan_projects_desc": {
-      "description": "Short description for Off-plan Projects feature card"
-    },
-    "aboutUs_feature_web_app_access_title": "Web & App Access",
-    "@aboutUs_feature_web_app_access_title": {
-      "description": "Title of Web & App Access feature card in grid"
-    },
-    "aboutUs_feature_web_app_access_desc": "Seamless browsing experience online and via mobile.",
-    "@aboutUs_feature_web_app_access_desc": {
-      "description": "Short description for Web & App Access feature card"
-    },
-    "aboutUs_feature_growth_tools_title": "Growth Tools",
-    "@aboutUs_feature_growth_tools_title": {
-      "description": "Title of Growth Tools feature card in grid"
-    },
-    "aboutUs_feature_growth_tools_desc": "Marketing and data insights to boost your brand and reach.",
-    "@aboutUs_feature_growth_tools_desc": {
-      "description": "Short description for Growth Tools feature card"
-    },
-    "aboutUs_audience_heading": "Our Audience",
-    "@aboutUs_audience_heading": {
-      "description": "Main heading of the audience section"
-    },
-    "aboutUs_audience_subtitle": "We proudly serve the full real estate ecosystem",
-    "@aboutUs_audience_subtitle": {
-      "description": "Subtitle under Our Audience heading"
-    },
-    "aboutUs_audience_pill_investors": "💼 Property Investors",
-    "@aboutUs_audience_pill_investors": {
-      "description": "Pill / chip for property investors"
-    },
-    "aboutUs_audience_pill_agents": "👨‍💼 Agents & Agencies",
-    "@aboutUs_audience_pill_agents": {
-      "description": "Pill / chip for agents and agencies"
-    },
-    "aboutUs_audience_pill_relocation": "🚚 Relocation Services",
-    "@aboutUs_audience_pill_relocation": {
-      "description": "Pill / chip for relocation services"
-    },
-    "aboutUs_audience_pill_developers": "🏗️ Developers & Brokers",
-    "@aboutUs_audience_pill_developers": {
-      "description": "Pill / chip for developers and brokers"
-    },
-    "aboutUs_audience_pill_buyers": "🏠 Home Buyers & Tenants",
-    "@aboutUs_audience_pill_buyers": {
-      "description": "Pill / chip for home buyers and tenants"
-    },
-    "aboutUs_story_heading": "Our Story",
-    "@aboutUs_story_heading": {
-      "description": "Red title above the Our Story section"
-    },
-    "aboutUs_story_main_title": "We started Akarat with one goal",
-    "@aboutUs_story_main_title": {
-      "description": "Large centered title in Our Story section"
-    },
-    "aboutUs_story_paragraph_1": "To remove the frustration from property search and marketing by delivering real listings, real tools, and real results.",
-    "@aboutUs_story_paragraph_1": {
-      "description": "First paragraph in Our Story"
-    },
-    "aboutUs_story_paragraph_2": "What began as a mission to bring clarity and trust to the real estate market has grown into a fully-featured platform trusted across the UAE.",
-    "@aboutUs_story_paragraph_2": {
-      "description": "Second paragraph in Our Story"
-    },
-    "aboutUs_story_stat_clients_number": "600 +",
-    "@aboutUs_story_stat_clients_number": {
-      "description": "Big number for international clients statistic"
-    },
-    "aboutUs_story_stat_clients_label": "International clients",
-    "@aboutUs_story_stat_clients_label": {
-      "description": "Label below clients statistic number"
-    },
-    "aboutUs_story_stat_offices_number": "40 +",
-    "@aboutUs_story_stat_offices_number": {
-      "description": "Big number for offices statistic"
-    },
-    "aboutUs_story_stat_offices_label": "Offices around the world",
-    "@aboutUs_story_stat_offices_label": {
-      "description": "Label below offices statistic number"
-    },
-    "aboutUs_explore_heading_part1": "Explore the Top Features of",
-    "@aboutUs_explore_heading_part1": {
-      "description": "First part of rich text heading before explore cards"
-    },
-    "aboutUs_services_heading": "Our services",
-    "@aboutUs_services_heading": {
-      "description": "Red title above Who We Serve section"
-    },
-    "aboutUs_services_subheading": "Who We Serve",
-    "@aboutUs_services_subheading": {
-      "description": "Large title above service cards"
-    },
-    "aboutUs_services_intro": "Find your ideal home through our verified listings, updated in real time to ensure accuracy and trust.",
-    "@aboutUs_services_intro": {
-      "description": "Intro text before the list of service cards"
-    },
-    "aboutUs_explore_verified_listings_title": "Verified Listings",
-    "@aboutUs_explore_verified_listings_title": {
-      "description": "Title of first longer explore card"
-    },
-    "aboutUs_explore_verified_listings_desc": "Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.",
-    "@aboutUs_explore_verified_listings_desc": {
-      "description": "Description of first longer explore card"
-    },
-    "aboutUs_explore_smart_location_title": "Smart Location Search",
-    "@aboutUs_explore_smart_location_title": {
-      "description": "Title of second longer explore card"
-    },
-    "aboutUs_explore_smart_location_desc": "Discover properties by area, community, landmark, or lifestyle preference using our intelligent filters.",
-    "@aboutUs_explore_smart_location_desc": {
-      "description": "Description of second longer explore card"
-    },
-    "aboutUs_explore_agent_dashboard_title": "Agent Dashboard",
-    "@aboutUs_explore_agent_dashboard_title": {
-      "description": "Title of third longer explore card"
-    },
-    "aboutUs_explore_agent_dashboard_desc": "Agencies and agents get a dedicated backend to track leads, views, and property performance.",
-    "@aboutUs_explore_agent_dashboard_desc": {
-      "description": "Description of third longer explore card"
-    },
-    "aboutUs_service_card_buyers_title": "Home Buyers & Renters",
-    "@aboutUs_service_card_buyers_title": {
-      "description": "Title of first animated service card"
-    },
-    "aboutUs_service_card_buyers_desc": "Explore verified listings with real-time updates",
-    "@aboutUs_service_card_buyers_desc": {
-      "description": "Description of first service card"
-    },
-    "aboutUs_service_card_agents_title": "Real Estate Agents & Agencies",
-    "@aboutUs_service_card_agents_title": {
-      "description": "Title of second animated service card"
-    },
-    "aboutUs_service_card_agents_desc": "Get leads, promote listings, and build your brand",
-    "@aboutUs_service_card_agents_desc": {
-      "description": "Description of second service card"
-    },
-    "aboutUs_service_card_developers_title": "Developers",
-    "@aboutUs_service_card_developers_title": {
-      "description": "Title of third animated service card"
-    },
-    "aboutUs_service_card_developers_desc": "Showcase off-plan properties with rich media and featured promotions",
-    "@aboutUs_service_card_developers_desc": {
-      "description": "Description of third service card"
-    },
-    "aboutUs_service_card_investors_title": "Investors",
-    "@aboutUs_service_card_investors_title": {
-      "description": "Title of fourth animated service card"
-    },
-    "aboutUs_service_card_investors_desc": "Discover new projects and profitable opportunities",
-    "@aboutUs_service_card_investors_desc": {
-      "description": "Description of fourth service card"
-    },
-    "aboutUs_service_card_providers_title": "Service Providers",
-    "@aboutUs_service_card_providers_title": {
-      "description": "Title of fifth animated service card"
-    },
-    "aboutUs_service_card_providers_desc": "Advertise moving, interior, mortgage & legal services",
-    "@aboutUs_service_card_providers_desc": {
-      "description": "Description of fifth service card"
-    },
-    "aboutUs_footer_email": "info@akarat.com",
-    "@aboutUs_footer_email": {
-      "description": "Email address shown in the dark footer at the bottom"
-    },
-    "aboutUs_start_project_button": "Start a project",
-    "@aboutUs_start_project_button": {
-      "description": "Label on red button inside explore cards"
-    },
-    "aboutUs_login_dialog_title": "Login Required",
-    "@aboutUs_login_dialog_title": {
-      "description": "Title of dialog shown when tapping favorites without login"
-    },
-    "aboutUs_login_dialog_message": "Please login to access favorites.",
-    "@aboutUs_login_dialog_message": {
-      "description": "Main message in the login required dialog"
-    },
-    "aboutUs_login_dialog_cancel": "Cancel",
-    "@aboutUs_login_dialog_cancel": {
-      "description": "Cancel button in login dialog"
-    },
-    "aboutUs_login_dialog_login": "Login",
-    "@aboutUs_login_dialog_login": {
-      "description": "Login button in login dialog"
+  "@_login_screen_section": "================= LOGIN SCREEN =================",
+
+
+    "welcomeToAkarat": "Welcome to Akarat!",
+    "@welcomeToAkarat": {
+      "description": "Main welcome title on login screen"
     },
 
-      "aboutUs_services_whoWeServe_title": "Who We Serve",
-      "@aboutUs_services_whoWeServe_title": {
-        "description": "Large bold title text above the service cards section in About Us screen, reads 'Who We Serve'"
+    "email": "Email",
+    "@email": {
+      "description": "Email field hint"
+    },
+
+    "password": "Password",
+    "@password": {
+      "description": "Password field hint"
+    },
+
+    "forgotPassword": "Forgot password?",
+    "@forgotPassword": {},
+
+    "login": "Login",
+    "@login": {},
+
+    "continueWithGoogle": "Continue with Google",
+    "@continueWithGoogle": {},
+
+    "notRegisteredYet": "Not registered yet?",
+    "@notRegisteredYet": {},
+
+    "createNewAccount": "Create new account",
+    "@createNewAccount": {},
+
+    "or": "or",
+    "@or": {},
+
+    "invalidEmail": "Invalid email address",
+    "@invalidEmail": {},
+
+  "pleaseEnterField": "Please enter {field}",
+  "@pleaseEnterField": {
+    "description": "Generic 'please enter' validation message",
+    "placeholders": {
+      "field": {}
+    }
+  },
+
+  "invalidEmailAddress": "Invalid email address",
+  "@invalidEmailAddress": {
+    "description": "Email format validation error"
+  },
+
+
+
+    "loginSucceededButTokenMissing": "Login succeeded but token missing.",
+    "@loginSucceededButTokenMissing": {
+      "description": "Error when backend login OK but no token returned"
+    },
+
+    "serverErrorTryAgain": "Server error. Try again.",
+    "@serverErrorTryAgain": {
+      "description": "Generic fallback server error"
+    },
+
+    "invalidEmailOrPassword": "Invalid email or password.",
+    "@invalidEmailOrPassword": {
+      "description": "401 Unauthorized - wrong credentials"
+    },
+
+    "validationError": "Validation error.",
+    "@validationError": {
+      "description": "422 validation failed generic message"
+    },
+
+    "serverErrorWithCode": "Server error ({code}).",
+    "@serverErrorWithCode": {
+      "description": "Generic server error with status code",
+      "placeholders": { "code": {} }
+    },
+
+    "networkErrorCheckConnection": "Network error. Check your connection.",
+    "@networkErrorCheckConnection": {
+      "description": "Catch-all network / timeout / connection error"
+    },
+
+    "accountInactiveOrDeleted": "Account inactive or deleted.",
+    "@accountInactiveOrDeleted": {
+      "description": "Google login returned no/invalid token"
+    },
+
+    "googleSignInNotSupported": "Google Sign-In not supported on this platform.",
+    "@googleSignInNotSupported": {
+      "description": "Platform check failure"
+    },
+
+    "googleIdTokenMissing": "Google ID token missing.",
+    "@googleIdTokenMissing": {
+      "description": "Google auth response missing idToken"
+    },
+
+    "firebaseSignInFailed": "Firebase sign-in failed.",
+    "@firebaseSignInFailed": {
+      "description": "Credential sign-in returned no user"
+    },
+
+    "failedToGetFirebaseToken": "Failed to get Firebase token.",
+    "@failedToGetFirebaseToken": {
+      "description": "getIdToken() failed"
+    },
+
+    "nonJsonFromGoogleLogin": "Non-JSON from /login-google (HTML). Check API_BASE_URL (QA vs PROD) and route.",
+    "@nonJsonFromGoogleLogin": {
+      "description": "Backend returned HTML instead of JSON (dev message)"
+    },
+
+"@_favorites": "================= Favorites =================",
+
+    "favoritesTitle": "Favorites",
+      "@favoritesTitle": { "description": "AppBar title for favorites screen" },
+
+      "clearAll": "Clear All",
+      "@clearAll": { "description": "Button to clear all favorites" },
+
+      "clearAllFavoritesTitle": "Clear All Favorites?",
+      "@clearAllFavoritesTitle": { "description": "Dialog title when clearing favorites" },
+
+      "clearAllFavoritesMessage": "This will remove all saved properties from your favorites. This action cannot be undone.",
+      "@clearAllFavoritesMessage": { "description": "Dialog content warning" },
+
+      "cancel": "Cancel",
+      "@cancel": { "description": "Cancel button in dialogs" },
+
+      "clearAllConfirm": "Clear All",
+      "@clearAllConfirm": { "description": "Confirm button in clear dialog – red style" },
+
+      "notLoggedInMessage": "You are not logged in",
+      "@notLoggedInMessage": { "description": "Snackbar when trying to clear without login" },
+
+      "clearingFavorites": "Clearing all favorites...",
+      "@clearingFavorites": { "description": "Loading message in snackbar" },
+
+      "favoritesClearedSuccess": "All favorites cleared successfully",
+      "@favoritesClearedSuccess": { "description": "Success message after clearing" },
+
+      "failedToClearFavorites": "Failed to clear favorites: {statusCode}",
+      "@failedToClearFavorites": {
+        "description": "Error message with status code",
+        "placeholders": { "statusCode": { "type": "int" } }
       },
-        "aboutUs_explore_verified_title": "Verified Listings",
-        "@aboutUs_explore_verified_title": {
-          "description": "Title of first explore card in About Us screen"
-        },
-        "aboutUs_explore_verified_desc": "Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.",
-        "@aboutUs_explore_verified_desc": {
-          "description": "Description of first explore card in About Us screen"
-        },
 
-        "aboutUs_explore_smart_location_title": "Smart Location Search",
-        "@aboutUs_explore_smart_location_title": {
-          "description": "Title of second explore card in About Us screen"
-        },
-        "aboutUs_explore_smart_location_desc": "Discover properties by area, community, landmark, or lifestyle preference using our intelligent filters.",
-        "@aboutUs_explore_smart_location_desc": {
-          "description": "Description of second explore card in About Us screen"
-        },
+      "errorClearingFavorites": "Error clearing favorites. Check your connection.",
+      "@errorClearingFavorites": { "description": "Generic error when clearing fails" },
 
-        "aboutUs_explore_agent_dashboard_title": "Agent Dashboard",
-        "@aboutUs_explore_agent_dashboard_title": {
-          "description": "Title of third explore card in About Us screen"
-        },
-        "aboutUs_explore_agent_dashboard_desc": "Agencies and agents get a dedicated backend to track leads, views, and property performance.",
-        "@aboutUs_explore_agent_dashboard_desc": {
-          "description": "Description of third explore card in About Us screen"
-        },
+      "loginRequiredTitle": "You need to log in to view your favorite properties.",
+      "@loginRequiredTitle": { "description": "Message shown when not logged in" },
 
-        "aboutUs_service_buyers_renters_title": "Home Buyers & Renters",
-        "@aboutUs_service_buyers_renters_title": {
-          "description": "Title of first service card in About Us screen"
-        },
-        "aboutUs_service_buyers_renters_desc": "Explore verified listings with real-time updates",
-        "@aboutUs_service_buyers_renters_desc": {
-          "description": "Description of first service card in About Us screen"
-        },
+      "loginButton": "Login",
+      "@loginButton": { "description": "Button to go to login screen" },
 
-        "aboutUs_service_agents_agencies_title": "Real Estate Agents & Agencies",
-        "@aboutUs_service_agents_agencies_title": {
-          "description": "Title of second service card in About Us screen"
-        },
-        "aboutUs_service_agents_agencies_desc": "Get leads, promote listings, and build your brand",
-        "@aboutUs_service_agents_agencies_desc": {
-          "description": "Description of second service card in About Us screen"
-        },
+      "noFavoritesYet": "No favorite properties yet",
+      "@noFavoritesYet": { "description": "Message when favorites list is empty" },
 
-        "aboutUs_service_developers_title": "Developers",
-        "@aboutUs_service_developers_title": {
-          "description": "Title of third service card in About Us screen"
-        },
-        "aboutUs_service_developers_desc": "Showcase off-plan properties with rich media and featured promotions",
-        "@aboutUs_service_developers_desc": {
-          "description": "Description of third service card in About Us screen"
-        },
+      "tapHeartToSave": "Tap the heart icon on any property to save it here",
+      "@tapHeartToSave": { "description": "Instruction for empty favorites state" },
 
-        "aboutUs_service_investors_title": "Investors",
-        "@aboutUs_service_investors_title": {
-          "description": "Title of fourth service card in About Us screen"
-        },
-        "aboutUs_service_investors_desc": "Discover new projects and profitable opportunities",
-        "@aboutUs_service_investors_desc": {
-          "description": "Description of fourth service card in About Us screen"
-        },
+      "browseProperties": "Browse Properties",
+      "@browseProperties": { "description": "Button to go to home screen when no favorites" },
 
-        "aboutUs_service_providers_title": "Service Providers",
-        "@aboutUs_service_providers_title": {
-          "description": "Title of fifth service card in About Us screen"
-        },
-        "aboutUs_service_providers_desc": "Advertise moving, interior, mortgage & legal services",
-        "@aboutUs_service_providers_desc": {
-          "description": "Description of fifth service card in About Us screen"
-        },
-          "aboutUs_hero_brand_name": "Akarat",
-          "@aboutUs_hero_brand_name": {
-            "description": "Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)"
-          }
+      "retry": "Retry",
+      "@retry": { "description": "Button to retry loading favorites on error" },
+
+      "errorOccurred": "An error occurred",
+      "@errorOccurred": { "description": "Generic fallback error title" },
 
 
+      "@_personalInformationTitle": "================= PERSONAL INFORMATION =================",
+
+       "personalInformationTitle": "Personal Information",
+        "@personalInformationTitle": { "description": "AppBar title" },
+
+        "firstNameLabel": "First name",
+        "@firstNameLabel": {},
+        "firstNameRequired": "First name is required",
+        "@firstNameRequired": { "description": "Validation error" },
+
+        "lastNameLabel": "Last name",
+        "@lastNameLabel": {},
+
+        "emailLabel": "Email",
+        "@emailLabel": {},
+        "emailRequired": "Email is required",
+        "@emailRequired": {},
+        "emailInvalid": "Enter a valid email",
+        "@emailInvalid": {},
+        "emailCannotBeChanged": "Email cannot be changed",
+        "@emailCannotBeChanged": { "description": "Helper text under email field" },
+
+        "changePasswordOptional": "Change password (optional)",
+        "@changePasswordOptional": { "description": "Section title" },
+
+        "newPasswordLabel": "New password",
+        "@newPasswordLabel": {},
+        "newPasswordHelper": "Leave blank to keep your current password",
+        "@newPasswordHelper": { "description": "Helper text" },
+
+        "confirmNewPasswordLabel": "Confirm new password",
+        "@confirmNewPasswordLabel": {},
+        "confirmNewPasswordRequired": "Please confirm the new password",
+        "@confirmNewPasswordRequired": {},
+        "passwordsDoNotMatch": "Passwords do not match",
+        "@passwordsDoNotMatch": {},
+
+        "currentPasswordLabel": "Current password (required to change)",
+        "@currentPasswordLabel": {},
+        "currentPasswordRequired": "Enter your current password",
+        "@currentPasswordRequired": {},
+
+        "updateButton": "Update",
+        "@updateButton": { "description": "Save profile button" },
+
+        "deleteAccountButton": "Delete your account",
+        "@deleteAccountButton": {},
+
+        "deleteAccountDialogTitle": "Delete Account?",
+        "@deleteAccountDialogTitle": {},
+        "deleteAccountDialogMessage": "You will lose all your saved alerts,\nsaved properties, etc.",
+        "@deleteAccountDialogMessage": {},
+        "cancel": "Cancel",
+        "@cancel": {},
+        "deleteConfirm": "Delete",
+        "@deleteConfirm": { "description": "Red delete button in dialog" },
+
+        "sessionExpired": "Session expired. Please login again.",
+        "@sessionExpired": {},
+        "profileUpdatedSuccess": "Profile updated successfully",
+        "@profileUpdatedSuccess": {},
+        "networkError": "Network error. Please try again.",
+        "@networkError": {},
+        "updateFailed": "Update failed",
+        "@updateFailed": { "description": "Generic fallback error" },
 
 
 
-}
+      "@_forgot_password_section": "================= FORGOT PASSWORD SCREEN =================",
+
+      "forgotPasswordTitle": "Forgot your password?",
+      "@forgotPasswordTitle": {
+        "description": "Main heading of the forgot password screen"
+      },
+
+      "forgotPasswordSubtitle": "Enter your email address and we'll send you a link to reset your password.",
+      "@forgotPasswordSubtitle": {
+        "description": "Explanation text below the title"
+      },
+
+      "emailLabel": "Email",
+      "@emailLabel": {
+        "description": "Label/hint for the email input field"
+      },
+
+      "submitButton": "Submit",
+      "@submitButton": {
+        "description": "Text on the main submit button"
+      },
+
+      "backToLogin": "Back to Login",
+      "@backToLogin": {
+        "description": "Text on the back button/link"
+      },
+
+      "emailRequired": "Please enter your email",
+      "@emailRequired": {
+        "description": "Validator message when email field is empty"
+      },
+
+      "invalidEmailFormat": "Invalid email format",
+      "@invalidEmailFormat": {
+        "description": "Validator message for invalid email pattern"
+      },
+
+      "resetEmailSent": "Reset email sent successfully.",
+      "@resetEmailSent": {
+        "description": "Success message when reset link is sent (fallback if backend message missing)"
+      },
+
+      "failedToSendResetEmail": "Failed to send reset email.",
+      "@failedToSendResetEmail": {
+        "description": "Generic error when status != 200 (fallback)"
+      },
+
+      "somethingWentWrong": "Something went wrong. Please try again.",
+      "@somethingWentWrong": {
+        "description": "Catch-all network/error message"
+      },
+
+
+
+   "@_saved_alert_section": "================= SAVED ALERT SCREEN =================",
+
+   "savedAlerts": "Saved Alerts",
+   "@savedAlerts": {
+     "description": "Screen title"
+   },
+
+   "savedAlertsCount": "({count})",
+   "@savedAlertsCount": {
+     "description": "Number of saved alerts",
+     "placeholders": {
+       "count": {}
+     }
+   },
+
+   "errorTitleWithMessage": "Error: {message}",
+     "@errorTitleWithMessage": {
+       "description": "Error message in error view (with dynamic error detail)",
+       "placeholders": {
+         "message": {}
+       }
+     },
+
+     "retryButton": "Retry",
+     "@retryButton": {
+       "description": "Button label to retry loading data"
+     },
+
+   "manageYourSavedPropertyAlerts": "Manage your saved property alerts here",
+   "@manageYourSavedPropertyAlerts": {
+     "description": "Subtitle/description under title"
+   },
+
+   "youHaventSavedAnyAlertsYet": "You haven’t saved any alerts yet.",
+   "@youHaventSavedAnyAlertsYet": {},
+
+   "createAlert": "Create Alert",
+   "@createAlert": {},
+
+   "receiveUpdates": "Receive updates",
+   "@receiveUpdates": {
+     "description": "Label above frequency selector in alert card"
+   },
+
+   "createdTimeAgo": "Created {time}",
+   "@createdTimeAgo": {
+     "description": "Prefix for relative time in alert card",
+     "placeholders": {
+       "time": {}
+     }
+   },
+
+   "justNow": "Just now",
+   "@justNow": {
+     "description": "Relative time < 1 minute"
+   },
+
+   "minutesAgo": "{count, plural, one{1 minute ago} other{{count} minutes ago}}",
+   "@minutesAgo": {
+     "description": "Relative time in minutes",
+     "placeholders": {
+       "count": {}
+     }
+   },
+
+   "hoursAgo": "{count, plural, one{1 hour ago} other{{count} hours ago}}",
+   "@hoursAgo": {
+     "description": "Relative time in hours",
+     "placeholders": {
+       "count": {}
+     }
+   },
+
+   "daysAgo": "{count, plural, one{1 day ago} other{{count} days ago}}",
+   "@daysAgo": {
+     "description": "Relative time in days",
+     "placeholders": {
+       "count": {}
+     }
+   },
+
+   "deleteAlertTitle": "Delete Saved Alert?",
+   "@deleteAlertTitle": {},
+
+   "deleteAlertConfirm": "Are you sure to delete this saved alert?",
+   "@deleteAlertConfirm": {},
+
+   "delete": "Delete",
+   "@delete": {},
+
+   "cancel": "Cancel",
+   "@cancel": {},
+
+   "clearAll": "Clear All",
+   "@clearAll": {
+     "description": "Button text in app bar"
+   },
+
+   "clearAllTitle": "Clear All Saved Alerts?",
+   "@clearAllTitle": {
+     "description": "Dialog title when clearing all"
+   },
+
+   "clearAllConfirm": "This will remove all your saved alerts.",
+   "@clearAllConfirm": {},
+
+   "alertDeleted": "Alert deleted",
+   "@alertDeleted": {
+     "description": "Snackbar after single delete"
+   },
+
+   "allAlertsDeleted": "All alerts deleted",
+   "@allAlertsDeleted": {
+     "description": "Snackbar after clear all"
+   },
+
+   "loginRequired": "Login Required",
+   "@loginRequired": {
+     "description": "Dialog title in bottom nav favorites when not logged in"
+   },
+
+   "pleaseLoginToAccessFavorites": "Please login to access favorites.",
+   "@pleaseLoginToAccessFavorites": {
+     "description": "Dialog message in bottom nav"
+   },
+
+   "loginRequiredToCreateAlerts": "Login required to create alerts.",
+   "@loginRequiredToCreateAlerts": {},
+
+   "login": "Login",
+   "@login": {},
+
+   "howToRemoveSavedAlerts": "How to remove saved alerts",
+   "@howToRemoveSavedAlerts": {
+     "description": "Tooltip on info icon"
+   },
+
+   "howToRemoveTitle": "How to Remove saved alerts?",
+   "@howToRemoveTitle": {
+     "description": "Info dialog title"
+   },
+
+   "howToRemoveMessage": "Swipe left on any alert to remove it from your saved list",
+   "@howToRemoveMessage": {},
+
+   "gotIt": "Got it",
+   "@gotIt": {
+     "description": "Button in how-to info dialog"
+   },
+
+   "pageCurrentOfTotal": "Page {current} of {total}",
+   "@pageCurrentOfTotal": {
+     "description": "Pagination text",
+     "placeholders": {
+       "current": {},
+       "total": {}
+     }
+   },
+
+   "alertCreated": "Alert created",
+   "@alertCreated": {
+     "description": "Snackbar after successfully creating new alert"
+   },
+
+   "errorOccurred": "An error occurred",
+   "@errorOccurred": {
+     "description": "Fallback error message"
+   },
+
+   "emailNotAvailable": "Email not available",
+   "@emailNotAvailable": {
+     "description": "Dialog title when email launch fails"
+   },
+
+   "noEmailAppConfigured": "No email app is configured on this device. Please add a mail account first.",
+   "@noEmailAppConfigured": {},
+
+   "ok": "OK",
+   "@ok": {
+     "description": "Generic OK button in dialogs"
+   },
+
+
+  "hourly": "Hourly",
+  "@hourly": {
+    "description": "Frequency option for alerts - every hour"
+  },
+
+  "daily": "Daily",
+  "@daily": {
+    "description": "Frequency option for alerts - every day"
+  },
+
+  "weekly": "Weekly",
+  "@weekly": {
+    "description": "Frequency option for alerts - every week"
+  },
+
+  "monthly": "Monthly",
+  "@monthly": {
+    "description": "Frequency option for alerts - every month"
+  },
+
+  "unnamedAlert": "Unnamed Alert",
+  "@unnamedAlert": {
+    "description": "Fallback when alert has no name"
+  },
+
+    "@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
+
+    "aboutUs_hero_title": "About Akarat",
+      "@aboutUs_hero_title": {
+        "description": "Main large heading at the top of the page"
+      },
+      "aboutUs_hero_subtitle": "Built for Trust. Designed for the Future.",
+      "@aboutUs_hero_subtitle": {
+        "description": "Tagline / subtitle shown right below the hero title (usually in red)"
+      },
+      "aboutUs_intro_paragraph_1": "Akarat is not just a real estate platform — it's a smarter way to connect people with properties in the UAE.",
+      "@aboutUs_intro_paragraph_1": {
+        "description": "First paragraph in the introduction section"
+      },
+      "aboutUs_intro_paragraph_2": "We bring together verified listings, powerful tech, and a user-first approach to help everyone succeed with confidence.",
+      "@aboutUs_intro_paragraph_2": {
+        "description": "Second paragraph in the introduction section"
+      },
+      "aboutUs_get_started_button": "Get Started",
+      "@aboutUs_get_started_button": {
+        "description": "Label on the prominent blue button after the main image"
+      },
+      "aboutUs_features_heading_part1": "What We",
+      "@aboutUs_features_heading_part1": {
+        "description": "First part of 'What We Offer' heading (black)"
+      },
+      "aboutUs_features_heading_part2": "Offer",
+      "@aboutUs_features_heading_part2": {
+        "description": "Second part of 'What We Offer' heading (red)"
+      },
+      "aboutUs_features_subtitle": "Smart tools and verified listings tailored for real estate success.",
+      "@aboutUs_features_subtitle": {
+        "description": "Small description under the 'What We Offer' heading"
+      },
+      "aboutUs_feature_verified_listings_title": "Verified Listings",
+      "@aboutUs_feature_verified_listings_title": {
+        "description": "Title of Verified Listings feature card in grid"
+      },
+      "aboutUs_feature_verified_listings_desc": "100% verified properties to build trust and transparency.",
+      "@aboutUs_feature_verified_listings_desc": {
+        "description": "Short description for Verified Listings feature card"
+      },
+      "aboutUs_feature_smart_filters_title": "Smart Filters",
+      "@aboutUs_feature_smart_filters_title": {
+        "description": "Title of Smart Filters feature card in grid"
+      },
+      "aboutUs_feature_smart_filters_desc": "Advanced location & lifestyle filters to refine your search.",
+      "@aboutUs_feature_smart_filters_desc": {
+        "description": "Short description for Smart Filters feature card"
+      },
+      "aboutUs_feature_agent_dashboard_title": "Agent Dashboard",
+      "@aboutUs_feature_agent_dashboard_title": {
+        "description": "Title of Agent Dashboard feature card in grid"
+      },
+      "aboutUs_feature_agent_dashboard_desc": "Track listing views, leads, and marketing performance.",
+      "@aboutUs_feature_agent_dashboard_desc": {
+        "description": "Short description for Agent Dashboard feature card"
+      },
+      "aboutUs_feature_offplan_projects_title": "Off-plan Projects",
+      "@aboutUs_feature_offplan_projects_title": {
+        "description": "Title of Off-plan Projects feature card in grid"
+      },
+      "aboutUs_feature_offplan_projects_desc": "Showcase upcoming developments with dedicated visibility.",
+      "@aboutUs_feature_offplan_projects_desc": {
+        "description": "Short description for Off-plan Projects feature card"
+      },
+      "aboutUs_feature_web_app_access_title": "Web & App Access",
+      "@aboutUs_feature_web_app_access_title": {
+        "description": "Title of Web & App Access feature card in grid"
+      },
+      "aboutUs_feature_web_app_access_desc": "Seamless browsing experience online and via mobile.",
+      "@aboutUs_feature_web_app_access_desc": {
+        "description": "Short description for Web & App Access feature card"
+      },
+      "aboutUs_feature_growth_tools_title": "Growth Tools",
+      "@aboutUs_feature_growth_tools_title": {
+        "description": "Title of Growth Tools feature card in grid"
+      },
+      "aboutUs_feature_growth_tools_desc": "Marketing and data insights to boost your brand and reach.",
+      "@aboutUs_feature_growth_tools_desc": {
+        "description": "Short description for Growth Tools feature card"
+      },
+      "aboutUs_audience_heading": "Our Audience",
+      "@aboutUs_audience_heading": {
+        "description": "Main heading of the audience section"
+      },
+      "aboutUs_audience_subtitle": "We proudly serve the full real estate ecosystem",
+      "@aboutUs_audience_subtitle": {
+        "description": "Subtitle under Our Audience heading"
+      },
+      "aboutUs_audience_pill_investors": "💼 Property Investors",
+      "@aboutUs_audience_pill_investors": {
+        "description": "Pill / chip for property investors"
+      },
+      "aboutUs_audience_pill_agents": "👨‍💼 Agents & Agencies",
+      "@aboutUs_audience_pill_agents": {
+        "description": "Pill / chip for agents and agencies"
+      },
+      "aboutUs_audience_pill_relocation": "🚚 Relocation Services",
+      "@aboutUs_audience_pill_relocation": {
+        "description": "Pill / chip for relocation services"
+      },
+      "aboutUs_audience_pill_developers": "🏗️ Developers & Brokers",
+      "@aboutUs_audience_pill_developers": {
+        "description": "Pill / chip for developers and brokers"
+      },
+      "aboutUs_audience_pill_buyers": "🏠 Home Buyers & Tenants",
+      "@aboutUs_audience_pill_buyers": {
+        "description": "Pill / chip for home buyers and tenants"
+      },
+      "aboutUs_story_heading": "Our Story",
+      "@aboutUs_story_heading": {
+        "description": "Red title above the Our Story section"
+      },
+      "aboutUs_story_main_title": "We started Akarat with one goal",
+      "@aboutUs_story_main_title": {
+        "description": "Large centered title in Our Story section"
+      },
+      "aboutUs_story_paragraph_1": "To remove the frustration from property search and marketing by delivering real listings, real tools, and real results.",
+      "@aboutUs_story_paragraph_1": {
+        "description": "First paragraph in Our Story"
+      },
+      "aboutUs_story_paragraph_2": "What began as a mission to bring clarity and trust to the real estate market has grown into a fully-featured platform trusted across the UAE.",
+      "@aboutUs_story_paragraph_2": {
+        "description": "Second paragraph in Our Story"
+      },
+      "aboutUs_story_stat_clients_number": "600 +",
+      "@aboutUs_story_stat_clients_number": {
+        "description": "Big number for international clients statistic"
+      },
+      "aboutUs_story_stat_clients_label": "International clients",
+      "@aboutUs_story_stat_clients_label": {
+        "description": "Label below clients statistic number"
+      },
+      "aboutUs_story_stat_offices_number": "40 +",
+      "@aboutUs_story_stat_offices_number": {
+        "description": "Big number for offices statistic"
+      },
+      "aboutUs_story_stat_offices_label": "Offices around the world",
+      "@aboutUs_story_stat_offices_label": {
+        "description": "Label below offices statistic number"
+      },
+      "aboutUs_explore_heading_part1": "Explore the Top Features of",
+      "@aboutUs_explore_heading_part1": {
+        "description": "First part of rich text heading before explore cards"
+      },
+      "aboutUs_services_heading": "Our services",
+      "@aboutUs_services_heading": {
+        "description": "Red title above Who We Serve section"
+      },
+      "aboutUs_services_subheading": "Who We Serve",
+      "@aboutUs_services_subheading": {
+        "description": "Large title above service cards"
+      },
+      "aboutUs_services_intro": "Find your ideal home through our verified listings, updated in real time to ensure accuracy and trust.",
+      "@aboutUs_services_intro": {
+        "description": "Intro text before the list of service cards"
+      },
+      "aboutUs_explore_verified_listings_title": "Verified Listings",
+      "@aboutUs_explore_verified_listings_title": {
+        "description": "Title of first longer explore card"
+      },
+      "aboutUs_explore_verified_listings_desc": "Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.",
+      "@aboutUs_explore_verified_listings_desc": {
+        "description": "Description of first longer explore card"
+      },
+      "aboutUs_explore_smart_location_title": "Smart Location Search",
+      "@aboutUs_explore_smart_location_title": {
+        "description": "Title of second longer explore card"
+      },
+      "aboutUs_explore_smart_location_desc": "Discover properties by area, community, landmark, or lifestyle preference using our intelligent filters.",
+      "@aboutUs_explore_smart_location_desc": {
+        "description": "Description of second longer explore card"
+      },
+      "aboutUs_explore_agent_dashboard_title": "Agent Dashboard",
+      "@aboutUs_explore_agent_dashboard_title": {
+        "description": "Title of third longer explore card"
+      },
+      "aboutUs_explore_agent_dashboard_desc": "Agencies and agents get a dedicated backend to track leads, views, and property performance.",
+      "@aboutUs_explore_agent_dashboard_desc": {
+        "description": "Description of third longer explore card"
+      },
+      "aboutUs_service_card_buyers_title": "Home Buyers & Renters",
+      "@aboutUs_service_card_buyers_title": {
+        "description": "Title of first animated service card"
+      },
+      "aboutUs_service_card_buyers_desc": "Explore verified listings with real-time updates",
+      "@aboutUs_service_card_buyers_desc": {
+        "description": "Description of first service card"
+      },
+      "aboutUs_service_card_agents_title": "Real Estate Agents & Agencies",
+      "@aboutUs_service_card_agents_title": {
+        "description": "Title of second animated service card"
+      },
+      "aboutUs_service_card_agents_desc": "Get leads, promote listings, and build your brand",
+      "@aboutUs_service_card_agents_desc": {
+        "description": "Description of second service card"
+      },
+      "aboutUs_service_card_developers_title": "Developers",
+      "@aboutUs_service_card_developers_title": {
+        "description": "Title of third animated service card"
+      },
+      "aboutUs_service_card_developers_desc": "Showcase off-plan properties with rich media and featured promotions",
+      "@aboutUs_service_card_developers_desc": {
+        "description": "Description of third service card"
+      },
+      "aboutUs_service_card_investors_title": "Investors",
+      "@aboutUs_service_card_investors_title": {
+        "description": "Title of fourth animated service card"
+      },
+      "aboutUs_service_card_investors_desc": "Discover new projects and profitable opportunities",
+      "@aboutUs_service_card_investors_desc": {
+        "description": "Description of fourth service card"
+      },
+      "aboutUs_service_card_providers_title": "Service Providers",
+      "@aboutUs_service_card_providers_title": {
+        "description": "Title of fifth animated service card"
+      },
+      "aboutUs_service_card_providers_desc": "Advertise moving, interior, mortgage & legal services",
+      "@aboutUs_service_card_providers_desc": {
+        "description": "Description of fifth service card"
+      },
+      "aboutUs_footer_email": "info@akarat.com",
+      "@aboutUs_footer_email": {
+        "description": "Email address shown in the dark footer at the bottom"
+      },
+      "aboutUs_start_project_button": "Start a project",
+      "@aboutUs_start_project_button": {
+        "description": "Label on red button inside explore cards"
+      },
+      "aboutUs_login_dialog_title": "Login Required",
+      "@aboutUs_login_dialog_title": {
+        "description": "Title of dialog shown when tapping favorites without login"
+      },
+      "aboutUs_login_dialog_message": "Please login to access favorites.",
+      "@aboutUs_login_dialog_message": {
+        "description": "Main message in the login required dialog"
+      },
+      "aboutUs_login_dialog_cancel": "Cancel",
+      "@aboutUs_login_dialog_cancel": {
+        "description": "Cancel button in login dialog"
+      },
+      "aboutUs_login_dialog_login": "Login",
+      "@aboutUs_login_dialog_login": {
+        "description": "Login button in login dialog"
+      },
+
+        "aboutUs_services_whoWeServe_title": "Who We Serve",
+        "@aboutUs_services_whoWeServe_title": {
+          "description": "Large bold title text above the service cards section in About Us screen, reads 'Who We Serve'"
+        },
+          "aboutUs_explore_verified_title": "Verified Listings",
+          "@aboutUs_explore_verified_title": {
+            "description": "Title of first explore card in About Us screen"
+          },
+          "aboutUs_explore_verified_desc": "Every listing is manually reviewed and verified for authenticity, price accuracy, and availability.",
+          "@aboutUs_explore_verified_desc": {
+            "description": "Description of first explore card in About Us screen"
+          },
+
+          "aboutUs_explore_smart_location_title": "Smart Location Search",
+          "@aboutUs_explore_smart_location_title": {
+            "description": "Title of second explore card in About Us screen"
+          },
+          "aboutUs_explore_smart_location_desc": "Discover properties by area, community, landmark, or lifestyle preference using our intelligent filters.",
+          "@aboutUs_explore_smart_location_desc": {
+            "description": "Description of second explore card in About Us screen"
+          },
+
+          "aboutUs_explore_agent_dashboard_title": "Agent Dashboard",
+          "@aboutUs_explore_agent_dashboard_title": {
+            "description": "Title of third explore card in About Us screen"
+          },
+          "aboutUs_explore_agent_dashboard_desc": "Agencies and agents get a dedicated backend to track leads, views, and property performance.",
+          "@aboutUs_explore_agent_dashboard_desc": {
+            "description": "Description of third explore card in About Us screen"
+          },
+
+          "aboutUs_service_buyers_renters_title": "Home Buyers & Renters",
+          "@aboutUs_service_buyers_renters_title": {
+            "description": "Title of first service card in About Us screen"
+          },
+          "aboutUs_service_buyers_renters_desc": "Explore verified listings with real-time updates",
+          "@aboutUs_service_buyers_renters_desc": {
+            "description": "Description of first service card in About Us screen"
+          },
+
+          "aboutUs_service_agents_agencies_title": "Real Estate Agents & Agencies",
+          "@aboutUs_service_agents_agencies_title": {
+            "description": "Title of second service card in About Us screen"
+          },
+          "aboutUs_service_agents_agencies_desc": "Get leads, promote listings, and build your brand",
+          "@aboutUs_service_agents_agencies_desc": {
+            "description": "Description of second service card in About Us screen"
+          },
+
+          "aboutUs_service_developers_title": "Developers",
+          "@aboutUs_service_developers_title": {
+            "description": "Title of third service card in About Us screen"
+          },
+          "aboutUs_service_developers_desc": "Showcase off-plan properties with rich media and featured promotions",
+          "@aboutUs_service_developers_desc": {
+            "description": "Description of third service card in About Us screen"
+          },
+
+          "aboutUs_service_investors_title": "Investors",
+          "@aboutUs_service_investors_title": {
+            "description": "Title of fourth service card in About Us screen"
+          },
+          "aboutUs_service_investors_desc": "Discover new projects and profitable opportunities",
+          "@aboutUs_service_investors_desc": {
+            "description": "Description of fourth service card in About Us screen"
+          },
+
+          "aboutUs_service_providers_title": "Service Providers",
+          "@aboutUs_service_providers_title": {
+            "description": "Title of fifth service card in About Us screen"
+          },
+          "aboutUs_service_providers_desc": "Advertise moving, interior, mortgage & legal services",
+          "@aboutUs_service_providers_desc": {
+            "description": "Description of fifth service card in About Us screen"
+          },
+            "aboutUs_hero_brand_name": "Akarat",
+            "@aboutUs_hero_brand_name": {
+              "description": "Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)"
+            }
+
+
+
+
+ }
+
+

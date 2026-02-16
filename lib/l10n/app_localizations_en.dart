@@ -127,7 +127,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirmationTitle => 'Are you sure you want to logout?';
 
   @override
-  String get loginRequiredTitle => 'Login Required';
+  String get loginRequiredTitle =>
+      'You need to log in to view your favorite properties.';
 
   @override
   String get loginToAccessSavedAlerts => 'Please login to access saved alerts.';
@@ -236,9 +237,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get myAccountSupportValidationEmailInvalid =>
       'Please enter a valid email';
-
-  @override
-  String get myAccountTermsAndConditionsAppBarTitle => 'Terms & Conditions';
 
   @override
   String get findAgentTitle => 'Find My Agent';
@@ -372,7 +370,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueWithGoogle => 'Continue with Google';
 
   @override
-  String get or => 'OR';
+  String get or => 'or';
 
   @override
   String get firstNameHint => 'First Name';
@@ -474,7 +472,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleSignInNotSupported =>
-      'Google Sign-In is not supported on this platform';
+      'Google Sign-In not supported on this platform.';
 
   @override
   String get firebaseUserNullAfterSignIn =>
@@ -496,7 +494,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nonJsonFromLoginGoogle =>
       'Invalid response from server. Please try again later.';
 
-
+  @override
+  String get myAccountTermsAndConditionsAppBarTitle => 'Terms & Conditions';
 
   @override
   String get myAccountTermsSectionIntroductionTitle => 'Introduction';
@@ -1007,6 +1006,364 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myAccountPrivacyUpdatesContent =>
       'We may update this Privacy Policy at any time, with or without prior notice. When updates occur, we will revise this page and may notify you directly in certain cases (for example, by email). All changes become effective immediately once posted.';
 
+  @override
+  String get welcomeToAkarat => 'Welcome to Akarat!';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get notRegisteredYet => 'Not registered yet?';
+
+  @override
+  String get createNewAccount => 'Create new account';
+
+  @override
+  String get invalidEmail => 'Invalid email address';
+
+  @override
+  String pleaseEnterField(Object field) {
+    return 'Please enter $field';
+  }
+
+  @override
+  String get invalidEmailAddress => 'Invalid email address';
+
+  @override
+  String get loginSucceededButTokenMissing =>
+      'Login succeeded but token missing.';
+
+  @override
+  String get serverErrorTryAgain => 'Server error. Try again.';
+
+  @override
+  String get invalidEmailOrPassword => 'Invalid email or password.';
+
+  @override
+  String get validationError => 'Validation error.';
+
+  @override
+  String serverErrorWithCode(Object code) {
+    return 'Server error ($code).';
+  }
+
+  @override
+  String get networkErrorCheckConnection =>
+      'Network error. Check your connection.';
+
+  @override
+  String get accountInactiveOrDeleted => 'Account inactive or deleted.';
+
+  @override
+  String get googleIdTokenMissing => 'Google ID token missing.';
+
+  @override
+  String get firebaseSignInFailed => 'Firebase sign-in failed.';
+
+  @override
+  String get failedToGetFirebaseToken => 'Failed to get Firebase token.';
+
+  @override
+  String get nonJsonFromGoogleLogin =>
+      'Non-JSON from /login-google (HTML). Check API_BASE_URL (QA vs PROD) and route.';
+
+  @override
+  String get favoritesTitle => 'Favorites';
+
+  @override
+  String get clearAll => 'Clear All';
+
+  @override
+  String get clearAllFavoritesTitle => 'Clear All Favorites?';
+
+  @override
+  String get clearAllFavoritesMessage =>
+      'This will remove all saved properties from your favorites. This action cannot be undone.';
+
+  @override
+  String get clearAllConfirm => 'This will remove all your saved alerts.';
+
+  @override
+  String get notLoggedInMessage => 'You are not logged in';
+
+  @override
+  String get clearingFavorites => 'Clearing all favorites...';
+
+  @override
+  String get favoritesClearedSuccess => 'All favorites cleared successfully';
+
+  @override
+  String failedToClearFavorites(int statusCode) {
+    return 'Failed to clear favorites: $statusCode';
+  }
+
+  @override
+  String get errorClearingFavorites =>
+      'Error clearing favorites. Check your connection.';
+
+  @override
+  String get loginButton => 'Login';
+
+  @override
+  String get noFavoritesYet => 'No favorite properties yet';
+
+  @override
+  String get tapHeartToSave =>
+      'Tap the heart icon on any property to save it here';
+
+  @override
+  String get browseProperties => 'Browse Properties';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get errorOccurred => 'An error occurred';
+
+  @override
+  String get personalInformationTitle => 'Personal Information';
+
+  @override
+  String get firstNameLabel => 'First name';
+
+  @override
+  String get firstNameRequired => 'First name is required';
+
+  @override
+  String get lastNameLabel => 'Last name';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get emailRequired => 'Please enter your email';
+
+  @override
+  String get emailInvalid => 'Enter a valid email';
+
+  @override
+  String get emailCannotBeChanged => 'Email cannot be changed';
+
+  @override
+  String get changePasswordOptional => 'Change password (optional)';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get newPasswordHelper => 'Leave blank to keep your current password';
+
+  @override
+  String get confirmNewPasswordLabel => 'Confirm new password';
+
+  @override
+  String get confirmNewPasswordRequired => 'Please confirm the new password';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get currentPasswordLabel => 'Current password (required to change)';
+
+  @override
+  String get currentPasswordRequired => 'Enter your current password';
+
+  @override
+  String get updateButton => 'Update';
+
+  @override
+  String get deleteAccountButton => 'Delete your account';
+
+  @override
+  String get deleteAccountDialogTitle => 'Delete Account?';
+
+  @override
+  String get deleteAccountDialogMessage =>
+      'You will lose all your saved alerts,\nsaved properties, etc.';
+
+  @override
+  String get deleteConfirm => 'Delete';
+
+  @override
+  String get sessionExpired => 'Session expired. Please login again.';
+
+  @override
+  String get profileUpdatedSuccess => 'Profile updated successfully';
+
+  @override
+  String get networkError => 'Network error. Please try again.';
+
+  @override
+  String get updateFailed => 'Update failed';
+
+  @override
+  String get forgotPasswordTitle => 'Forgot your password?';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'Enter your email address and we\'ll send you a link to reset your password.';
+
+  @override
+  String get submitButton => 'Submit';
+
+  @override
+  String get backToLogin => 'Back to Login';
+
+  @override
+  String get invalidEmailFormat => 'Invalid email format';
+
+  @override
+  String get resetEmailSent => 'Reset email sent successfully.';
+
+  @override
+  String get failedToSendResetEmail => 'Failed to send reset email.';
+
+  @override
+  String get somethingWentWrong => 'Something went wrong. Please try again.';
+
+  @override
+  String savedAlertsCount(Object count) {
+    return '($count)';
+  }
+
+  @override
+  String errorTitleWithMessage(Object message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get retryButton => 'Retry';
+
+  @override
+  String get manageYourSavedPropertyAlerts =>
+      'Manage your saved property alerts here';
+
+  @override
+  String get youHaventSavedAnyAlertsYet => 'You haven’t saved any alerts yet.';
+
+  @override
+  String get createAlert => 'Create Alert';
+
+  @override
+  String get receiveUpdates => 'Receive updates';
+
+  @override
+  String createdTimeAgo(Object time) {
+    return 'Created $time';
+  }
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minutesAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes ago',
+      one: '1 minute ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hoursAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours ago',
+      one: '1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get deleteAlertTitle => 'Delete Saved Alert?';
+
+  @override
+  String get deleteAlertConfirm => 'Are you sure to delete this saved alert?';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get clearAllTitle => 'Clear All Saved Alerts?';
+
+  @override
+  String get alertDeleted => 'Alert deleted';
+
+  @override
+  String get allAlertsDeleted => 'All alerts deleted';
+
+  @override
+  String get pleaseLoginToAccessFavorites =>
+      'Please login to access favorites.';
+
+  @override
+  String get loginRequiredToCreateAlerts => 'Login required to create alerts.';
+
+  @override
+  String get howToRemoveSavedAlerts => 'How to remove saved alerts';
+
+  @override
+  String get howToRemoveTitle => 'How to Remove saved alerts?';
+
+  @override
+  String get howToRemoveMessage =>
+      'Swipe left on any alert to remove it from your saved list';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String pageCurrentOfTotal(Object current, Object total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get alertCreated => 'Alert created';
+
+  @override
+  String get emailNotAvailable => 'Email not available';
+
+  @override
+  String get noEmailAppConfigured =>
+      'No email app is configured on this device. Please add a mail account first.';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get hourly => 'Hourly';
+
+  @override
+  String get daily => 'Daily';
+
+  @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get unnamedAlert => 'Unnamed Alert';
 
   @override
   String get aboutUs_hero_title => 'About Akarat';

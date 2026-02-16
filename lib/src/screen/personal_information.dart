@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../l10n/app_localizations.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/auth_prefs.dart' as prefs;
 import '../core/utils/secure_storage.dart';
@@ -64,6 +65,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   }
 
   Future<void> _confirmAndDelete() async {
+
+    final l10n = AppLocalizations.of(context)!;
     final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -72,32 +75,32 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           backgroundColor: const Color(0xFF2C2C2C), // dark like your app
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text(
-            'Delete Account?',
-            style: TextStyle(
+          title: Text(
+            l10n.deleteAccountDialogTitle,
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 20,
             ),
           ),
-          content: const Text(
-            'You will lose all your saved alerts,\nsaved properties, etc.',
-            style: TextStyle(color: Colors.white70),
+          content: Text(
+            l10n.deleteAccountDialogMessage,
+            style: const TextStyle(color: Colors.white70),
             textAlign: TextAlign.center,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.blue, fontSize: 17),
+              child: Text(
+                l10n.cancel,
+                style: const TextStyle(color: Colors.blue, fontSize: 17),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text(
-                'Delete',
-                style: TextStyle(
+              child: Text(
+                l10n.deleteConfirm,
+                style: const TextStyle(
                     color: Colors.red,
                     fontSize: 17,
                     fontWeight: FontWeight.bold),
@@ -160,6 +163,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   }
 
   Future<void> _saveProfile() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
@@ -167,7 +172,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       final token = await SecureStorage.getToken();
       if (token == null || token.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Session expired. Please login again.')),
+          SnackBar(content: Text(l10n.sessionExpired)),
         );
         _goToLogin();
         return;
@@ -236,7 +241,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           );
         }
 
-        _showSuccess('Profile updated successfully');
+        _showSuccess(l10n.profileUpdatedSuccess);
         setState(() => _editMode = false);
         _clearPasswordFields();
 
@@ -253,21 +258,22 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         _showError(_parseError(response));
       }
     } catch (e) {
-      _showError('Network error. Please try again.');
+      _showError(l10n.networkError);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
   String _parseError(http.Response resp) {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final json = jsonDecode(resp.body);
       return json['message'] ??
           (json['errors'] is Map
               ? (json['errors'] as Map).values.first[0]
-              : 'Update failed');
+              : l10n.updateFailed);
     } catch (_) {}
-    return 'Update failed (${resp.statusCode})';
+    return l10n.updateFailed;
   }
 
   void _showError(String msg) => ScaffoldMessenger.of(context)
@@ -337,10 +343,11 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Personal Information',
-            style: TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(l10n.personalInformationTitle,
+            style: const TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0.5,
@@ -360,9 +367,9 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _firstNameCtrl,
-                        decoration: _inputDecoration('First name'),
+                        decoration: _inputDecoration(l10n.firstNameLabel),
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'First name is required'
+                            ? l10n.firstNameRequired
                             : null,
                       ),
                     ),
@@ -370,7 +377,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _lastNameCtrl,
-                        decoration: _inputDecoration('Last name'),
+                        decoration: _inputDecoration(l10n.lastNameLabel),
                         validator: (v) => null, // optional
                       ),
                     ),
@@ -382,21 +389,21 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                   readOnly: true, // email is static
                   enableInteractiveSelection: false,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration('Email')
-                      .copyWith(helperText: 'Email cannot be changed'),
+                  decoration: _inputDecoration(l10n.emailLabel)
+                      .copyWith(helperText: l10n.emailCannotBeChanged),
                   validator: (v) {
                     final value = v?.trim() ?? '';
-                    if (value.isEmpty) return 'Email is required';
+                    if (value.isEmpty) return l10n.emailRequired;
                     final emailOk =
                         RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
-                    return emailOk ? null : 'Enter a valid email';
+                    return emailOk ? null : l10n.emailInvalid;
                   },
                 ),
                 const SizedBox(height: 12),
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Change password (optional)',
+                  child: Text(l10n.changePasswordOptional,
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
@@ -408,7 +415,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                 TextFormField(
                   controller: _newPwdCtrl,
                   obscureText: _obscureNew,
-                  decoration: _inputDecoration('New password').copyWith(
+                  decoration: _inputDecoration(l10n.newPasswordLabel).copyWith(
                     suffixIcon: IconButton(
                       icon: Icon(_obscureNew
                           ? Icons.visibility_off
@@ -416,7 +423,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                       onPressed: () =>
                           setState(() => _obscureNew = !_obscureNew),
                     ),
-                    helperText: 'Leave blank to keep your current password',
+                    helperText: l10n.newPasswordHelper,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -425,7 +432,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                 TextFormField(
                   controller: _confirmPwdCtrl,
                   obscureText: _obscureConfirm,
-                  decoration: _inputDecoration('Confirm new password').copyWith(
+                  decoration: _inputDecoration(l10n.confirmNewPasswordLabel).copyWith(
                     suffixIcon: IconButton(
                       icon: Icon(_obscureConfirm
                           ? Icons.visibility_off
@@ -437,9 +444,9 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                   validator: (v) {
                     if (_newPwdCtrl.text.trim().isNotEmpty) {
                       if ((v ?? '').trim().isEmpty)
-                        return 'Please confirm the new password';
+                        return l10n.confirmNewPasswordRequired;
                       if (v!.trim() != _newPwdCtrl.text.trim())
-                        return 'Passwords do not match';
+                        return l10n.passwordsDoNotMatch;
                     }
                     return null;
                   },
@@ -451,7 +458,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                     controller: _currentPwdCtrl,
                     obscureText: _obscureCurrent,
                     decoration: _inputDecoration(
-                            'Current password (required to change)')
+                            l10n.currentPasswordLabel)
                         .copyWith(
                       suffixIcon: IconButton(
                         icon: Icon(_obscureCurrent
@@ -464,7 +471,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                     validator: (v) {
                       if (_newPwdCtrl.text.trim().isNotEmpty &&
                           (v ?? '').trim().isEmpty) {
-                        return 'Enter your current password';
+                        return l10n.currentPasswordRequired;
                       }
                       return null;
                     },
@@ -483,9 +490,9 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: _loading ? null : _saveProfile,
-                    child: const Text(
-                      'Update',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.updateButton,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -504,9 +511,9 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: _confirmAndDelete,
-                    child: const Text(
-                      'Delete your account',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.deleteAccountButton,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),

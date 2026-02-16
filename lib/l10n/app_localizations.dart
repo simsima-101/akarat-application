@@ -232,7 +232,7 @@ abstract class AppLocalizations {
   /// **'No data available'**
   String get noData;
 
-  /// Dialog title when authentication is required
+  /// Dialog title in bottom nav favorites when not logged in
   ///
   /// In en, this message translates to:
   /// **'Login Required'**
@@ -244,13 +244,13 @@ abstract class AppLocalizations {
   /// **'Please login to access your favorites.'**
   String get loginToAccessFavorites;
 
-  /// Button text to close / cancel dialogs
+  /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
 
-  /// Button / link text that takes user to login screen
+  /// No description provided for @login.
   ///
   /// In en, this message translates to:
   /// **'Login'**
@@ -280,7 +280,7 @@ abstract class AppLocalizations {
   /// **'Favorites'**
   String get favorites;
 
-  /// Menu item for saved search alerts
+  /// Screen title
   ///
   /// In en, this message translates to:
   /// **'Saved Alerts'**
@@ -334,10 +334,10 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to logout?'**
   String get logoutConfirmationTitle;
 
-  /// Dialog title when action needs authentication
+  /// Message shown when not logged in
   ///
   /// In en, this message translates to:
-  /// **'Login Required'**
+  /// **'You need to log in to view your favorite properties.'**
   String get loginRequiredTitle;
 
   /// Message shown when trying to access saved alerts without login
@@ -537,12 +537,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a valid email'**
   String get myAccountSupportValidationEmailInvalid;
-
-  /// App bar title text shown on the Terms & Conditions screen in the My Account section
-  ///
-  /// In en, this message translates to:
-  /// **'Terms & Conditions'**
-  String get myAccountTermsAndConditionsAppBarTitle;
 
   /// AppBar title of Find Agent screen
   ///
@@ -778,16 +772,16 @@ abstract class AppLocalizations {
   /// **'Create Account'**
   String get registerTitle;
 
-  /// Label on Google sign-in button
+  /// No description provided for @continueWithGoogle.
   ///
   /// In en, this message translates to:
   /// **'Continue with Google'**
   String get continueWithGoogle;
 
-  /// Separator between sign-in methods
+  /// No description provided for @or.
   ///
   /// In en, this message translates to:
-  /// **'OR'**
+  /// **'or'**
   String get or;
 
   /// Hint for first name field
@@ -976,10 +970,10 @@ abstract class AppLocalizations {
   /// **'Too many attempts. Please wait a minute and try again.'**
   String get tooManyAttempts;
 
-  /// Error when platform does not support Google auth
+  /// Platform check failure
   ///
   /// In en, this message translates to:
-  /// **'Google Sign-In is not supported on this platform'**
+  /// **'Google Sign-In not supported on this platform.'**
   String get googleSignInNotSupported;
 
   /// Firebase returned no user after credential sign-in
@@ -1012,7 +1006,11 @@ abstract class AppLocalizations {
   /// **'Invalid response from server. Please try again later.'**
   String get nonJsonFromLoginGoogle;
 
-
+  /// App bar title text shown on the Terms & Conditions screen in the My Account section
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & Conditions'**
+  String get myAccountTermsAndConditionsAppBarTitle;
 
   /// Section title for the introduction
   ///
@@ -1824,10 +1822,624 @@ abstract class AppLocalizations {
   /// **'We may update this Privacy Policy at any time, with or without prior notice. When updates occur, we will revise this page and may notify you directly in certain cases (for example, by email). All changes become effective immediately once posted.'**
   String get myAccountPrivacyUpdatesContent;
 
-  /// Main large heading at the top of the page
+  /// Main welcome title on login screen
   ///
   /// In en, this message translates to:
-  /// **'About Akarat'**
+  /// **'Welcome to Akarat!'**
+  String get welcomeToAkarat;
+
+  /// Email field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// Password field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPassword;
+
+  /// No description provided for @notRegisteredYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not registered yet?'**
+  String get notRegisteredYet;
+
+  /// No description provided for @createNewAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new account'**
+  String get createNewAccount;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email address'**
+  String get invalidEmail;
+
+  /// Generic 'please enter' validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter {field}'**
+  String pleaseEnterField(Object field);
+
+  /// Email format validation error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email address'**
+  String get invalidEmailAddress;
+
+  /// Error when backend login OK but no token returned
+  ///
+  /// In en, this message translates to:
+  /// **'Login succeeded but token missing.'**
+  String get loginSucceededButTokenMissing;
+
+  /// Generic fallback server error
+  ///
+  /// In en, this message translates to:
+  /// **'Server error. Try again.'**
+  String get serverErrorTryAgain;
+
+  /// 401 Unauthorized - wrong credentials
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get invalidEmailOrPassword;
+
+  /// 422 validation failed generic message
+  ///
+  /// In en, this message translates to:
+  /// **'Validation error.'**
+  String get validationError;
+
+  /// Generic server error with status code
+  ///
+  /// In en, this message translates to:
+  /// **'Server error ({code}).'**
+  String serverErrorWithCode(Object code);
+
+  /// Catch-all network / timeout / connection error
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Check your connection.'**
+  String get networkErrorCheckConnection;
+
+  /// Google login returned no/invalid token
+  ///
+  /// In en, this message translates to:
+  /// **'Account inactive or deleted.'**
+  String get accountInactiveOrDeleted;
+
+  /// Google auth response missing idToken
+  ///
+  /// In en, this message translates to:
+  /// **'Google ID token missing.'**
+  String get googleIdTokenMissing;
+
+  /// Credential sign-in returned no user
+  ///
+  /// In en, this message translates to:
+  /// **'Firebase sign-in failed.'**
+  String get firebaseSignInFailed;
+
+  /// getIdToken() failed
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to get Firebase token.'**
+  String get failedToGetFirebaseToken;
+
+  /// Backend returned HTML instead of JSON (dev message)
+  ///
+  /// In en, this message translates to:
+  /// **'Non-JSON from /login-google (HTML). Check API_BASE_URL (QA vs PROD) and route.'**
+  String get nonJsonFromGoogleLogin;
+
+  /// AppBar title for favorites screen
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favoritesTitle;
+
+  /// Button text in app bar
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get clearAll;
+
+  /// Dialog title when clearing favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Favorites?'**
+  String get clearAllFavoritesTitle;
+
+  /// Dialog content warning
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove all saved properties from your favorites. This action cannot be undone.'**
+  String get clearAllFavoritesMessage;
+
+  /// No description provided for @clearAllConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove all your saved alerts.'**
+  String get clearAllConfirm;
+
+  /// Snackbar when trying to clear without login
+  ///
+  /// In en, this message translates to:
+  /// **'You are not logged in'**
+  String get notLoggedInMessage;
+
+  /// Loading message in snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Clearing all favorites...'**
+  String get clearingFavorites;
+
+  /// Success message after clearing
+  ///
+  /// In en, this message translates to:
+  /// **'All favorites cleared successfully'**
+  String get favoritesClearedSuccess;
+
+  /// Error message with status code
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear favorites: {statusCode}'**
+  String failedToClearFavorites(int statusCode);
+
+  /// Generic error when clearing fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error clearing favorites. Check your connection.'**
+  String get errorClearingFavorites;
+
+  /// Button to go to login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginButton;
+
+  /// Message when favorites list is empty
+  ///
+  /// In en, this message translates to:
+  /// **'No favorite properties yet'**
+  String get noFavoritesYet;
+
+  /// Instruction for empty favorites state
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the heart icon on any property to save it here'**
+  String get tapHeartToSave;
+
+  /// Button to go to home screen when no favorites
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Properties'**
+  String get browseProperties;
+
+  /// Button to retry loading favorites on error
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Fallback error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get errorOccurred;
+
+  /// AppBar title
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformationTitle;
+
+  /// No description provided for @firstNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'First name'**
+  String get firstNameLabel;
+
+  /// Validation error
+  ///
+  /// In en, this message translates to:
+  /// **'First name is required'**
+  String get firstNameRequired;
+
+  /// No description provided for @lastNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name'**
+  String get lastNameLabel;
+
+  /// Label/hint for the email input field
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailLabel;
+
+  /// Validator message when email field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get emailRequired;
+
+  /// No description provided for @emailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email'**
+  String get emailInvalid;
+
+  /// Helper text under email field
+  ///
+  /// In en, this message translates to:
+  /// **'Email cannot be changed'**
+  String get emailCannotBeChanged;
+
+  /// Section title
+  ///
+  /// In en, this message translates to:
+  /// **'Change password (optional)'**
+  String get changePasswordOptional;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// Helper text
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank to keep your current password'**
+  String get newPasswordHelper;
+
+  /// No description provided for @confirmNewPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm new password'**
+  String get confirmNewPasswordLabel;
+
+  /// No description provided for @confirmNewPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm the new password'**
+  String get confirmNewPasswordRequired;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @currentPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password (required to change)'**
+  String get currentPasswordLabel;
+
+  /// No description provided for @currentPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password'**
+  String get currentPasswordRequired;
+
+  /// Save profile button
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateButton;
+
+  /// No description provided for @deleteAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account'**
+  String get deleteAccountButton;
+
+  /// No description provided for @deleteAccountDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account?'**
+  String get deleteAccountDialogTitle;
+
+  /// No description provided for @deleteAccountDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You will lose all your saved alerts,\nsaved properties, etc.'**
+  String get deleteAccountDialogMessage;
+
+  /// Red delete button in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteConfirm;
+
+  /// No description provided for @sessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please login again.'**
+  String get sessionExpired;
+
+  /// No description provided for @profileUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profileUpdatedSuccess;
+
+  /// No description provided for @networkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please try again.'**
+  String get networkError;
+
+  /// Generic fallback error
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed'**
+  String get updateFailed;
+
+  /// Main heading of the forgot password screen
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password?'**
+  String get forgotPasswordTitle;
+
+  /// Explanation text below the title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address and we\'ll send you a link to reset your password.'**
+  String get forgotPasswordSubtitle;
+
+  /// Text on the main submit button
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submitButton;
+
+  /// Text on the back button/link
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get backToLogin;
+
+  /// Validator message for invalid email pattern
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email format'**
+  String get invalidEmailFormat;
+
+  /// Success message when reset link is sent (fallback if backend message missing)
+  ///
+  /// In en, this message translates to:
+  /// **'Reset email sent successfully.'**
+  String get resetEmailSent;
+
+  /// Generic error when status != 200 (fallback)
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send reset email.'**
+  String get failedToSendResetEmail;
+
+  /// Catch-all network/error message
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get somethingWentWrong;
+
+  /// Number of saved alerts
+  ///
+  /// In en, this message translates to:
+  /// **'({count})'**
+  String savedAlertsCount(Object count);
+
+  /// Error message in error view (with dynamic error detail)
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String errorTitleWithMessage(Object message);
+
+  /// Button label to retry loading data
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retryButton;
+
+  /// Subtitle/description under title
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your saved property alerts here'**
+  String get manageYourSavedPropertyAlerts;
+
+  /// No description provided for @youHaventSavedAnyAlertsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven’t saved any alerts yet.'**
+  String get youHaventSavedAnyAlertsYet;
+
+  /// No description provided for @createAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Alert'**
+  String get createAlert;
+
+  /// Label above frequency selector in alert card
+  ///
+  /// In en, this message translates to:
+  /// **'Receive updates'**
+  String get receiveUpdates;
+
+  /// Prefix for relative time in alert card
+  ///
+  /// In en, this message translates to:
+  /// **'Created {time}'**
+  String createdTimeAgo(Object time);
+
+  /// Relative time < 1 minute
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// Relative time in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 minute ago} other{{count} minutes ago}}'**
+  String minutesAgo(num count);
+
+  /// Relative time in hours
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 hour ago} other{{count} hours ago}}'**
+  String hoursAgo(num count);
+
+  /// Relative time in days
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 day ago} other{{count} days ago}}'**
+  String daysAgo(num count);
+
+  /// No description provided for @deleteAlertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Saved Alert?'**
+  String get deleteAlertTitle;
+
+  /// No description provided for @deleteAlertConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure to delete this saved alert?'**
+  String get deleteAlertConfirm;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// Dialog title when clearing all
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Saved Alerts?'**
+  String get clearAllTitle;
+
+  /// Snackbar after single delete
+  ///
+  /// In en, this message translates to:
+  /// **'Alert deleted'**
+  String get alertDeleted;
+
+  /// Snackbar after clear all
+  ///
+  /// In en, this message translates to:
+  /// **'All alerts deleted'**
+  String get allAlertsDeleted;
+
+  /// Dialog message in bottom nav
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to access favorites.'**
+  String get pleaseLoginToAccessFavorites;
+
+  /// No description provided for @loginRequiredToCreateAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Login required to create alerts.'**
+  String get loginRequiredToCreateAlerts;
+
+  /// Tooltip on info icon
+  ///
+  /// In en, this message translates to:
+  /// **'How to remove saved alerts'**
+  String get howToRemoveSavedAlerts;
+
+  /// Info dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'How to Remove saved alerts?'**
+  String get howToRemoveTitle;
+
+  /// No description provided for @howToRemoveMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe left on any alert to remove it from your saved list'**
+  String get howToRemoveMessage;
+
+  /// Button in how-to info dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// Pagination text
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current} of {total}'**
+  String pageCurrentOfTotal(Object current, Object total);
+
+  /// Snackbar after successfully creating new alert
+  ///
+  /// In en, this message translates to:
+  /// **'Alert created'**
+  String get alertCreated;
+
+  /// Dialog title when email launch fails
+  ///
+  /// In en, this message translates to:
+  /// **'Email not available'**
+  String get emailNotAvailable;
+
+  /// No description provided for @noEmailAppConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'No email app is configured on this device. Please add a mail account first.'**
+  String get noEmailAppConfigured;
+
+  /// Generic OK button in dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// Frequency option for alerts - every hour
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly'**
+  String get hourly;
+
+  /// Frequency option for alerts - every day
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get daily;
+
+  /// Frequency option for alerts - every week
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// Frequency option for alerts - every month
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// Fallback when alert has no name
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed Alert'**
+  String get unnamedAlert;
+
   String get aboutUs_hero_title;
 
   /// Tagline / subtitle shown right below the hero title (usually in red)
@@ -2274,7 +2886,6 @@ abstract class AppLocalizations {
   /// **'Akarat'**
   String get aboutUs_hero_brand_name;
 }
-
 
 class _AppLocalizationsDelegate
     extends LocalizationsDelegate<AppLocalizations> {

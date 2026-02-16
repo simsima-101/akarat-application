@@ -4,6 +4,7 @@ import 'package:Akarat/src/core/utils/secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../common/widgets/property_card.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/session_manager.dart';
@@ -59,23 +60,25 @@ class _Fav_LogoutState extends State<Fav_Logout> {
   }
 
   Future<void> _clearAllFavorites() async {
+
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text("Clear All Favorites?"),
-        content: const Text(
-            "This will remove all saved properties from your favorites. This action cannot be undone."),
+        title: Text(l10n.clearAllFavoritesTitle),
+        content: Text(
+            l10n.clearAllFavoritesMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Clear All",
+            child: Text(l10n.clearAll,
                 style:
-                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -87,20 +90,20 @@ class _Fav_LogoutState extends State<Fav_Logout> {
         SessionManager().token ?? await SecureStorage.getToken();
     if (currentToken == null || currentToken.isEmpty) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("You are not logged in")));
+          .showSnackBar(SnackBar(content: Text(l10n.notLoggedInMessage)));
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Row(
-        children: const [
-          SizedBox(
+        children: [
+          const SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
                   strokeWidth: 2, color: Colors.white)),
-          SizedBox(width: 16),
-          Text("Clearing all favorites..."),
+          const SizedBox(width: 16),
+          Text(l10n.clearingFavorites),
         ],
       ),
       duration: const Duration(seconds: 10),
@@ -126,21 +129,27 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         context.read<FavoriteBloc>().add(const LoadFavorites());
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: const Text("All favorites cleared successfully"),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l10n.favoritesClearedSuccess),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 3),
         ));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Failed to clear favorites: ${response.statusCode}"),
-          backgroundColor: Colors.red,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.failedToClearFavorites(
+                response.statusCode,
+              ),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: const Text("Error clearing favorites. Check your connection."),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l10n.errorClearingFavorites),
         backgroundColor: Colors.red,
       ));
     }
@@ -190,6 +199,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     if (!hasCheckedLogin) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -207,8 +218,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               elevation: 0,
               backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
-              title: const Text("Favorites",
-                  style: TextStyle(color: Colors.black)),
+              title: Text(l10n.favoritesTitle,
+                  style: const TextStyle(color: Colors.black)),
             ),
             body: _loginPrompt(context),
           );
@@ -234,8 +245,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                 elevation: 0,
                 backgroundColor: Colors.white,
                 iconTheme: const IconThemeData(color: Colors.red),
-                title: const Text("Favorites",
-                    style: TextStyle(color: Colors.black)),
+                title: Text(l10n.favoritesTitle,
+                    style: const TextStyle(color: Colors.black)),
               ),
               body: _loginPrompt(context),
             );
@@ -248,8 +259,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               elevation: 0,
               backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
-              title: const Text("Favorites",
-                  style: TextStyle(color: Colors.black)),
+              title: Text(l10n.favoritesTitle,
+                  style: const TextStyle(color: Colors.black)),
             ),
             body: Center(
               child: Column(
@@ -262,7 +273,7 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                       style: const TextStyle(fontSize: 16, color: Colors.grey)),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                      onPressed: refreshFavorites, child: const Text("Retry")),
+                      onPressed: refreshFavorites, child: Text(l10n.retry)),
                 ],
               ),
             ),
@@ -284,14 +295,14 @@ class _Fav_LogoutState extends State<Fav_Logout> {
               elevation: 0,
               backgroundColor: Colors.white,
               iconTheme: const IconThemeData(color: Colors.red),
-              title: const Text("Favorites",
-                  style: TextStyle(color: Colors.black)),
+              title: Text(l10n.favoritesTitle,
+                  style: const TextStyle(color: Colors.black)),
               actions: [
                 if (hasFavorites)
                   TextButton(
                     onPressed: _clearAllFavorites,
-                    child: const Text("Clear All",
-                        style: TextStyle(
+                    child: Text(l10n.clearAll,
+                        style: const TextStyle(
                             color: Colors.red, fontWeight: FontWeight.bold)),
                   ),
               ],
@@ -325,16 +336,16 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                               Icon(Icons.favorite_border,
                                   size: 80, color: Colors.grey[400]),
                               const SizedBox(height: 20),
-                              const Text("No favorite properties yet",
-                                  style: TextStyle(
+                              Text(l10n.noFavoritesYet,
+                                  style: const TextStyle(
                                       fontSize: 18,
                                       color: Colors.grey,
                                       fontWeight: FontWeight.w500)),
                               const SizedBox(height: 10),
-                              const Text(
-                                  "Tap the heart icon on any property to save it here",
+                              Text(
+                                  l10n.tapHeartToSave,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 14, color: Colors.grey)),
                               const SizedBox(height: 24),
                               ElevatedButton.icon(
@@ -344,8 +355,8 @@ class _Fav_LogoutState extends State<Fav_Logout> {
                                         builder: (_) => const Home())),
                                 icon: const Icon(Icons.explore,
                                     color: Colors.white),
-                                label: const Text("Browse Properties",
-                                    style: TextStyle(
+                                label: Text(l10n.browseProperties,
+                                    style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600)),
                                 style: ElevatedButton.styleFrom(
@@ -372,6 +383,9 @@ class _Fav_LogoutState extends State<Fav_Logout> {
   }
 
   Widget _loginPrompt(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -380,14 +394,14 @@ class _Fav_LogoutState extends State<Fav_Logout> {
           children: [
             const Icon(Icons.lock_outline, size: 80, color: Colors.grey),
             const SizedBox(height: 20),
-            const Text("You need to log in to view your favorite properties.",
-                textAlign: TextAlign.center, style: TextStyle(fontSize: 18)),
+            Text(l10n.loginRequiredTitle,
+                textAlign: TextAlign.center, style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => Navigator.push(
                   context, MaterialPageRoute(builder: (_) => const Login())),
               icon: const Icon(Icons.login),
-              label: const Text("Login"),
+              label: Text(l10n.loginButton),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,

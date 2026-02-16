@@ -76,7 +76,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get noData => 'Veri yok';
 
   @override
-  String get loginRequired => 'Giriş Yapılması Gerekiyor';
+  String get loginRequired => 'Giriş gerekli';
 
   @override
   String get loginToAccessFavorites =>
@@ -129,7 +129,8 @@ class AppLocalizationsTr extends AppLocalizations {
       'Çıkış yapmak istediğinize emin misiniz?';
 
   @override
-  String get loginRequiredTitle => 'Giriş Gereklidir';
+  String get loginRequiredTitle =>
+      'Favori mülklerinizi görüntülemek için giriş yapmanız gerekiyor.';
 
   @override
   String get loginToAccessSavedAlerts =>
@@ -240,9 +241,6 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get myAccountSupportValidationEmailInvalid =>
       'Lütfen geçerli bir e-posta girin';
-
-  @override
-  String get myAccountTermsAndConditionsAppBarTitle => 'Şartlar ve Koşullar';
 
   @override
   String get findAgentTitle => 'Acentemi Bul';
@@ -373,10 +371,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get registerTitle => 'Hesap Oluştur';
 
   @override
-  String get continueWithGoogle => 'Google ile Devam Et';
+  String get continueWithGoogle => 'Google ile devam et';
 
   @override
-  String get or => 'VEYA';
+  String get or => 'veya';
 
   @override
   String get firstNameHint => 'Ad';
@@ -479,7 +477,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get googleSignInNotSupported =>
-      'Bu platform Google ile girişi desteklemiyor';
+      'Google ile giriş bu platformda desteklenmiyor.';
 
   @override
   String get firebaseUserNullAfterSignIn =>
@@ -501,517 +499,885 @@ class AppLocalizationsTr extends AppLocalizations {
   String get nonJsonFromLoginGoogle =>
       'Sunucudan geçersiz yanıt alındı. Lütfen daha sonra tekrar deneyin.';
 
-
+  @override
+  String get myAccountTermsAndConditionsAppBarTitle => 'Terms & Conditions';
 
   @override
-  String get myAccountTermsSectionIntroductionTitle => 'Giriş';
+  String get myAccountTermsSectionIntroductionTitle => 'Introduction';
 
   @override
   String get myAccountTermsSectionIntroductionContent =>
-      'Akarat\'a hoş geldiniz (\"Platform\"). Bu Şartlar ve Koşullar (\"Şartlar\"), Akarat ile web sitemize, mobil uygulamamıza, dijital çözümlerimize veya ilgili herhangi bir araç ve işlevselliğe (topluca \"Hizmetler\") erişen, kullanan veya bunlarla etkileşime giren herhangi bir birey veya kuruluş arasında yasal olarak bağlayıcı bir anlaşma oluşturur. Bu Şartlar, ziyaretçiler, kayıtlı üyeler, reklam verenler, lisanslı acenteler, geliştiriciler ve Platform\'a erişen veya kullanan diğer tüm taraflar dahil olmak üzere tüm kullanıcı kategorilerine uygulanır.\n\nPlatform\'un herhangi bir bileşenini kullanarak veya erişerek, bu Şartları ve Gizlilik Politikamızı okuduğunuzu, anladığınızı ve bunlara uymayı kabul ettiğinizi beyan etmiş olursunuz. Bu belgede yer alan herhangi bir hükme katılmıyorsanız, Platform\'u ve ilgili tüm Hizmetleri derhal kullanmayı bırakmalısınız.';
+      'Welcome to Akarat (the “Platform”). These Terms & Conditions (“Terms”) serve as a legally binding agreement between Akarat and any individual or entity who accesses, uses, or interacts with our website, mobile application, digital solutions, or any related tools and functionalities (collectively, the “Services”). These Terms apply to all categories of users, including visitors, registered members, advertisers, licensed agents, developers, and any other parties accessing or utilizing the Platform.\n\nBy using or accessing any component of the Platform, you acknowledge that you have read, understood, and agreed to comply with these Terms, together with our Privacy Policy. If you disagree with any provision contained herein, you must immediately discontinue use of the Platform and all associated Services.';
 
   @override
-  String get myAccountTermsSectionWhoWeAreTitle => '1. Biz Kimiz';
+  String get myAccountTermsSectionWhoWeAreTitle => '1. Who We Are';
 
   @override
   String get myAccountTermsWhoWeAreCompany =>
-      'Platform, Birleşik Arap Emirlikleri\'nde (BAE) yasal olarak kayıtlı bir kuruluş olan EMLAK BULUCU PORTAL LLC tarafından sahip olunmakta ve işletilmektedir.';
+      'The Platform is owned and operated by EMLAK BULUCU PORTAL LLC, a legally registered entity in the United Arab Emirates (UAE).';
 
   @override
   String get myAccountTermsWhoWeAreOffice =>
-      'Kayıtlı Ofis: Westburry Ofis Kulesi, 23. Kat, Ofis No. 2303, Business Bay, Dubai, BAE\nE-posta: info@akarat.com';
+      'Registered Office: Westburry Office Tower, Floor 23, Office No. 2303, Business Bay, Dubai, UAE\nEmail: info@akarat.com';
 
   @override
   String get myAccountTermsWhoWeArePronouns =>
-      '\"Biz\", \"bize\" veya \"bizim\" ifadeleri Platform işletmecisi olan Akarat\'ı ifade eder.';
+      'References to “we,” “us,” or “our” refer to Akarat as the Platform operator.';
 
   @override
-  String get myAccountTermsSectionDefinitionsTitle => '2. Tanımlar';
+  String get myAccountTermsSectionDefinitionsTitle => '2. Definitions';
 
   @override
   String get myAccountTermsDefinitionAdvertiser =>
-      'Reklam Veren: Platformda mülk ilanları yayınlayarak mülkleri tanıtmak, pazarlamak veya satmak amacıyla hareket eden herhangi bir birey, işletme veya kuruluş.';
+      'Advertiser: Any individual, business, or organization that posts property listings on the Platform to promote, market, or sell properties.';
 
   @override
   String get myAccountTermsDefinitionAgent =>
-      'Acente: Mülkleri listelemek veya pazarlamak için yetkili lisanslı gayrimenkul uzmanı, aracı veya ajans.';
+      'Agent: A licensed real estate professional, broker, or agency authorized to list or market properties.';
 
   @override
   String get myAccountTermsDefinitionContent =>
-      'İçerik: Platforma yüklenen veya gönderilen tüm materyaller; metin, resim, video, belge, grafik ve diğer medya dahil.';
+      'Content: All materials uploaded or submitted to the Platform, including text, images, videos, documents, graphics, and other media.';
 
   @override
   String get myAccountTermsDefinitionListing =>
-      'İlan: Platformda yayınlanan herhangi bir mülk reklamı, tanıtım girişi veya gönderi; ilgili tüm detaylar ve medya dahil.';
+      'Listing: Any property advertisement, promotional entry, or post published on the Platform, including all related details and media.';
 
   @override
   String get myAccountTermsDefinitionUser =>
-      'Kullanıcı / Siz: Platforma veya Hizmetlerine erişen, gezinen veya bunlarla etkileşime giren herhangi bir kişi, şirket veya kuruluş.';
+      'User / You: Any person, company, or entity who accesses, navigates, or interacts with the Platform or its Services.';
 
   @override
   String get myAccountTermsDefinitionServices =>
-      'Hizmetler: Akarat tarafından Platform üzerinden sunulan özellikler, araçlar, işlevler ve çözümlerin tamamı.';
+      'Services: The complete range of features, tools, functionalities, and solutions offered by Akarat through the Platform.';
 
   @override
-  String get myAccountTermsSectionAcceptanceTitle => '3. Şartların Kabulü';
+  String get myAccountTermsSectionAcceptanceTitle => '3. Acceptance of Terms';
 
   @override
   String get myAccountTermsAcceptanceMain =>
-      'Platforma erişerek veya kullanarak, bu Şartları okuduğunuzu, anladığınızı ve bunlara bağlı kalmayı açıkça kabul ettiğinizi beyan edersiniz. Platformu kullanmanız, burada belirtilen tüm yükümlülükleri kabul ettiğiniz anlamına gelir.';
+      'By accessing or using the Platform, you expressly acknowledge that you have read, understood, and agreed to be bound by these Terms. Your use of the Platform signifies your acceptance of all obligations outlined herein.';
 
   @override
   String get myAccountTermsAcceptanceNotAllowed =>
-      'Aşağıdaki durumlardan herhangi biri geçerliyse Platformu kullanamazsınız:';
+      'You may not use the Platform if any of the following apply:';
 
   @override
   String get myAccountTermsAcceptanceConditions =>
-      '• 18 yaşından küçükseniz.\n• Yargı bölgeniz dijital gayrimenkul pazarlarına erişimi yasaklamaktaysa.\n• İlan verme, reklam yapma veya gayrimenkul ilanlarıyla etkileşimde bulunma için yasal veya uygunluk şartlarını karşılamıyorsanız.';
+      '• You are under the age of 18 years.\n• Your jurisdiction prohibits access to digital property marketplaces.\n• You do not meet the eligibility or legal requirements to list, advertise, or interact with property listings.';
 
   @override
   String get myAccountTermsAcceptanceUpdates =>
-      'Akarat, bu Şartları herhangi bir zamanda önceden haber vermeksizin değiştirme, düzeltme veya güncelleme hakkını saklı tutar. Güncellemeler yayınlandığı anda yürürlüğe girer. Değişikliklerden sonra Platformu kullanmaya devam etmeniz, revize edilen Şartları kabul ettiğiniz anlamına gelir.';
+      'Akarat reserves the right to modify, amend, or update these Terms at any time without prior notice. Updates become effective immediately upon publication. Continued use of the Platform after such changes constitutes acceptance of the revised Terms.';
 
   @override
-  String get myAccountTermsSectionScopeTitle => '4. Kullanım Kapsamı';
+  String get myAccountTermsSectionScopeTitle => '4. Scope of Use';
 
   @override
   String get myAccountTermsScopeIntro =>
-      'Kullanıcılar Platformu profesyonel, etik ve yürürlükteki tüm yasalara uygun şekilde kullanmalıdır. Aşağıdaki eylemler kesinlikle yasaktır:';
+      'Users must utilize the Platform professionally, ethically, and in accordance with all applicable laws. You are strictly prohibited from:';
 
   @override
   String get myAccountTermsScopeProhibited =>
-      '• Yasadışı, yanıltıcı, hileli veya izinsiz telif hakkıyla korunan materyal yüklemek.\n• Platform verilerini ticari amaçla kazımak, kopyalamak veya çıkarmak.\n• Yanlış, tekrarlanan veya mevcut olmayan mülk ilanları yayınlamak.\n• Otomatik araçlar, botlar veya scriptler kullanarak Platforma erişmek veya etkileşimde bulunmak.\n• Platformun güvenliğini veya işleyişini zarar vermek, devre dışı bırakmak, aşırı yüklemek veya müdahale etmek.';
+      '• Uploading unlawful, misleading, fraudulent, or copyrighted material without permission.\n• Scraping, mining, copying, or extracting Platform data for commercial use.\n• Posting inaccurate, duplicate, or non-existent property listings.\n• Using automated tools, bots, or scripts to access or interact with the Platform.\n• Attempting to harm, disable, overburden, or interfere with Platform security or operations.';
 
   @override
   String get myAccountTermsScopeConsequence =>
-      'Kötüye kullanım, anında askıya alma, hesap kapatma, içerik kaldırma veya yasal işlemle sonuçlanabilir.';
+      'Misuse may result in immediate suspension, account termination, content removal, or legal action.';
 
   @override
-  String get myAccountTermsSectionRegistrationTitle => '5. Hesap Kaydı';
+  String get myAccountTermsSectionRegistrationTitle =>
+      '5. Account Registration';
 
   @override
   String get myAccountTermsRegistrationIntro =>
-      'Bazı Hizmetler kullanıcı kaydı gerektirir. Doğru, eksiksiz ve güncel bilgi sağlamalısınız. Kullanıcılar şunlardan sorumludur:';
+      'Certain Services require user registration. You must provide accurate, complete, and up-to-date information. Users are responsible for:';
 
   @override
   String get myAccountTermsRegistrationDuties =>
-      '• Giriş bilgilerini koruma\n• Yetkisiz erişimi önleme\n• Hesapları altında gerçekleştirilen tüm faaliyetler';
+      '• Protecting login credentials\n• Preventing unauthorized access\n• All activity performed under their account';
 
   @override
   String get myAccountTermsRegistrationNoLiability =>
-      'Akarat, ihmal veya yetkisiz erişimden kaynaklanan kayıplardan sorumlu değildir.';
+      'Akarat is not liable for losses resulting from negligence or unauthorized access.';
 
   @override
   String get myAccountTermsSectionAdvertiserAgentTitle =>
-      '6. İlan Veren ve Acente Yükümlülükleri';
+      '6. Advertiser & Agent Obligations';
 
   @override
   String get myAccountTermsAdvertiserAgentCompliance =>
-      'İlan verenler ve acenteler, DLD (Dubai Arazi Dairesi) gibi yetkililer tarafından belirlenen lisans ve reklam gereklilikleri dahil olmak üzere tüm ilgili BAE gayrimenkul düzenlemelerine uymalıdır.';
+      'Advertisers and Agents must comply with all relevant UAE real estate regulations, including licensing and advertising requirements set by authorities such as the DLD (Dubai Land Department).';
 
   @override
-  String get myAccountTermsListingMust => 'Tüm mülk ilanları:';
+  String get myAccountTermsListingMust => 'All property listings must:';
 
   @override
   String get myAccountTermsListingRequirements =>
-      '• Doğru, gerçek ve şu anda mevcut olmalıdır.\n• Güncel bilgi, resim, özellik ve fiyat içermelidir.\n• Geçerli yetki, mülkiyet belgeleri veya ilan anlaşmaları ile desteklenmelidir.';
+      '• Be accurate, truthful, and currently available.\n• Contain updated information, images, specifications, and pricing.\n• Be backed by valid authorization, ownership documents, or listing agreements.';
 
   @override
-  String get myAccountTermsAkaratRights => 'Akarat tam haklara sahiptir:';
+  String get myAccountTermsAkaratRights => 'Akarat reserves full rights to:';
 
   @override
   String get myAccountTermsAkaratRightsList =>
-      '• İlanları yayınlamadan önce inceleme ve onaylama.\n• Kurallara aykırı içeriği düzenleme veya kaldırma.\n• Dürüst olmayan veya etik olmayan uygulamalarda bulunan hesapları askıya alma.';
+      '• Review and approve listings before publication.\n• Edit or remove content that violates guidelines.\n• Suspend accounts engaged in dishonest or unethical practices.';
 
   @override
   String get myAccountTermsAgentLicense =>
-      'Acentelerin, emirete bağlı olarak geçerli bir DLD lisansı veya eşdeğer sertifikaya sahip olması gerekir.';
+      'Agents must hold a valid DLD license or equivalent certification depending on the emirate.';
 
   @override
-  String get myAccountTermsSectionUGCTitle => '7. Kullanıcı Üretilen İçerik';
+  String get myAccountTermsSectionUGCTitle => '7. User-Generated Content';
 
   @override
   String get myAccountTermsUGCLicense =>
-      'İçerik yükleyerek, Akarat\'a içeriği Platform ile ilgili amaçlar için saklama, yayınlama, çoğaltma, değiştirme veya kullanma konusunda küresel, münhasır olmayan, telifsiz bir lisans verirsiniz.';
+      'By uploading content, you grant Akarat a global, non-exclusive, royalty-free license to store, publish, reproduce, modify, or use the content for Platform-related purposes.';
 
   @override
-  String get myAccountTermsUGCAffirm => 'Şunu beyan edersiniz:';
+  String get myAccountTermsUGCAffirm => 'You affirm that:';
 
   @override
   String get myAccountTermsUGCAffirmList =>
-      '• İçeriğin sahibi sizsiniz veya yasal kullanım hakkına sahipsiniz.\n• İçeriğiniz fikri mülkiyet kanunlarını ihlal etmemektedir.';
+      '• You own the content or possess legal usage rights.\n• Your content does not violate intellectual property laws.';
 
   @override
-  String get myAccountTermsSectionIPTitle => '8. Fikri Mülkiyet';
+  String get myAccountTermsSectionIPTitle => '8. Intellectual Property';
 
   @override
   String get myAccountTermsIPOwnership =>
-      'Platformdaki tüm fikri mülkiyet hakları; ticari markalar, hizmet markaları, logolar, grafikler, metinler, görüntüler, sesli-görsel materyaller, yazılımlar, tasarım unsurları ve diğer içerikler dahil ancak bunlarla sınırlı olmamak üzere, Akarat veya lisans verenlerinin münhasır mülkiyetidir.';
+      'All intellectual property rights in the Platform, including but not limited to trademarks, service marks, logos, graphics, text, images, audiovisual material, software, design elements, and other content, are the exclusive property of Akarat or its licensors.';
 
   @override
   String get myAccountTermsIPProhibited =>
-      'Kullanıcıların kesinlikle yapmaması gerekenler:';
+      'Users are strictly prohibited from:';
 
   @override
   String get myAccountTermsIPProhibitedList =>
-      '• Önceden yazılı izin olmaksızın Platform içeriğini kopyalama, çoğaltma veya dağıtma.\n• Platformu veya içeriğini değiştirme, türev eserler oluşturma veya ticari olarak kullanma.\n• Akarat veya üçüncü taraf lisans verenlerinin haklarını ihlal edecek şekilde fikri mülkiyet kullanma.';
+      '• Copying, reproducing, or distributing any Platform content without prior written consent.\n• Modifying, creating derivative works, or commercially exploiting the Platform or its content.\n• Using intellectual property in any way that infringes on the rights of Akarat or third-party licensors.';
 
   @override
   String get myAccountTermsIPConsequence =>
-      'Platformun fikri mülkiyetinin yetkisiz kullanımı, Birleşik Arap Emirlikleri yürürlükteki kanunları uyarınca medeni veya cezai sorumluluğa yol açabilir.';
+      'Any unauthorized use of the Platform’s intellectual property may result in civil or criminal liability under the applicable laws of the United Arab Emirates.';
 
   @override
   String get myAccountTermsSectionDisclaimerTitle =>
-      '9. Sorumluluk Reddi ve Sorumluluk Sınırlandırması';
+      '9. Disclaimer & Limitation of Liability';
 
   @override
   String get myAccountTermsDisclaimerBasis =>
-      'Platform ve Hizmetleri \"olduğu gibi\" ve \"mevcut olduğu şekilde\" sunulmaktadır. Akarat, Platform üzerinden sunulan herhangi bir içerik, ilan veya Hizmetin kullanılabilirliği, doğruluğu, eksiksizliği, güvenilirliği veya amaca uygunluğu konusunda açık veya zımni hiçbir garanti vermez.';
+      'The Platform and its Services are provided on an “as-is” and “as-available” basis. Akarat makes no warranties, whether express or implied, regarding the availability, accuracy, completeness, reliability, or fitness for purpose of any content, listings, or Services offered through the Platform.';
 
   @override
   String get myAccountTermsNoLiabilityFor =>
-      'Kullanıcılar, Akarat\'ın aşağıdaki durumlardan sorumlu olmadığını kabul ve beyan eder:';
+      'Users acknowledge and agree that Akarat is not liable for:';
 
   @override
   String get myAccountTermsNoLiabilityList =>
-      '• Mülk ilanlarında veya kullanıcı tarafından üretilen içerikteki hatalar, eksiklikler veya güncel olmayan bilgiler.\n• Dolaylı, arızi, sonuçsal, cezai veya özel zararlar; kâr kaybı, fırsat kaybı veya iş kesintisi dahil.\n• İlan verenler, acenteler, kullanıcılar veya üçüncü tarafların kötü niyetli davranışları, yanlış beyanları, ihmalleri veya eylemleri.';
+      '• Errors, omissions, or outdated information in property listings or user-generated content.\n• Indirect, incidental, consequential, punitive, or special damages, including lost profits, lost opportunities, or business interruptions.\n• Misconduct, misrepresentation, negligence, or any actions taken by advertisers, agents, users, or third-party entities.';
 
   @override
   String get myAccountTermsUseAtOwnRisk =>
-      'Kullanıcılar Platforma tamamen kendi riskleri altında erişir ve kullanır. Akarat\'ın toplam sorumluluğu, sözleşme, haksız fiil veya başka bir şekilde, ilgili Hizmetler için kullanıcı tarafından ödenen ücretleri (varsa) aşmayacaktır.';
+      'Users access and use the Platform entirely at their own risk. The total aggregate liability of Akarat, whether in contract, tort, or otherwise, shall not exceed the fees, if any, paid by the user for the relevant Services.';
 
   @override
   String get myAccountTermsSectionSuspensionTitle =>
-      '10. Askıya Alma veya Fesih';
+      '10. Suspension or Termination';
 
   @override
   String get myAccountTermsSuspensionRight =>
-      'Akarat, kendi takdirine bağlı olarak, herhangi bir ön ihbar yapmaksızın bir kullanıcının hesabını ve Platform erişimini tamamen veya kısmen askıya alma, kısıtlama veya feshetme hakkını saklı tutar, eğer:';
+      'Akarat reserves the right, at its sole discretion, to suspend, restrict, or terminate a user’s account and access to the Platform, in whole or in part, without prior notice, if:';
 
   @override
   String get myAccountTermsSuspensionReasons =>
-      '• Kullanıcı bu Şartların herhangi bir hükmünü veya yürürlükteki yasayı ihlal ederse.\n• Hileli, kötü niyetli veya etik olmayan faaliyet tespit edilirse.\n• Platformun veya diğer kullanıcıların güvenliği tehdit edilirse.';
+      '• The user violates any provision of these Terms or applicable law.\n• Fraudulent, abusive, or unethical activity is detected.\n• Security of the Platform or other users is threatened.';
 
   @override
   String get myAccountTermsSuspensionEffect =>
-      'Askıya alma veya fesih üzerine, tüm Hizmetlere, içeriğe ve kullanıcı verilerine erişim derhal iptal edilir. Kullanıcılar, fesih öncesinde hesapları altında gerçekleştirilen tüm yükümlülüklerden ve eylemlerden sorumlu olmaya devam eder.';
+      'Upon suspension or termination, access to all Services, content, and user data will be immediately revoked. Users remain liable for all obligations and actions performed under their account prior to termination.';
 
   @override
-  String get myAccountTermsSectionPrivacyTitle => '11. Veri Koruma ve Gizlilik';
+  String get myAccountTermsSectionPrivacyTitle =>
+      '11. Data Protection & Privacy';
 
   @override
   String get myAccountTermsPrivacyProcessed =>
-      'Platform üzerinden toplanan tüm kişisel ve kişisel olmayan veriler, Akarat\'ın Gizlilik Politikasına uygun olarak işlenir. Temel uygulamalar şunlardır:';
+      'All personal and non-personal data collected through the Platform are processed in accordance with Akarat’s Privacy Policy. Key practices include:';
 
   @override
   String get myAccountTermsPrivacyPractices =>
-      '• Verilerin yalnızca operasyonel, yasal veya hizmetle ilgili amaçlar için toplanması.\n• Verilerin güvenli şekilde saklanması ve yalnızca yetkili personele erişim izni verilmesi.\n• Kişisel verilerin yalnızca Hizmetleri iyileştirme, işlem işleme veya yasal yükümlülüklere uyma amacıyla kullanılması.\n• Kullanıcıların kişisel bilgilerine erişme, düzeltme veya silme talep etme hakları, BAE yasalarına tabidir.';
+      '• Collection of data only for operational, legal, or service-related purposes.\n• Secure storage of data and restriction of access to authorized personnel only.\n• Use of personal data solely for improving Services, processing transactions, or complying with legal obligations.\n• User rights to access, correct, or request deletion of personal information, subject to applicable UAE laws.';
 
   @override
   String get myAccountTermsPrivacyConsent =>
-      'Platformu kullanarak, kullanıcılar Gizlilik Politikasında açıklandığı şekilde veri toplanmasına, işlenmesine ve saklanmasına rıza gösterir.';
+      'By using the Platform, users consent to the collection, processing, and storage of data as described in the Privacy Policy.';
 
   @override
-  String get myAccountTermsSectionThirdPartyTitle =>
-      '12. Üçüncü Taraf Bağlantıları';
+  String get myAccountTermsSectionThirdPartyTitle => '12. Third-Party Links';
 
   @override
   String get myAccountTermsThirdPartyContent =>
-      'Platform üçüncü taraf web sitelerine, uygulamalara veya hizmetlere bağlantılar içerebilir. Akarat bu siteleri kontrol etmez, onaylamaz veya bunların doğruluğunu, içeriğini, gizliliğini veya güvenliğini garanti etmez.\n\nKullanıcılar, harici web sitelerine veya kaynaklara erişmenin kendi riskleri altında olduğunu kabul eder. Akarat, bu tür üçüncü taraf hizmetlerin kullanımından kaynaklanan herhangi bir zarar veya kayıptan sorumlu tutulamaz.';
+      'The Platform may contain links to third-party websites, applications, or services. Akarat does not control, endorse, or guarantee the accuracy, content, privacy, or security of third-party sites.\n\nUsers acknowledge that access to external websites or resources is at their own risk. Akarat disclaims all liability for any damages or losses incurred as a result of using such third-party services.';
 
   @override
   String get myAccountTermsSectionGoverningLawTitle =>
-      '13. Uygulanacak Hukuk ve Yargı Yetkisi';
+      '13. Governing Law & Jurisdiction';
 
   @override
   String get myAccountTermsGoverningLawContent =>
-      'Bu Şartlar, Birleşik Arap Emirlikleri yasalarına göre yönetilecek ve yorumlanacaktır. Bu Şartlardan veya Platform kullanımından kaynaklanan veya bunlarla ilgili herhangi bir uyuşmazlık, ihtilaf veya talep, Dubai\'deki yetkili mahkemelerin münhasır yargı yetkisine tabi olacaktır.\n\nKullanıcılar açıkça bu mahkemelerin yargı yetkisine tabi olur ve yargı yeri veya uygun olmayan forum itirazından feragat eder.';
+      'These Terms shall be governed by and construed in accordance with the laws of the United Arab Emirates. Any dispute, controversy, or claim arising out of or in connection with these Terms, or the use of the Platform, shall be subject to the exclusive jurisdiction of the competent courts in Dubai.\n\nUsers expressly submit to the jurisdiction of such courts and waive any objection to venue or inconvenient forum.';
 
   @override
-  String get myAccountTermsSectionLanguageTitle => '14. Dil';
+  String get myAccountTermsSectionLanguageTitle => '14. Language';
 
   @override
   String get myAccountTermsLanguageContent =>
-      'Bu Şartlar kolaylık sağlamak amacıyla İngilizce ve Arapça olarak sunulmuştur. İngilizce ve Arapça sürümler arasında herhangi bir çelişki veya tutarsızlık olması durumunda, tüm yasal amaçlar, yorum ve uygulama için İngilizce sürüm geçerli olacaktır.';
+      'These Terms are provided in both English and Arabic for convenience. In the event of any conflict or inconsistency between the English and Arabic versions, the English version shall prevail for all legal purposes, interpretation, and enforcement.';
 
   @override
-  String get myAccountTermsSectionUpdatesTitle =>
-      '15. Bu Şartlarda Güncellemeler';
+  String get myAccountTermsSectionUpdatesTitle => '15. Updates to These Terms';
 
   @override
   String get myAccountTermsUpdatesIntro =>
-      'Akarat, aşağıdaki konulardaki değişiklikleri yansıtmak için bu Şartları herhangi bir zamanda değiştirme, gözden geçirme veya güncelleme hakkını saklı tutar:';
+      'Akarat reserves the right to amend, revise, or update these Terms at any time to reflect changes in:';
 
   @override
   String get myAccountTermsUpdatesReasons =>
-      '• Yasal veya düzenleyici gereklilikler.\n• Operasyonel, teknik veya güvenlik iyileştirmeleri.\n• Platform üzerinden sunulan yeni özellikler, işlevler veya Hizmetler.';
+      '• Legal or regulatory requirements.\n• Operational, technical, or security improvements.\n• New features, functionalities, or Services offered through the Platform.';
 
   @override
   String get myAccountTermsUpdatesEffect =>
-      'Güncellenmiş Şartlar, Platformda yayınlandığı anda yürürlüğe girer. Kullanıcıların Şartları periyodik olarak gözden geçirmesi önerilir. Platformu kullanmaya devam etmek, herhangi bir değişiklik veya güncellemeyi kabul ettiğiniz anlamına gelir.';
+      'Updated Terms become effective immediately upon publication on the Platform. Users are encouraged to periodically review the Terms. Continued use of the Platform constitutes acceptance of any modifications or updates.';
 
   @override
-  String get myAccountTermsSectionContactTitle => '16. Bize Ulaşın';
+  String get myAccountTermsSectionContactTitle => '16. Contact Us';
 
   @override
   String get myAccountTermsContactContent =>
-      'Yardım, soru veya şikayetler için:\n\n✉️ info@akarat.com\n\n📍 Westburry Ofis Kulesi, 23. Kat, Ofis 2303, Business Bay, Dubai, BAE';
+      'For assistance, inquiries, or complaints:\n\n✉️ info@akarat.com\n\n📍 Westburry Office Tower, Floor 23, Office 2303, Business Bay, Dubai, UAE';
 
   @override
-  String get myAccountPrivacyAppBarTitle => 'Gizlilik Politikası';
+  String get myAccountPrivacyAppBarTitle => 'Privacy Policy';
 
   @override
-  String get myAccountPrivacyIntroductionTitle => 'Giriş';
+  String get myAccountPrivacyIntroductionTitle => 'Introduction';
 
   @override
   String get myAccountPrivacyIntroductionContent =>
-      'Gizliliğinizi korumak Akarat için önceliktir. Kişisel Verilerinizi korumaya ve web sitemiz ile mobil uygulamalarımızı (\"Platform\") kullandığınızda bu verilerin nasıl toplandığını, kullanıldığını ve açıklanacağını şeffaf bir şekilde paylaşmaya kararlıyız.\n\nBu Gizlilik Politikası, Platform\'a eriştiğinizde veya kullandığınızda Akarat\'ın Kişisel Verilerinizi nasıl topladığını, işlediğini ve yönettiğini açıklar ve haklarınızı ile size sunulan yasal korumaları belirtir.\n\nPlatform\'a erişerek veya kullanarak, Kişisel Verilerinizin bu Gizlilik Politikasına uygun olarak toplanmasını, kullanılmasını ve aktarılmasını kabul etmiş olursunuz.';
+      'Protecting your privacy is a priority for Akarat. We are committed to safeguarding your Personal Data and being transparent about how it is collected, used, and disclosed in connection with your use of our website and mobile applications (the “Platform”).\n\nThis Privacy Policy explains how Akarat collects, processes, and manages your Personal Data when you access or use the Platform, and outlines your rights and the legal protections available to you.\n\nBy accessing or using the Platform, you acknowledge and agree to the collection, use, and transfer of your Personal Data in accordance with this Privacy Policy.';
 
   @override
   String get myAccountPrivacySectionsIntro =>
-      'Bu Gizlilik Politikası aşağıdaki bölümleri kapsar:';
+      'This Privacy Policy covers the following sections:';
 
   @override
   String get myAccountPrivacySectionLinkAbout =>
-      'Şirketimiz ve iletişim bilgilerimiz hakkında';
+      'About our company and contact information';
 
   @override
-  String get myAccountPrivacySectionLinkTypes => 'Topladığımız bilgi türleri';
+  String get myAccountPrivacySectionLinkTypes =>
+      'Types of information we collect';
 
   @override
   String get myAccountPrivacySectionLinkLegal =>
-      'Bilgilerinizi işlemenin yasal dayanağı';
+      'Legal Basis for Processing Your Information';
 
   @override
   String get myAccountPrivacySectionLinkShare =>
-      'Bilgilerinizi kimlerle paylaşıyoruz?';
+      'How We Share Your Information';
 
   @override
-  String get myAccountPrivacySectionLinkSecurity => 'Veri Güvenliği Tedbirleri';
+  String get myAccountPrivacySectionLinkSecurity => 'Data Security Measures';
 
   @override
   String get myAccountPrivacySectionLinkRights =>
-      'Bilgilerinizle ilgili haklarınız';
+      'Your Rights Regarding Your Information';
 
   @override
   String get myAccountPrivacySectionLinkMarketing =>
-      'Pazarlama ve Promosyon İletişimi';
+      'Marketing and Promotional Communications';
 
   @override
-  String get myAccountPrivacySectionLinkMinors =>
-      'Reşit Olmayanlar Hakkında Bilgi';
+  String get myAccountPrivacySectionLinkMinors => 'Information About Minors';
 
   @override
-  String get myAccountPrivacySectionLinkThirdParty =>
-      'Üçüncü Taraf Bağlantıları';
+  String get myAccountPrivacySectionLinkThirdParty => 'Links to Third-Party';
 
   @override
   String get myAccountPrivacySectionLinkUpdates =>
-      'Politika Güncellemeleri ve Revizyonları';
+      'Policy Updates and Revisions';
 
   @override
   String get myAccountPrivacyFooterNote =>
-      'Bu Gizlilik Politikasını periyodik olarak gözden geçirebiliriz. En güncel sürüm her zaman bu sayfada bulunacaktır.\n\nBu Politika farklı dillerde yayınlandığında ve herhangi bir tutarsızlık ortaya çıktığında, İngilizce sürüm geçerli olacaktır.';
+      'We may revise this Privacy Policy periodically. The latest version will always be available on this page.\n\nIf this Policy is published in different languages and any discrepancies arise, the English version shall prevail.';
 
   @override
   String get myAccountPrivacySectionWhoWeAreTitle =>
-      'Biz Kimiz & Bize Nasıl Ulaşılır?';
+      'Who We Are & How to Contact Us?';
 
   @override
-  String get myAccountPrivacyWhoWeAreSubtitle => 'Biz kimiz?';
+  String get myAccountPrivacyWhoWeAreSubtitle => 'Who are we?';
 
   @override
   String get myAccountPrivacyWhoWeAreContent =>
-      'Platform, Birleşik Arap Emirlikleri\'nde kayıtlı olan EMLAK BULUCU tarafından işletilmektedir. Kayıtlı adresi: Westburry Ofis Kulesi, 23. Kat, Ofis No. 2303, Business Bay, Dubai, BAE (\"Akarat\", \"biz\", \"bize\", \"bizim\").';
+      'The Platform is operated by EMLAK BULUCU, a company registered in the United Arab Emirates, with its registered address at Westburry Office Tower, Floor 23, Office No. 2303, Business Bay, Dubai, UAE (“Akarat”, “we”, “us”, “our”).';
 
   @override
-  String get myAccountPrivacyContactSubtitle => 'Bize nasıl ulaşılır?';
+  String get myAccountPrivacyContactSubtitle => 'How to contact us?';
 
   @override
   String get myAccountPrivacyContactContent =>
-      'Bu Gizlilik Politikası ile ilgili herhangi bir sorunuz için info@akarat.com adresinden bizimle iletişime geçebilirsiniz.';
+      'You may contact us via email at info@akarat.com for any inquiries related to this Privacy Policy.';
 
   @override
   String get myAccountPrivacySectionTypesTitle =>
-      'Topladığımız Bilgiler & Nasıl Kullanıyoruz';
+      'Informations We Collect & How We Use It';
 
   @override
   String get myAccountPrivacyTypesIntro =>
-      'Sizden doğrudan topladığımız Kişisel Veri kategorileri aşağıda açıklanmıştır.';
+      'The categories of Personal Data we collect directly from you are outlined below.';
 
   @override
   String get myAccountPrivacyPersonalDataDefinition =>
-      '\"Kişisel Veri\", sizi tanımlayan veya makul olarak sizi tanımlamak için kullanılabilecek herhangi bir bilgiyi ifade eder. Bu, sizi tanımlayamayan anonimleştirilmiş veya toplu verileri kapsamaz. Fotoğraflar, fiyatlar, açıklamalar ve özellikler gibi mülk ilan detayları Kişisel Veri sayılmaz, çünkü bunlar mülklerle ilgilidir ve bireyleri tanımlamaz.';
+      '“Personal Data” refers to any information that identifies you or can reasonably be used to identify you. This does not include anonymised or aggregated data that cannot be linked back to you. Property listing details—such as photos, prices, descriptions, and amenities—are not considered Personal Data, as they relate to properties and do not identify individuals.';
 
   @override
   String get myAccountPrivacyTypesCollectedIntro =>
-      'Toplayabileceğimiz Kişisel Veri türleri şunlardır:';
+      'The types of Personal Data we may collect include:';
 
   @override
   String get myAccountPrivacyTypesList =>
-      '→ Kullanıcı Bilgileri\n→ Ajans Bilgileri\n→ Acente Bilgileri\n→ Mülk Oluşturma Bilgileri\n→ Sohbet Verileri\n→ Teknik Veriler\n→ Pazarlama Verileri';
+      '→ User Information\n→ Agency Information\n→ Agent Information\n→ Property Creation Information\n→ Chat Data\n→ Technical Data\n→ Marketing Data';
 
   @override
   String get myAccountPrivacyUserInfoTitle =>
-      '→ Kullanıcı Bilgileri (Kayıt ve Giriş için)';
+      '→ User Information (for Registration and Login)';
 
   @override
   String get myAccountPrivacyUserInfoPurpose =>
-      'Akarat.com\'a kaydolduğunuzda hesabınızı oluşturmak ve yönetmek, kimliğinizi doğrulamak ve Platform\'daki deneyiminizi kişiselleştirmek için belirli kişisel bilgileri toplarız.';
+      'When you register on Akarat.com, we collect certain personal information to create and manage your account, verify your identity, and personalize your experience on the Platform.';
 
   @override
   String get myAccountPrivacyUserInfoCollectedTitle =>
-      'Topladığımız Hesap ve Kimlik Detayları:';
+      'Account and Identity Details We Collect:';
 
   @override
   String get myAccountPrivacyUserInfoCollectedList =>
-      '• Tam Ad (Ad ve Soyad)\n• E-posta Adresi\n• Cep Telefon Numarası (ülke kodu dahil)\n• WhatsApp Numarası\n• Şifre ve giriş bilgileri\n• Google ile Devam Et seçeneği kullanıldığında Google oturum açma detayları\n• Hesap kurulumu, giriş veya güvenlik kontrolleri için kullanılan doğrulama kodları veya OTP\'ler';
+      '• Full Name (First and Last Name)\n• Email Address\n• Mobile Number (including country code)\n• WhatsApp Number\n• Password and login credentials\n• Google Sign-In details (if you choose “Continue with Google”)\n• Verification codes or OTPs used for account setup, login, or security checks';
 
   @override
-  String get myAccountPrivacyAgencyInfoTitle => '→ Ajans Bilgileri';
+  String get myAccountPrivacyAgencyInfoTitle => '→ Agency Information';
 
   @override
   String get myAccountPrivacyAgencyInfoList =>
-      '• Ajans Adı ve Emirliği\n• Ulusal Kimlik ve mülk konumu\n• Ajansın kayıtlı lisans numarası\n• Ajansın kayıtlı logosu\n• Kayıtlı şirket lisans belgesi\n• Kayıtlı ofis kayıt numarası';
+      '• Agency Name and Emirate\n• National ID and property location\n• Registered license number of Agency\n• Registered logo of Agency\n• Registered company license document\n• Registered office registration number';
 
   @override
   String get myAccountPrivacyAgencyPurpose =>
-      'İşletmenin meşruiyetini doğrulamak ve lisans gerekliliklerine uyumu sağlamak için ajans verilerini toplarız. Bu bilgiler, Akarat.com\'da doğrulanmış ajans profili oluşturup göstermemizi, kullanıcılar ile kayıtlı ajanslar arasında şeffaf iletişim sağlamamızı ve mülk ilanlarını ve ilgili acenteleri verimli bir şekilde yönetmemizi sağlar.';
+      'We collect Agency data to verify the legitimacy of the business and ensure compliance with licensing requirements. This information allows us to create and display a verified Agency profile on Akarat.com, facilitate transparent communication between users and registered Agencies, and efficiently manage property listings and the agents associated with each Agency.';
 
   @override
   String get myAccountPrivacyAgencyPublicDisplayTitle =>
-      'Akarat şunları kamuya açık olarak gösterebilir:';
+      'Akarat may publicly display:';
 
   @override
   String get myAccountPrivacyAgencyPublicDisplayList =>
-      '• Ajans adı, logosu, ORN ve iletişim bilgileri\n• Ofis adresi ve bağlı acenteler\n• Kamuya açık olarak listelenen mülkler (görüntülenmeler, ilanlar)\n\nHassas kayıt veya lisans belgeleri katı bir şekilde gizli tutulur.';
+      '• Agency name, logo, ORN, and contact information\n• Office address and linked Agents\n• Publicly listed properties (views, listings)\n\nSensitive registration or licensing documents remain strictly confidential.';
 
   @override
-  String get myAccountPrivacyAgentInfoTitle => '→ Acente Bilgileri';
+  String get myAccountPrivacyAgentInfoTitle => '→ Agent Information';
 
   @override
   String get myAccountPrivacyAgentInfoList =>
-      '• Acente adı ve Emirliği\n• Kayıtlı Acente Lisans Numarası\n• Acente Ulusal Kimlik\n• Acente profil fotoğrafı\n• Cep telefonu numarası ve WhatsApp numarası\n• Milliyet';
+      '• Agent name and Emirate\n• Registered Agent License Number\n• Agent National ID\n• Agent profile photo\n• Mobile phone number and WhatsApp number\n• Nationality';
 
   @override
   String get myAccountPrivacyAgentPurpose =>
-      'RERA/DLD yönergelerine göre mesleki kimliklerini ve yetkilerini doğrulamak, Akarat.com\'da doğrulanmış acente profilleri göstermek ve acenteler ile potansiyel müşteriler arasında iletişimi kolaylaştırmak için acente verilerini toplarız. Yalnızca sınırlı bilgiler kamuya açık olarak gösterilir: acentenin adı, profil fotoğrafı, bağlı ajans adı ve logosu, aktif mülk ilanları.\n\nEmirates kimlik fotokopileri dahil hassas belgeler asla kamuya açıklanmaz.';
+      'We collect Agent data to verify their professional identity and authorization under RERA/DLD guidelines, to display verified Agent profiles on Akarat.com, and to facilitate communication between Agents and potential clients. Only limited information is displayed publicly, such as the Agent’s name, profile photo, linked Agency name and logo, and active property listings.\n\nSensitive documents, including copies of Emirates IDs, are never shared publicly.';
 
   @override
-  String get myAccountPrivacyPropertyInfoTitle => '→ Mülk Oluşturma Bilgileri';
+  String get myAccountPrivacyPropertyInfoTitle =>
+      '→ Property Creation Information';
 
   @override
   String get myAccountPrivacyPropertyPurpose =>
-      'Akarat.com\'da mülk listelediğinizde veya yönettiğinizde, ilanınızın eksiksiz, doğru ve uyumlu olmasını sağlamak için belirli detayları toplarız.';
+      'When you list or manage a property on Akarat.com, we collect specific details to ensure your listing is complete, accurate, and compliant.';
 
   @override
-  String get myAccountPrivacyPropertyCollectedTitle => 'Toplanan Bilgiler:';
+  String get myAccountPrivacyPropertyCollectedTitle => 'Information Collected:';
 
   @override
   String get myAccountPrivacyPropertyCollectedList =>
-      '• Emirlik ve Trakheesi lisans detayları\n• Mülk Başlığı ve Açıklama\n• Mülk türü (ör. daire, villa, ofis, arsa)\n• Konum ve harita koordinatları\n• Ödeme detayları ve kira süresi\n• Alan büyüklüğü, yatak odası ve banyo sayısı\n• Özellikler ve döşeme detayları\n• Mülkün müsaitlik durumu\n• Tüm proje ile ilgili detaylar\n• Yüklenen medya (Fotoğraflar, Kat Planları, YouTube Bağlantısı)';
+      '• Emirate and Trakheesi license details\n• Property Title and Description\n• Property type (e.g., apartment, villa, office, land)\n• Location and map coordinates\n• Payment details and rental period\n• Area size, number of bedrooms and bathrooms\n• Amenities and furnishing details\n• Availability status of property\n• All project-related details\n• Uploaded media (Photos, Floor Plans, YouTube Link)';
 
   @override
   String get myAccountPrivacyTrakheesiNote =>
-      'Trakheesi lisansı, Dubai Arazi Dairesi (DLD) tarafından RERA aracılığıyla verilen zorunlu bir izindir ve Dubai\'deki tüm gayrimenkul reklamlarını düzenler. İlanların meşru, izlenebilir ve uyumlu olmasını sağlar.\n\nMülk ilan bilgilerini potansiyel alıcılara veya kiracılara göstermek, doğruluğunu teyit etmek, arama doğruluğunu artırmak ve BAE\'de reklam uyumluluğunu sağlamak için toplarız.';
+      'A Trakheesi license is a mandatory permit issued by the Dubai Land Department (DLD) through RERA, regulating all real estate advertising in Dubai. It ensures that property advertisements are legitimate, traceable, and compliant.\n\nWe collect property listing information to publish and display your listings to potential buyers or tenants, verify authenticity, improve search accuracy, and ensure advertising compliance in the UAE.';
 
   @override
-  String get myAccountPrivacyChatDataTitle => '→ Sohbet Verileri';
+  String get myAccountPrivacyChatDataTitle => '→ Chat Data';
 
   @override
   String get myAccountPrivacyChatDataContent =>
-      'Sohbet Verileri, Platform üzerinden değiştirdiğiniz mesajları ifade eder. Bu, gönderilen veya alınan tüm metinleri içerir. Bu verileri kullanıcılar ile acenteler arasındaki iletişimi kolaylaştırmak, sorulara yanıt vermek, destek sağlamak, etkileşim kayıtlarını tutmak ve hizmetlerimizi geliştirmek için kullanırız.\n\nSohbet Verileri gizlidir ve bu Gizlilik Politikasına uygun olarak güvenli bir şekilde saklanır.';
+      'Chat Data refers to the messages you exchange through the Platform. This includes any text sent or received. We use this data to facilitate communication between users and Agents, respond to inquiries, provide support, maintain a record of interactions, and improve our services.\n\nChat Data is confidential and securely stored in accordance with this Privacy Policy.';
 
   @override
-  String get myAccountPrivacyTechnicalDataTitle => '→ Teknik Veriler';
+  String get myAccountPrivacyTechnicalDataTitle => '→ Technical Data';
 
   @override
   String get myAccountPrivacyTechnicalDataList =>
-      '• IP Adresi\n• Giriş Verileri\n• Tarayıcı türü ve sürümü\n• İşletim sistemi ve platform\n• Cihaz bilgileri\n• Saat dilimi ayarları';
+      '• IP Address\n• Login Data\n• Browser type and version\n• Operating system and platform\n• Device information\n• Time zone settings';
 
   @override
   String get myAccountPrivacyTechnicalPurpose =>
-      'Kullanıcıların Platform ile nasıl etkileşime girdiğini anlamak, sorunları teşhis etmek, performansı ve işlevselliği iyileştirmek, güvenliği artırmak ve kullanıcı deneyimini optimize etmek için teknik verileri toplarız. Bu veriler ayrıca analiz, dolandırıcılık tespiti ve düzenleyici uyumluluk için kullanılabilir.';
+      'We collect technical data to understand how users interact with our Platform, diagnose issues, improve performance and functionality, enhance security, and optimize user experience. This data may also be used for analytics, fraud detection, and regulatory compliance.';
 
   @override
-  String get myAccountPrivacyMarketingDataTitle => '→ Pazarlama Verileri';
+  String get myAccountPrivacyMarketingDataTitle => '→ Marketing Data';
 
   @override
   String get myAccountPrivacyMarketingContent =>
-      'Yeni mülk uyarıları, hesap durumu güncellemeleri, sorgu bildirimleri veya promosyonel mesajlar almak isteyip istemediğiniz dahil pazarlama tercihleriniz hakkında bilgi toplayabilir ve saklayabiliriz. Bu, iletişimleri ilgi alanlarınıza göre uyarlamamıza yardımcı olur.\n\nHerhangi bir pazarlama e-postasındaki \"Abonelikten Çık\" bağlantısına tıklayarak veya info@akarat.com adresinden bizimle iletişime geçerek istediğiniz zaman vazgeçebilirsiniz. Vazgeçmek Platform\'u kullanma yeteneğinizi etkilemez.';
+      'We may collect and store your preferences regarding the marketing communications you wish to receive from us, including property alerts, account updates, enquiry responses, and promotional messages. This helps us tailor communication to your interests.\n\nYou may opt out at any time by clicking the “Unsubscribe” link in any marketing email or by contacting us at info@akarat.com. Opting out will not affect your ability to use the Platform.';
 
   @override
   String get myAccountPrivacyRefusalTitle =>
-      'Gerekli Kişisel Verileri sağlamayı reddederseniz ne olur?';
+      'What happens if you refuse to provide necessary Personal Data?';
 
   @override
   String get myAccountPrivacyRefusalContent =>
-      'Bize Kişisel Veri sağlamak zorunda değilsiniz. Ancak Platform\'a erişim veya yasal gereklilikler için belirli veriler gerekliyse ve bunları sağlamazsanız erişim sağlayamayabiliriz. Örneğin, Akarat.com\'da hesap oluşturmak için e-posta adresiniz gereklidir.';
+      'You are not required to provide Personal Data to us. However, if certain data is necessary to access the Platform or comply with legal requirements, and you do not provide it, we may be unable to grant access. For example, we require your email address to register your account on Akarat.com.';
 
   @override
-  String get myAccountPrivacySectionLegalTitle => 'İşlemenin Yasal Dayanağı';
+  String get myAccountPrivacySectionLegalTitle => 'Legal Basis for Processing';
 
   @override
   String get myAccountPrivacyLegalIntro =>
-      'Geçerli gizlilik yasalarına göre, Kişisel Verilerinizi kullandığımız her amaç için geçerli bir yasal dayanak olması gerekir. Çoğu durumda aşağıdaki dayanaklardan birine güveniriz:';
+      'Under applicable privacy laws, we must ensure that each purpose for which we use your Personal Data is supported by a valid legal basis. In most cases, we rely on one of the following:';
 
   @override
   String get myAccountPrivacyLegalBases =>
-      '• Sözleşmesel Gereklilik – Kişisel Verilerinizi sizinle yaptığımız sözleşmeyi yerine getirmek için işlemenin gerektiği durumlarda (örneğin Platform\'a erişiminizi sağlamak).\n\n• Yasal Uyum – Yasal veya düzenleyici gereklilikleri karşılamak için Kişisel Verilerinizi işlemenin zorunlu olduğu durumlarda.\n\n• Onay – Kişisel Verilerinizi belirli bir amaç için işlememize açıkça izin verdiğiniz durumlarda.';
+      '• Contractual Necessity – When processing your Personal Data is required to fulfil our contract with you (for example, enabling your access to the Platform).\n\n• Compliance with Law – When we must process your Personal Data to meet legal or regulatory requirements.\n\n• Consent – When you have provided clear permission for us to process your Personal Data for a specific purpose.';
 
   @override
   String get myAccountPrivacySectionShareTitle =>
-      'Bilgilerinizi Kimlerle Paylaşıyoruz?';
+      'Who Do We Share Your Information With?';
 
   @override
   String get myAccountPrivacyShareContent =>
-      'Kişisel Verilerinizi alan tüm tarafların, politikalarımız ve geçerli veri koruma yükümlülükleriyle uyumlu uygun güvenlik önlemleri uygulamasını talep ederiz. Adımıza Kişisel Veri işleyen üçüncü taraf hizmet sağlayıcıların bu verileri kendi amaçları için kullanmasına izin vermeyiz. Yalnızca bizim tanımladığımız belirli amaçlar için ve yalnızca talimatlarımıza tam olarak uygun şekilde işlemelerine izin verilir.\n\nPlatform\'un diğer kullanıcılarıyla işlem yapmaya karar verdiğinizde belirli Kişisel Verileri onlarla paylaşmamız gerekebilir. Örneğin, bir Acente tarafından listelenen bir mülke ilgi gösterdiğinizde, o Acente\'nin ilgili temsilcileri Kişisel Verilerinize erişim talep edebilir.';
+      'We require all parties who receive your Personal Data to apply appropriate security measures to protect it, in line with our policies and applicable data protection obligations. We do not allow any third-party service providers who process Personal Data on our behalf to use it for their own purposes. They are only permitted to handle your Personal Data for the specific purposes we define and strictly in accordance with our instructions.\n\nWe may also need to share certain Personal Data with other users of the Platform when you choose to engage in transactions with them. For example, if you express interest in a property listed by an Agent, relevant representatives of that Agent may require access to your Personal Data.';
 
   @override
   String get myAccountPrivacySectionSecurityTitle =>
-      'Verilerinizi Nasıl Güvende Tutuyoruz';
+      'How We Keep Your Data Secure';
 
   @override
   String get myAccountPrivacySecurityContent =>
-      'Kişisel Verilerinizi kazara kayıp, değişiklik, yetkisiz erişim veya kötüye kullanımdan korumak için uygun güvenlik önlemleri uygulamaktayız.\n\nKişisel Verilerinize erişim, meşru iş amaçları için buna ihtiyaç duyan çalışanlar ve yetkili personelle sınırlıdır. Bu erişime sahip tüm kişiler gizlilik yükümlülüklerine tabidir.\n\nAyrıca herhangi bir gerçek veya şüpheli Kişisel Veri ihlalini tespit etmek, yönetmek ve yanıtlamak için güçlü prosedürler sürdürürüz. Böyle durumlarda gizliliğiniz üzerindeki olası etkiyi en aza indirmek için derhal adım atarız ve gerektiğinde ilgili düzenleyici makamlarla iş birliği yaparız.';
+      'We have implemented suitable security measures to protect your Personal Data from accidental loss, alteration, unauthorized access, or misuse.\n\nAccess to your Personal Data is restricted to employees and authorized personnel who require it for legitimate business purposes. All individuals with such access are bound by confidentiality obligations.\n\nWe also maintain robust procedures to detect, manage, and respond to any actual or suspected Personal Data breaches. In such cases, we take immediate steps to minimize potential impact on your privacy and cooperate with relevant regulatory authorities as required.';
 
   @override
-  String get myAccountPrivacySectionRightsTitle => 'Haklarınız';
+  String get myAccountPrivacySectionRightsTitle => 'Your Rights';
 
   @override
   String get myAccountPrivacyRightsIntro =>
-      'Geçerli veri koruma yasalarına ve Kişisel Verilerinizin kontrolümüz altında olduğu yere bağlı olarak aşağıdaki haklara sahip olabilirsiniz:';
+      'Depending on the applicable data protection laws and where your Personal Data is under our control, you may have the right to:';
 
   @override
   String get myAccountPrivacyRightsList =>
-      '• Erişim — Hakkınızda tuttuğumuz Kişisel Verilerin bir kopyasını talep etme.\n• Düzeltme — Yanlış veya eksik bilgileri güncelleme veya düzeltme talebinde bulunma.\n• Silme — Artık orijinal amacı için gerekli olmadığında Kişisel Verilerin silinmesini talep etme.\n• İşlemeyi Kısıtlama — Verilerinizin tamamının veya bir kısmının geçici veya kalıcı olarak işlenmesini durdurmamızı isteme.\n• İtiraz — Meşru menfaatlerimize dayalı işlemeye veya doğrudan pazarlamaya itiraz etme.\n• Veri Taşınabilirliği — Kişisel Verilerinizin yapılandırılmış, makine tarafından okunabilir bir kopyasını talep etme.\n• Onayın Geri Çekilmesi — İşleme izninize dayanıyorsa onayı geri çekme.\n\nBu haklardan herhangi birini kullanmak isterseniz lütfen bizimle iletişime geçin.';
+      '• Access — Request a copy of the Personal Data we hold about you.\n• Correction — Ask us to update or amend inaccurate or incomplete information.\n• Erasure — Request deletion of your Personal Data where it is no longer needed for its original purpose.\n• Restrict Processing — Ask us to temporarily or permanently stop processing all or part of your data.\n• Objection — Object to processing based on our legitimate interests or for direct marketing.\n• Data Portability — Request a structured, machine-readable copy of your Personal Data.\n• Withdrawal of Consent — Withdraw consent where processing is based on your permission.\n\nIf you want to exercise any of these rights, please contact us.';
 
   @override
-  String get myAccountPrivacySectionMarketingTitle => 'Pazarlama İletişimi';
+  String get myAccountPrivacySectionMarketingTitle =>
+      'Marketing Communications';
 
   @override
-  String get myAccountPrivacySectionMinorsTitle =>
-      'Reşit Olmayanlar İçin Gizliliğimiz';
+  String get myAccountPrivacySectionMinorsTitle => 'Our Privacy for Minors';
 
   @override
   String get myAccountPrivacyMinorsContent =>
-      'Bu Platform 18 yaşından küçük kişiler için tasarlanmamıştır. Reşit olmayanlardan bilerek veri toplamayız veya kullanıcı yaşını doğrulamayız. Bir reşit olmayanın Platform\'u kullandığını düşünüyorsanız, lütfen info@akarat.com adresinden bizi bilgilendirin; böylece ilgili Kişisel Verileri kaldırabilir ve daha fazla erişimi engelleyebiliriz.';
+      'This Platform is not intended for use by anyone under 18. We do not knowingly collect data from minors or verify user age. If you believe a minor is using the Platform, please notify us at info@akarat.com so we can remove any associated Personal Data and prevent further access.';
 
   @override
-  String get myAccountPrivacySectionThirdPartyTitle =>
-      'Üçüncü Taraf Bağlantıları';
+  String get myAccountPrivacySectionThirdPartyTitle => 'Third-Party Links';
 
   @override
   String get myAccountPrivacyThirdPartyContent =>
-      'Platform üçüncü taraf web sitelerine veya hizmetlere bağlantılar içerebilir. Akarat, harici sitelerin içeriği, kullanılabilirliği veya gizlilik uygulamalarından sorumlu değildir. Platform\'dan ayrıldığınızda, ziyaret ettiğiniz her sitenin gizlilik politikalarını incelemenizi öneririz.';
+      'The Platform may contain links to third-party websites or services. Akarat is not responsible for the content, availability, or privacy practices of external sites. When you leave our Platform, we encourage you to review the privacy policies of each website you visit.';
 
   @override
   String get myAccountPrivacySectionUpdatesTitle =>
-      'Gizlilik Politikasında Değişiklikler';
+      'Changes to the Privacy Policy';
 
   @override
   String get myAccountPrivacyUpdatesContent =>
-      'Bu Gizlilik Politikasını herhangi bir zamanda, önceden haber vermeksizin güncelleyebiliriz. Güncellemeler olduğunda bu sayfayı revize edeceğiz ve bazı durumlarda sizi doğrudan bilgilendirebiliriz (örneğin e-posta ile). Tüm değişiklikler yayınlandığı anda yürürlüğe girer.';
+      'We may update this Privacy Policy at any time, with or without prior notice. When updates occur, we will revise this page and may notify you directly in certain cases (for example, by email). All changes become effective immediately once posted.';
+
+  @override
+  String get welcomeToAkarat => 'Akarat\'a Hoş Geldiniz!';
+
+  @override
+  String get email => 'E-posta';
+
+  @override
+  String get password => 'Şifre';
+
+  @override
+  String get forgotPassword => 'Şifremi unuttum?';
+
+  @override
+  String get notRegisteredYet => 'Henüz kayıtlı değil misiniz?';
+
+  @override
+  String get createNewAccount => 'Yeni hesap oluştur';
+
+  @override
+  String get invalidEmail => 'Geçersiz e-posta adresi';
+
+  @override
+  String pleaseEnterField(Object field) {
+    return 'Lütfen $field girin';
+  }
+
+  @override
+  String get invalidEmailAddress => 'Geçersiz e-posta adresi';
+
+  @override
+  String get loginSucceededButTokenMissing =>
+      'Giriş başarılı ancak token eksik.';
+
+  @override
+  String get serverErrorTryAgain => 'Sunucu hatası. Tekrar deneyin.';
+
+  @override
+  String get invalidEmailOrPassword => 'Geçersiz e-posta veya şifre.';
+
+  @override
+  String get validationError => 'Doğrulama hatası.';
+
+  @override
+  String serverErrorWithCode(Object code) {
+    return 'Sunucu hatası ($code).';
+  }
+
+  @override
+  String get networkErrorCheckConnection =>
+      'Ağ hatası. Bağlantınızı kontrol edin.';
+
+  @override
+  String get accountInactiveOrDeleted => 'Hesap etkin değil veya silinmiş.';
+
+  @override
+  String get googleIdTokenMissing => 'Google ID token eksik.';
+
+  @override
+  String get firebaseSignInFailed => 'Firebase girişi başarısız oldu.';
+
+  @override
+  String get failedToGetFirebaseToken => 'Firebase token alınamadı.';
+
+  @override
+  String get nonJsonFromGoogleLogin =>
+      '/login-google\'dan JSON olmayan yanıt (HTML). API_BASE_URL\'yi (QA vs PROD) ve rotayı kontrol edin.';
+
+  @override
+  String get favoritesTitle => 'Favoriler';
+
+  @override
+  String get clearAll => 'Tümünü Temizle';
+
+  @override
+  String get clearAllFavoritesTitle => 'Tüm Favorileri Temizle?';
+
+  @override
+  String get clearAllFavoritesMessage =>
+      'Bu işlem, favorilerinize kaydedilmiş tüm mülkleri kaldıracaktır. Bu işlem geri alınamaz.';
+
+  @override
+  String get clearAllConfirm =>
+      'Bu işlem tüm kaydedilen uyarılarınızı kaldıracaktır.';
+
+  @override
+  String get notLoggedInMessage => 'Giriş yapmadınız';
+
+  @override
+  String get clearingFavorites => 'Tüm favoriler temizleniyor...';
+
+  @override
+  String get favoritesClearedSuccess => 'Tüm favoriler başarıyla temizlendi';
+
+  @override
+  String failedToClearFavorites(int statusCode) {
+    return 'Favoriler temizlenemedi: $statusCode';
+  }
+
+  @override
+  String get errorClearingFavorites =>
+      'Favoriler temizlenirken hata oluştu. Bağlantınızı kontrol edin.';
+
+  @override
+  String get loginButton => 'Giriş Yap';
+
+  @override
+  String get noFavoritesYet => 'Henüz favori mülk yok';
+
+  @override
+  String get tapHeartToSave =>
+      'Herhangi bir mülkteki kalp simgesine dokunarak buraya kaydedebilirsiniz';
+
+  @override
+  String get browseProperties => 'Mülkleri Görüntüle';
+
+  @override
+  String get retry => 'Tekrar Dene';
+
+  @override
+  String get errorOccurred => 'Bir hata oluştu';
+
+  @override
+  String get personalInformationTitle => 'Kişisel Bilgiler';
+
+  @override
+  String get firstNameLabel => 'Ad';
+
+  @override
+  String get firstNameRequired => 'Ad zorunludur';
+
+  @override
+  String get lastNameLabel => 'Soyad';
+
+  @override
+  String get emailLabel => 'E-posta';
+
+  @override
+  String get emailRequired => 'Lütfen e-posta adresinizi girin';
+
+  @override
+  String get emailInvalid => 'Geçerli bir e-posta adresi girin';
+
+  @override
+  String get emailCannotBeChanged => 'E-posta değiştirilemez';
+
+  @override
+  String get changePasswordOptional => 'Parola değiştir (isteğe bağlı)';
+
+  @override
+  String get newPasswordLabel => 'Yeni parola';
+
+  @override
+  String get newPasswordHelper => 'Mevcut parolanızı korumak için boş bırakın';
+
+  @override
+  String get confirmNewPasswordLabel => 'Yeni parolayı onayla';
+
+  @override
+  String get confirmNewPasswordRequired => 'Lütfen yeni parolayı onaylayın';
+
+  @override
+  String get passwordsDoNotMatch => 'Parolalar eşleşmiyor';
+
+  @override
+  String get currentPasswordLabel => 'Mevcut parola (değiştirmek için zorunlu)';
+
+  @override
+  String get currentPasswordRequired => 'Mevcut parolanızı girin';
+
+  @override
+  String get updateButton => 'Güncelle';
+
+  @override
+  String get deleteAccountButton => 'Hesabınızı sil';
+
+  @override
+  String get deleteAccountDialogTitle => 'Hesabı Sil?';
+
+  @override
+  String get deleteAccountDialogMessage =>
+      'Tüm kaydedilmiş uyarılarınız,\nkaydedilmiş mülkleriniz vb. kaybolacak.';
+
+  @override
+  String get deleteConfirm => 'Sil';
+
+  @override
+  String get sessionExpired =>
+      'Oturum süresi doldu. Lütfen tekrar giriş yapın.';
+
+  @override
+  String get profileUpdatedSuccess => 'Profil başarıyla güncellendi';
+
+  @override
+  String get networkError => 'Ağ hatası. Lütfen tekrar deneyin.';
+
+  @override
+  String get updateFailed => 'Güncelleme başarısız oldu';
+
+  @override
+  String get forgotPasswordTitle => 'Şifrenizi mi unuttunuz?';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'E-posta adresinizi girin, size şifrenizi sıfırlamak için bir bağlantı göndereceğiz.';
+
+  @override
+  String get submitButton => 'Gönder';
+
+  @override
+  String get backToLogin => 'Girişe Dön';
+
+  @override
+  String get invalidEmailFormat => 'Geçersiz e-posta formatı';
+
+  @override
+  String get resetEmailSent =>
+      'Şifre sıfırlama e-postası başarıyla gönderildi.';
+
+  @override
+  String get failedToSendResetEmail =>
+      'Şifre sıfırlama e-postası gönderilemedi.';
+
+  @override
+  String get somethingWentWrong =>
+      'Bir şeyler ters gitti. Lütfen tekrar deneyin.';
+
+  @override
+  String savedAlertsCount(Object count) {
+    return '($count)';
+  }
+
+  @override
+  String errorTitleWithMessage(Object message) {
+    return 'Hata: $message';
+  }
+
+  @override
+  String get retryButton => 'Tekrar Dene';
+
+  @override
+  String get manageYourSavedPropertyAlerts =>
+      'Kaydedilen emlak uyarılarınızı burada yönetin';
+
+  @override
+  String get youHaventSavedAnyAlertsYet =>
+      'Henüz herhangi bir uyarı kaydetmediniz.';
+
+  @override
+  String get createAlert => 'Uyarı Oluştur';
+
+  @override
+  String get receiveUpdates => 'Güncellemeleri Al';
+
+  @override
+  String createdTimeAgo(Object time) {
+    return 'Oluşturulma: $time';
+  }
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minutesAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes ago',
+      one: '1 minute ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hoursAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours ago',
+      one: '1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get deleteAlertTitle => 'Kaydedilen Uyarıyı Sil?';
+
+  @override
+  String get deleteAlertConfirm =>
+      'Bu kaydedilen uyarıyı silmek istediğinizden emin misiniz?';
+
+  @override
+  String get delete => 'Sil';
+
+  @override
+  String get clearAllTitle => 'Tüm Kaydedilen Uyarıları Temizle?';
+
+  @override
+  String get alertDeleted => 'Uyarı silindi';
+
+  @override
+  String get allAlertsDeleted => 'Tüm uyarılar silindi';
+
+  @override
+  String get pleaseLoginToAccessFavorites =>
+      'Please login to access favorites.';
+
+  @override
+  String get loginRequiredToCreateAlerts =>
+      'Uyarı oluşturmak için giriş yapmanız gerekiyor.';
+
+  @override
+  String get howToRemoveSavedAlerts => 'How to remove saved alerts';
+
+  @override
+  String get howToRemoveTitle => 'How to Remove saved alerts?';
+
+  @override
+  String get howToRemoveMessage =>
+      'Swipe left on any alert to remove it from your saved list';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String pageCurrentOfTotal(Object current, Object total) {
+    return 'Page $current of $total';
+  }
+
+  @override
+  String get alertCreated => 'Alert created';
+
+  @override
+  String get emailNotAvailable => 'Email not available';
+
+  @override
+  String get noEmailAppConfigured =>
+      'No email app is configured on this device. Please add a mail account first.';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get hourly => 'Hourly';
+
+  @override
+  String get daily => 'Daily';
+
+  @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get unnamedAlert => 'Unnamed Alert';
+
 
   @override
   String get aboutUs_hero_title => 'Akarat Hakkında';

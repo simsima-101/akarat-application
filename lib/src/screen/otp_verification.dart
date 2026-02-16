@@ -97,9 +97,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (_inited) return;
     _inited = true;
 
-    final raw = ModalRoute.of(context)?.settings.arguments;
-    final Map<String, dynamic> args =
-        (raw is Map) ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    final route = ModalRoute.of(context);
+    final rawArgs = route?.settings.arguments;
+
+    debugPrint('OTP screen RAW arguments received: $rawArgs');
+
+    final args = (rawArgs is Map<String, dynamic>)
+        ? rawArgs
+        : <String, dynamic>{};
 
     email = (args['email'] as String?)?.trim().toLowerCase() ?? '';
     mode = (args['mode'] as String?) == 'reset' ? 'reset' : 'register';
@@ -111,19 +116,33 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     phoneCode = (args['phoneCode'] as String?)?.trim() ?? '';
     _provisionalTokenFromArgs = (args['token'] as String?)?.trim() ?? '';
 
-    final resendAfter =
-        (args['resendAfter'] is int) ? args['resendAfter'] as int : 60;
+    final resendAfter = (args['resendAfter'] as int?) ?? 60;
     final passedDev = (args['devOtp'] as String?)?.trim() ?? '';
     if (passedDev.isNotEmpty) _devOtpHint = passedDev;
     if (_cooldown == 0 && resendAfter > 0) _startCooldown(resendAfter);
 
+    // Safety: if email still empty → show error & pop back
+    if (email.isEmpty) {
+      debugPrint('OTP screen: CRITICAL - email is empty after navigation!');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Email information missing. Please try registering again.'),
+              duration: Duration(seconds: 4),
+            ),
+          );
+          Navigator.pop(context);
+        }
+      });
+    }
+
     if (kDebugMode) {
-      final expiresIn =
-          (args['expiresIn'] is int) ? args['expiresIn'] as int : 300;
+      final expiresIn = (args['expiresIn'] as int?) ?? 300;
       debugPrint(
-        'OTP args: mode=$mode email=$email first=$firstName last=$lastName '
-        'phone=$phoneCode$phone expiresIn=$expiresIn '
-        'resendAfter=$resendAfter devOtp=$_devOtpHint tokenFromArgs=${_provisionalTokenFromArgs.isNotEmpty}',
+        'OTP args parsed: mode=$mode email=$email first=$firstName last=$lastName '
+            'phone=$phoneCode$phone expiresIn=$expiresIn '
+            'resendAfter=$resendAfter devOtp=$_devOtpHint tokenFromArgs=${_provisionalTokenFromArgs.isNotEmpty}',
       );
     }
   }

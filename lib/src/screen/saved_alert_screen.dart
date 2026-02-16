@@ -6,6 +6,7 @@ import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../core/constants/constants.dart' as ApiService;
 import '../core/utils/secure_storage.dart';
 import '../features/property/data/datasources/favorite_remote_datasource.dart';
@@ -321,6 +322,8 @@ class _SavedAlertsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: Container(
@@ -343,27 +346,27 @@ class _SavedAlertsView extends StatelessWidget {
               return Row(
                 children: [
                   IconButton(
-                    tooltip: "How to remove saved alerts",
+                    tooltip: l10n.howToRemoveSavedAlerts,
                     icon: Icon(Icons.info_outline, color: Colors.grey[600]),
                     onPressed: () {
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
                           backgroundColor: Colors.white,
-                          title: const Text(
-                            "How to Remove saved alerts ?",
-                            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
+                          title: Text(
+                            l10n.howToRemoveTitle,
+                            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
                           ),
-                          content: const Text(
-                            "Swipe left on any alert to remove it from your saved list",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                          content: Text(
+                            l10n.howToRemoveMessage,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text(
-                                "Got it",
-                                style: TextStyle(color: Colors.red, fontSize: 17, fontWeight: FontWeight.w500),
+                              child: Text(
+                                l10n.gotIt,
+                                style: const TextStyle(color: Colors.red, fontSize: 17, fontWeight: FontWeight.w500),
                               ),
                             ),
                           ],
@@ -378,8 +381,8 @@ class _SavedAlertsView extends StatelessWidget {
                         context: context,
                         builder: (ctx) => AlertDialog(
                           backgroundColor: Colors.white,
-                          title: const Text("Clear All Saved Alert?"),
-                          content: const Text("This will remove all your saved alerts."),
+                          title: Text(l10n.clearAllTitle),
+                          content: Text(l10n.clearAllConfirm),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx, false),
@@ -397,7 +400,7 @@ class _SavedAlertsView extends StatelessWidget {
                         context.read<SavedAlertsCubit>().deleteAllAlerts();
                       }
                     },
-                    child: const Text("Clear All", style: TextStyle(color: Colors.red, fontSize: 15)),
+                    child: Text(l10n.clearAll, style: const TextStyle(color: Colors.red, fontSize: 15)),
                   ),
                   const Gap(10),
                 ],
@@ -411,14 +414,14 @@ class _SavedAlertsView extends StatelessWidget {
           if (state.status == SavedAlertsStatus.deleteSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.alerts.isEmpty ? 'All alerts deleted' : 'Alert deleted'),
+                content: Text(state.alerts.isEmpty ? l10n.allAlertsDeleted : l10n.alertDeleted),
                 duration: const Duration(milliseconds: 1500),
               ),
             );
           }
           if (state.status == SavedAlertsStatus.deleteError || state.status == SavedAlertsStatus.error) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage ?? 'An error occurred')),
+              SnackBar(content: Text(state.errorMessage ?? l10n.errorOccurred)),
             );
           }
         },
@@ -444,9 +447,9 @@ class _SavedAlertsView extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text(
-                        'Saved Alerts',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black, height: 1.1),
+                      Text(
+                        l10n.savedAlerts,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black, height: 1.1),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -456,13 +459,13 @@ class _SavedAlertsView extends StatelessWidget {
                     ],
                   ),
                 ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Manage your saved property alerts here',
-                    style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.2),
+                    l10n.manageYourSavedPropertyAlerts,
+                    style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.2),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -475,9 +478,9 @@ class _SavedAlertsView extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'You haven’t saved any alerts yet.',
-                        style: TextStyle(color: Colors.black54, fontSize: 17, fontWeight: FontWeight.w600),
+                      Text(
+                        l10n.youHaventSavedAnyAlertsYet,
+                        style: const TextStyle(color: Colors.black54, fontSize: 17, fontWeight: FontWeight.w600),
                       ),
                       const Gap(24),
                       SizedBox(
@@ -508,16 +511,16 @@ class _SavedAlertsView extends StatelessWidget {
                           context: context,
                           builder: (ctx) => AlertDialog(
                             backgroundColor: Colors.white,
-                            title: const Text("Delete Saved Alert?"),
-                            content: const Text("Are you sure to delete this saved alert."),
+                            title: Text(l10n.deleteAlertTitle),
+                            content: Text(l10n.deleteAlertConfirm),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                                child: Text(l10n.cancel, style: const TextStyle(color: Colors.red)),
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                                child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
                               ),
                             ],
                           ),
@@ -526,9 +529,9 @@ class _SavedAlertsView extends StatelessWidget {
                       },
                       onDismissed: (_) => cubit.deleteAlert(alert),
                       child: SavedAlertCard(
-                        title: alert.alertName ?? 'Alert',
-                        frequency: alert.timePeriod ?? 'Daily',
-                        created: _relativeTime(alert.createdAt),
+                        title: alert.alertName ?? l10n.unnamedAlert,           // ← localized fallback (good)
+                        frequency: alert.timePeriod ?? l10n.daily,             // ← also better to localize
+                        created: _relativeTime(alert.createdAt, l10n),         // ← FIXED: pass l10n
                       ),
                     );
                   },
@@ -560,7 +563,28 @@ class _SavedAlertsView extends StatelessWidget {
     );
   }
 
+
+  String _formatFrequency(String? raw, AppLocalizations l10n) {
+    if (raw == null || raw.isEmpty) return l10n.daily;
+
+    final lower = raw.trim().toLowerCase();
+    switch (lower) {
+      case 'hourly':
+        return l10n.hourly;
+      case 'daily':
+        return l10n.daily;
+      case 'weekly':
+        return l10n.weekly;
+      case 'monthly':
+        return l10n.monthly;
+      default:
+        return raw; // fallback to raw value if unknown
+    }
+  }
+
   Future<void> _onCreateAlert(BuildContext context, SavedAlertsCubit cubit) async {
+
+    final l10n = AppLocalizations.of(context)!;
     final isLoggedIn = await _isUserLoggedIn();
     if (!isLoggedIn) {
       // Show your beautiful login required dialog
@@ -595,10 +619,10 @@ class _SavedAlertsView extends StatelessWidget {
                   bottom: 12,
                   child: Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Login required to create alerts.',
-                          style: TextStyle(color: Colors.white, fontSize: 13),
+                          l10n.loginRequiredToCreateAlerts,
+                          style: const TextStyle(color: Colors.white, fontSize: 13),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -607,9 +631,9 @@ class _SavedAlertsView extends StatelessWidget {
                           Navigator.of(ctx).pop();
                           Navigator.of(context).pushNamed('/login');
                         },
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.login,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
@@ -642,9 +666,9 @@ class _SavedAlertsView extends StatelessWidget {
 
     if (saved == true && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Alert created'),
-          duration: Duration(milliseconds: 1200),
+        SnackBar(
+          content: Text(l10n.alertCreated),
+          duration: const Duration(milliseconds: 1200),
         ),
       );
       await cubit.reloadAlerts(goToLastPage: true);
@@ -656,19 +680,31 @@ class _SavedAlertsView extends StatelessWidget {
     return token != null && token.isNotEmpty;
   }
 
-  String _relativeTime(DateTime dt) {
+  String _relativeTime(DateTime dt, AppLocalizations l10n) {
     final now = DateTime.now();
     final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return 'Created ${diff.inMinutes} minutes ago';
-    if (diff.inHours < 24) return 'Created ${diff.inHours} hours ago';
-    return 'Created ${diff.inDays} days ago';
+
+    if (diff.inMinutes < 1) {
+      return l10n.justNow;
+    }
+
+    if (diff.inMinutes < 60) {
+      return l10n.minutesAgo(diff.inMinutes);
+    }
+
+    if (diff.inHours < 24) {
+      return l10n.hoursAgo(diff.inHours);
+    }
+
+    return l10n.daysAgo(diff.inDays);
   }
 
   // ────────────────────────────────────────────────
   // Bottom Navigation Bar (kept almost identical)
   // ────────────────────────────────────────────────
   Container _buildNavBar(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     const pageIndex = 2;
 
     return Container(
@@ -700,8 +736,8 @@ class _SavedAlertsView extends StatelessWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white,
-                    title: const Text("Login Required", style: TextStyle(color: Colors.black)),
-                    content: const Text("Please login to access favorites.", style: TextStyle(color: Colors.black)),
+                    title: Text(l10n.loginRequired, style: const TextStyle(color: Colors.black)),
+                    content: Text(l10n.pleaseLoginToAccessFavorites, style: const TextStyle(color: Colors.black)),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -712,7 +748,7 @@ class _SavedAlertsView extends StatelessWidget {
                           Navigator.pop(context);
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const Login()));
                         },
-                        child: const Text("Login", style: TextStyle(color: Colors.red)),
+                        child: Text(l10n.login, style: const TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -739,15 +775,15 @@ class _SavedAlertsView extends StatelessWidget {
                   context: context,
                   builder: (context) => AlertDialog(
                     backgroundColor: Colors.white,
-                    title: const Text('Email not available', style: TextStyle(color: Colors.black)),
-                    content: const Text(
-                      'No email app is configured on this device. Please add a mail account first.',
-                      style: TextStyle(color: Colors.black),
+                    title: Text(l10n.emailNotAvailable, style: const TextStyle(color: Colors.black)),
+                    content: Text(
+                      l10n.noEmailAppConfigured,
+                      style: const TextStyle(color: Colors.black),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('OK', style: TextStyle(color: Colors.red)),
+                        child: Text(l10n.ok, style: const TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -791,6 +827,8 @@ class SavedAlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
@@ -811,7 +849,7 @@ class SavedAlertCard extends StatelessWidget {
             style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 14),
-          const Text("Receive updates", style: TextStyle(color: Colors.black87, fontSize: 14)),
+          Text(l10n.receiveUpdates, style: const TextStyle(color: Colors.black87, fontSize: 14)),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -842,6 +880,8 @@ class CreateAlertButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     const gradient = LinearGradient(
       begin: Alignment.centerRight,
       end: Alignment.centerLeft,
@@ -878,9 +918,9 @@ class CreateAlertButton extends StatelessWidget {
                   errorBuilder: (_, __, ___) => const Icon(Icons.notifications_none, size: 18, color: Colors.black),
                 ),
                 const SizedBox(width: 6),
-                const Text(
-                  'Create Alert',
-                  style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.2),
+                Text(
+                  l10n.createAlert,
+                  style: const TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.2),
                 ),
               ],
             ),
@@ -899,18 +939,22 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     return Center(
+
+
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Error: $message', textAlign: TextAlign.center),
+            Text('l10n.errorTitleWithMessage', textAlign: TextAlign.center),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l10n.retryButton),
             ),
           ],
         ),

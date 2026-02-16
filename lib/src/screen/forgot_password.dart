@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../core/services/api_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -17,6 +18,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool _isSubmitting = false;
 
   Future<void> _submitForgotPassword() async {
+
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
@@ -49,7 +52,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  responseData['message'] ?? 'Reset email sent successfully.')),
+                  responseData['message'] ?? l10n.resetEmailSent)),
         );
         await Future.delayed(const Duration(seconds: 2));
         print('Navigating to /verify-otp with email: $email');
@@ -63,14 +66,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  responseData['message'] ?? 'Failed to send reset email.')),
+                  responseData['message'] ?? l10n.failedToSendResetEmail)),
         );
       }
     } catch (e) {
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Something went wrong. Please try again.')),
+        SnackBar(
+            content: Text(l10n.somethingWentWrong)),
       );
     }
   }
@@ -83,6 +86,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
@@ -139,16 +144,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       child: Column(
                         children: [
-                          const Text(
-                            'Forgot your password?',
-                            style: TextStyle(
+                          Text(
+                            l10n.forgotPasswordTitle,
+                            style: const TextStyle(
                                 fontSize: 22, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          const Text(
-                            'Enter your email address and we\'ll send you a link to reset your password.',
+                          Text(
+                            l10n.forgotPasswordSubtitle,
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.black54),
+                            style: const TextStyle(color: Colors.black54),
                           ),
                           const SizedBox(height: 28),
                           // Email Field
@@ -156,7 +161,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             controller: emailController,
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
-                              labelText: 'Email',
+                              labelText: l10n.emailLabel,
                               prefixIcon: const Icon(Icons.email_outlined),
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10)),
@@ -165,11 +170,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
+                                return l10n.emailRequired;
                               }
                               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                                   .hasMatch(value)) {
-                                return 'Invalid email format';
+                                return l10n.invalidEmailFormat;
                               }
                               return null;
                             },
@@ -198,9 +203,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                         color: Colors.white,
                                       ),
                                     )
-                                  : const Text(
-                                      'Submit',
-                                      style: TextStyle(
+                                  : Text(
+                                      l10n.submitButton,
+                                      style: const TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
                             ),
@@ -211,9 +216,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             child: TextButton.icon(
                               icon: const Icon(Icons.arrow_back,
                                   color: Colors.black54),
-                              label: const Text(
-                                'Back to Login',
-                                style: TextStyle(
+                              label: Text(
+                                l10n.backToLogin,
+                                style: const TextStyle(
                                   color: Colors.black87,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,

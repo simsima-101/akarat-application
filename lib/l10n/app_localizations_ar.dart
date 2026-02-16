@@ -127,7 +127,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get logoutConfirmationTitle => 'هل أنت متأكد من تسجيل الخروج؟';
 
   @override
-  String get loginRequiredTitle => 'يتطلب تسجيل الدخول';
+  String get loginRequiredTitle =>
+      'يجب عليك تسجيل الدخول لعرض العقارات المفضلة لديك.';
 
   @override
   String get loginToAccessSavedAlerts =>
@@ -237,9 +238,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get myAccountSupportValidationEmailInvalid =>
       'يرجى إدخال بريد إلكتروني صالح';
-
-  @override
-  String get myAccountTermsAndConditionsAppBarTitle => 'الشروط والأحكام';
 
   @override
   String get findAgentTitle => 'ابحث عن وكيلي';
@@ -476,7 +474,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get googleSignInNotSupported =>
-      'تسجيل الدخول عبر جوجل غير مدعوم على هذه المنصة';
+      'تسجيل الدخول باستخدام جوجل غير مدعوم على هذه المنصة.';
 
   @override
   String get firebaseUserNullAfterSignIn =>
@@ -497,8 +495,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get nonJsonFromLoginGoogle =>
       'تم استلام رد غير صالح من الخادم. يرجى المحاولة لاحقاً.';
 
-
-
+  @override
+  String get myAccountTermsAndConditionsAppBarTitle => 'الشروط والأحكام';
 
   @override
   String get myAccountTermsSectionIntroductionTitle => 'المقدمة';
@@ -999,6 +997,380 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get myAccountPrivacyUpdatesContent =>
       'قد نحدث سياسة الخصوصية هذه في أي وقت، مع أو بدون إشعار مسبق. عند حدوث تحديثات، سنراجع هذه الصفحة وقد نُخطرك مباشرة في حالات معينة (مثلاً عبر البريد الإلكتروني). تصبح جميع التغييرات سارية المفعول فور نشرها.';
+
+  @override
+  String get welcomeToAkarat => 'مرحباً بك في عقارة!';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get forgotPassword => 'هل نسيت كلمة المرور؟';
+
+  @override
+  String get notRegisteredYet => 'غير مسجل بعد؟';
+
+  @override
+  String get createNewAccount => 'إنشاء حساب جديد';
+
+  @override
+  String get invalidEmail => 'Invalid email address';
+
+  @override
+  String pleaseEnterField(Object field) {
+    return 'يرجى إدخال $field';
+  }
+
+  @override
+  String get invalidEmailAddress => 'عنوان البريد الإلكتروني غير صحيح';
+
+  @override
+  String get loginSucceededButTokenMissing =>
+      'تم تسجيل الدخول بنجاح ولكن الرمز (token) مفقود.';
+
+  @override
+  String get serverErrorTryAgain => 'خطأ في الخادم. حاول مرة أخرى.';
+
+  @override
+  String get invalidEmailOrPassword =>
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+
+  @override
+  String get validationError => 'خطأ في التحقق من البيانات.';
+
+  @override
+  String serverErrorWithCode(Object code) {
+    return 'خطأ في الخادم (كود $code).';
+  }
+
+  @override
+  String get networkErrorCheckConnection =>
+      'خطأ في الشبكة. تحقق من اتصالك بالإنترنت.';
+
+  @override
+  String get accountInactiveOrDeleted => 'الحساب غير نشط أو تم حذفه.';
+
+  @override
+  String get googleIdTokenMissing => 'رمز تعريف جوجل (ID token) مفقود.';
+
+  @override
+  String get firebaseSignInFailed => 'فشل تسجيل الدخول عبر Firebase.';
+
+  @override
+  String get failedToGetFirebaseToken => 'فشل في الحصول على رمز Firebase.';
+
+  @override
+  String get nonJsonFromGoogleLogin =>
+      'تم استلام رد غير متوقع من الخادم. يرجى المحاولة لاحقاً.';
+
+  @override
+  String get favoritesTitle => 'المفضلة';
+
+  @override
+  String get clearAll => 'مسح الكل';
+
+  @override
+  String get clearAllFavoritesTitle => 'مسح جميع المفضلات؟';
+
+  @override
+  String get clearAllFavoritesMessage =>
+      'سيؤدي هذا إلى إزالة جميع العقارات المحفوظة من المفضلة. لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get clearAllConfirm => 'سيؤدي هذا إلى إزالة جميع التنبيهات المحفوظة.';
+
+  @override
+  String get notLoggedInMessage => 'أنت غير مسجل الدخول';
+
+  @override
+  String get clearingFavorites => 'جاري مسح جميع المفضلات...';
+
+  @override
+  String get favoritesClearedSuccess => 'تم مسح جميع المفضلات بنجاح';
+
+  @override
+  String failedToClearFavorites(int statusCode) {
+    return 'فشل في مسح المفضلات: $statusCode';
+  }
+
+  @override
+  String get errorClearingFavorites =>
+      'خطأ أثناء مسح المفضلات. تحقق من الاتصال.';
+
+  @override
+  String get loginButton => 'تسجيل الدخول';
+
+  @override
+  String get noFavoritesYet => 'لا توجد عقارات مفضلة بعد';
+
+  @override
+  String get tapHeartToSave => 'اضغط على أيقونة القلب في أي عقار لحفظه هنا';
+
+  @override
+  String get browseProperties => 'تصفح العقارات';
+
+  @override
+  String get retry => 'إعادة المحاولة';
+
+  @override
+  String get errorOccurred => 'حدث خطأ ما';
+
+  @override
+  String get personalInformationTitle => 'المعلومات الشخصية';
+
+  @override
+  String get firstNameLabel => 'الاسم الأول';
+
+  @override
+  String get firstNameRequired => 'الاسم الأول مطلوب';
+
+  @override
+  String get lastNameLabel => 'الاسم الأخير';
+
+  @override
+  String get emailLabel => 'البريد الإلكتروني';
+
+  @override
+  String get emailRequired => 'يرجى إدخال بريدك الإلكتروني';
+
+  @override
+  String get emailInvalid => 'أدخل بريدًا إلكترونيًا صالحًا';
+
+  @override
+  String get emailCannotBeChanged => 'لا يمكن تغيير البريد الإلكتروني';
+
+  @override
+  String get changePasswordOptional => 'تغيير كلمة المرور (اختياري)';
+
+  @override
+  String get newPasswordLabel => 'كلمة المرور الجديدة';
+
+  @override
+  String get newPasswordHelper => 'اتركه فارغًا للاحتفاظ بكلمة المرور الحالية';
+
+  @override
+  String get confirmNewPasswordLabel => 'تأكيد كلمة المرور الجديدة';
+
+  @override
+  String get confirmNewPasswordRequired => 'يرجى تأكيد كلمة المرور الجديدة';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمات المرور غير متطابقة';
+
+  @override
+  String get currentPasswordLabel => 'كلمة المرور الحالية (مطلوبة للتغيير)';
+
+  @override
+  String get currentPasswordRequired => 'أدخل كلمة المرور الحالية';
+
+  @override
+  String get updateButton => 'تحديث';
+
+  @override
+  String get deleteAccountButton => 'حذف حسابك';
+
+  @override
+  String get deleteAccountDialogTitle => 'حذف الحساب؟';
+
+  @override
+  String get deleteAccountDialogMessage =>
+      'ستفقد جميع التنبيهات المحفوظة،\nالعقارات المحفوظة، إلخ.';
+
+  @override
+  String get deleteConfirm => 'حذف';
+
+  @override
+  String get sessionExpired =>
+      'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+
+  @override
+  String get profileUpdatedSuccess => 'تم تحديث الملف الشخصي بنجاح';
+
+  @override
+  String get networkError => 'خطأ في الشبكة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get updateFailed => 'فشل التحديث';
+
+  @override
+  String get forgotPasswordTitle => 'هل نسيت كلمة المرور؟';
+
+  @override
+  String get forgotPasswordSubtitle =>
+      'أدخل عنوان بريدك الإلكتروني وسوف نرسل لك رابطاً لإعادة تعيين كلمة المرور.';
+
+  @override
+  String get submitButton => 'إرسال';
+
+  @override
+  String get backToLogin => 'العودة إلى تسجيل الدخول';
+
+  @override
+  String get invalidEmailFormat => 'صيغة البريد الإلكتروني غير صحيحة';
+
+  @override
+  String get resetEmailSent => 'تم إرسال بريد إعادة التعيين بنجاح.';
+
+  @override
+  String get failedToSendResetEmail => 'فشل إرسال بريد إعادة التعيين.';
+
+  @override
+  String get somethingWentWrong => 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String savedAlertsCount(Object count) {
+    return '($count)';
+  }
+
+  @override
+  String errorTitleWithMessage(Object message) {
+    return 'خطأ: $message';
+  }
+
+  @override
+  String get retryButton => 'إعادة المحاولة';
+
+  @override
+  String get manageYourSavedPropertyAlerts =>
+      'إدارة تنبيهات العقارات المحفوظة من هنا';
+
+  @override
+  String get youHaventSavedAnyAlertsYet => 'لم تقم بحفظ أي تنبيهات حتى الآن.';
+
+  @override
+  String get createAlert => 'إنشاء تنبيه';
+
+  @override
+  String get receiveUpdates => 'تلقي التحديثات';
+
+  @override
+  String createdTimeAgo(Object time) {
+    return 'تم إنشاؤه $time';
+
+
+
+  }
+
+  @override
+  String get justNow => 'الآن';
+
+  @override
+  String minutesAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count دقيقة',
+      many: 'قبل $count دقيقة',
+      few: 'قبل $count دقائق',
+      two: 'قبل دقيقتين',
+      one: 'قبل دقيقة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hoursAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count ساعة',
+      many: 'قبل $count ساعة',
+      few: 'قبل $count ساعات',
+      two: 'قبل ساعتين',
+      one: 'قبل ساعة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String daysAgo(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'قبل $count يوم',
+      many: 'قبل $count يومًا',
+      few: 'قبل $count أيام',
+      two: 'قبل يومين',
+      one: 'قبل يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get deleteAlertTitle => 'حذف التنبيه المحفوظ؟';
+
+  @override
+  String get deleteAlertConfirm => 'هل أنت متأكد من حذف هذا التنبيه المحفوظ؟';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get clearAllTitle => 'مسح جميع التنبيهات المحفوظة؟';
+
+  @override
+  String get alertDeleted => 'تم حذف التنبيه';
+
+  @override
+  String get allAlertsDeleted => 'تم حذف جميع التنبيهات';
+
+  @override
+  String get pleaseLoginToAccessFavorites =>
+      'يرجى تسجيل الدخول للوصول إلى المفضلة.';
+
+  @override
+  String get loginRequiredToCreateAlerts =>
+      'يتطلب تسجيل الدخول لإنشاء تنبيهات.';
+
+  @override
+  String get howToRemoveSavedAlerts => 'كيفية إزالة التنبيهات المحفوظة';
+
+  @override
+  String get howToRemoveTitle => 'كيفية إزالة التنبيهات المحفوظة؟';
+
+  @override
+  String get howToRemoveMessage =>
+      'اسحب يسارًا على أي تنبيه لحذفه من القائمة المحفوظة';
+
+  @override
+  String get gotIt => 'حسنًا';
+
+  @override
+  String pageCurrentOfTotal(Object current, Object total) {
+    return 'الصفحة $current من $total';
+  }
+
+  @override
+  String get alertCreated => 'تم إنشاء التنبيه';
+
+  @override
+  String get emailNotAvailable => 'البريد الإلكتروني غير متاح';
+
+  @override
+  String get noEmailAppConfigured =>
+      'لم يتم تهيئة أي تطبيق بريد إلكتروني على الجهاز. يرجى إضافة حساب بريد أولاً.';
+
+  @override
+  String get ok => 'موافق';
+
+  @override
+  String get hourly => 'Saatlik';
+
+  @override
+  String get daily => 'Günlük';
+
+  @override
+  String get weekly => 'Haftalık';
+
+  @override
+  String get monthly => 'Aylık';
+
+  @override
+  String get unnamedAlert => 'İsimsiz Uyarı';
+
 
   @override
   String get aboutUs_hero_title => 'عن أكارت';
