@@ -518,7 +518,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Phone number must be {length} digits for {country}'**
-  String myAccountSupportValidationPhoneLength(Object country, Object length);
+  String myAccountSupportValidationPhoneLength(Object length, Object country);
 
   /// Generic required field error. {label} = field name
   ///
@@ -1948,10 +1948,10 @@ abstract class AppLocalizations {
   /// **'Favorites'**
   String get favoritesTitle;
 
-  /// Button text in app bar
+  /// Confirmation dialog title for clearing all contacted properties
   ///
   /// In en, this message translates to:
-  /// **'Clear All'**
+  /// **'Clear All Contacted Properties?'**
   String get clearAll;
 
   /// Dialog title when clearing favorites
@@ -1994,7 +1994,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Failed to clear favorites: {statusCode}'**
-  String failedToClearFavorites(int statusCode);
+  String failedToClearFavorites(Object statusCode);
 
   /// Generic error when clearing fails
   ///
@@ -2026,7 +2026,7 @@ abstract class AppLocalizations {
   /// **'Browse Properties'**
   String get browseProperties;
 
-  /// Button to retry loading favorites on error
+  /// No description provided for @retry.
   ///
   /// In en, this message translates to:
   /// **'Retry'**
@@ -2179,7 +2179,7 @@ abstract class AppLocalizations {
   /// No description provided for @networkError.
   ///
   /// In en, this message translates to:
-  /// **'Network error. Please try again.'**
+  /// **'Network error. Please check your connection.'**
   String get networkError;
 
   /// Generic fallback error
@@ -2235,6 +2235,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get somethingWentWrong;
+
+  /// Title of the language change dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Change Language'**
+  String get changeLanguage;
+
+  /// Instruction text shown on iOS when changing language
+  ///
+  /// In en, this message translates to:
+  /// **'To change your Akarat app language, follow the steps below:'**
+  String get changeLanguageInstruction;
+
+  /// No description provided for @stepOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Open Settings.'**
+  String get stepOpenSettings;
+
+  /// No description provided for @stepSelectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Tap Language to make a selection.'**
+  String get stepSelectLanguage;
+
+  /// Button label to open device settings (iOS)
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
+  /// Label for English language option
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// Label for Arabic language option
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic'**
+  String get arabic;
+
+  /// Label for Turkish language option
+  ///
+  /// In en, this message translates to:
+  /// **'Turkish'**
+  String get turkish;
+
+  /// Title of the screen when creating a new alert
+  ///
+  /// In en, this message translates to:
+  /// **'Create Alert'**
+  String get createAlertTitle;
+
+  /// Title of the screen when editing an existing saved alert
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Alert'**
+  String get editAlertTitle;
+
+  /// Label above the alert name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Name'**
+  String get alertNameLabel;
+
+  /// Placeholder/hint text inside the alert name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Name'**
+  String get alertNameHint;
+
+  /// Validation error message when alert name is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name'**
+  String get alertNameRequired;
+
+  /// Label above the time period (frequency) dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Time Period'**
+  String get timePeriodLabel;
+
+  /// Label above the purpose field (Rent / Buy)
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get purposeLabel;
+
+  /// Label above the property type dropdown / selector
+  ///
+  /// In en, this message translates to:
+  /// **'Property Type'**
+  String get propertyTypeLabel;
+
+  /// Option meaning 'any property type'
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get propertyTypeAny;
+
+  /// Button text when creating a new alert
+  ///
+  /// In en, this message translates to:
+  /// **'Save Alert'**
+  String get saveAlert;
+
+  /// Button text when editing / updating an existing alert
+  ///
+  /// In en, this message translates to:
+  /// **'Update Alert'**
+  String get updateAlert;
+
+  /// Button text shown while the save/update operation is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get savingAlert;
+
+  /// Success message shown after creating a new alert
+  ///
+  /// In en, this message translates to:
+  /// **'Alert saved successfully'**
+  String get alertSaved;
+
+  /// Success message shown after updating an existing alert
+  ///
+  /// In en, this message translates to:
+  /// **'Alert updated successfully'**
+  String get alertUpdated;
+
+  /// Generic error message when save/update fails (e.g. server error)
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save alert. Please try again.'**
+  String get alertSaveFailed;
 
   /// Number of saved alerts
   ///
@@ -2362,19 +2500,19 @@ abstract class AppLocalizations {
   /// **'How to remove saved alerts'**
   String get howToRemoveSavedAlerts;
 
-  /// Info dialog title
+  /// No description provided for @howToRemoveTitle.
   ///
   /// In en, this message translates to:
-  /// **'How to Remove saved alerts?'**
+  /// **'How to Remove'**
   String get howToRemoveTitle;
 
   /// No description provided for @howToRemoveMessage.
   ///
   /// In en, this message translates to:
-  /// **'Swipe left on any alert to remove it from your saved list'**
+  /// **'Swipe left on any property to remove it from your contacted list'**
   String get howToRemoveMessage;
 
-  /// Button in how-to info dialog
+  /// No description provided for @gotIt.
   ///
   /// In en, this message translates to:
   /// **'Got it'**
@@ -2440,6 +2578,28 @@ abstract class AppLocalizations {
   /// **'Unnamed Alert'**
   String get unnamedAlert;
 
+  /// No description provided for @purposeRent.
+  ///
+  /// In en, this message translates to:
+  /// **'Rent'**
+  String get purposeRent;
+
+  /// No description provided for @purposeBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy'**
+  String get purposeBuy;
+
+  /// Label for property type dropdown/filter
+  ///
+  /// In en, this message translates to:
+  /// **'Property Type'**
+  String get alertPropertyType;
+
+  /// Main large heading at the top of the page
+  ///
+  /// In en, this message translates to:
+  /// **'About Akarat'**
   String get aboutUs_hero_title;
 
   /// Tagline / subtitle shown right below the hero title (usually in red)
@@ -2885,6 +3045,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Akarat'**
   String get aboutUs_hero_brand_name;
+
+  /// Title of the contacted properties screen
+  ///
+  /// In en, this message translates to:
+  /// **'Contacted Properties'**
+  String get contactedPropertiesTitle;
+
+  /// No description provided for @noPropertiesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No properties contacted yet.\nStart contacting agents!'**
+  String get noPropertiesYet;
+
+  /// No description provided for @pleaseLoginAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Please login again.'**
+  String get pleaseLoginAgain;
+
+  /// Failed to load properties with status code
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load ({statusCode})'**
+  String failedToLoad(Object statusCode);
+
+  /// No description provided for @removing.
+  ///
+  /// In en, this message translates to:
+  /// **'Removing...'**
+  String get removing;
+
+  /// No description provided for @propertyRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Property removed from contacted list'**
+  String get propertyRemoved;
+
+  /// No description provided for @failedToRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to remove property'**
+  String get failedToRemove;
+
+  /// No description provided for @cannotBeUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone.'**
+  String get cannotBeUndone;
+
+  /// No description provided for @deleteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete All'**
+  String get deleteAll;
+
+  /// No description provided for @allCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'All contacted properties cleared'**
+  String get allCleared;
+
+  /// No description provided for @failedToClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear all properties'**
+  String get failedToClearAll;
+
+  /// No description provided for @removeProperty.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Property?'**
+  String get removeProperty;
+
+  /// Confirmation message for removing a single property
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{propertyTitle}\" from contacted list?'**
+  String removePropertyConfirm(Object propertyTitle, Object propertyName);
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Price format with AED currency
+  ///
+  /// In en, this message translates to:
+  /// **'{price} AED'**
+  String priceAed(Object price);
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,7 @@ import 'package:Akarat/src/features/localization/data/model/language_mdoel.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../src/features/localization/presentation/bloc/localization_cubit.dart';
 import '../../src/features/localization/presentation/bloc/localization_state.dart';
 
@@ -12,7 +13,10 @@ void showChangeLanguageDialog({
   VoidCallback? onOpenSettings,
   void Function(Locale language)? onLanguageSelected,
 }) {
+  final l10n = AppLocalizations.of(context)!;
   showModalBottomSheet(
+
+
     context: context,
     backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(
@@ -26,33 +30,33 @@ void showChangeLanguageDialog({
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.language, size: 27),
-                  SizedBox(width: 10),
+                  const Icon(Icons.language, size: 27),
+                  const SizedBox(width: 10),
                   Text(
-                    'Change Language',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    l10n.changeLanguage,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 15),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    'To change your Akarat app language, follow the steps below:',
-                    style: TextStyle(fontSize: 15.5),
+                    l10n.changeLanguageInstruction,
+                    style: const TextStyle(fontSize: 15.5),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    '1. Open Settings.',
-                    style: TextStyle(fontSize: 15.5),
+                    l10n.stepOpenSettings,
+                    style: const TextStyle(fontSize: 15.5),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    '2. Tap Language to make a selection.',
-                    style: TextStyle(fontSize: 15.5),
+                   l10n.stepSelectLanguage,
+                    style: const TextStyle(fontSize: 15.5),
                   ),
                 ],
               ),
@@ -68,9 +72,9 @@ void showChangeLanguageDialog({
                     ),
                   ),
                   onPressed: onOpenSettings,
-                  child: const Text(
-                    'Open Settings',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.openSettings,
+                    style: const TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.bold,
                         color: Colors.white),
@@ -84,9 +88,9 @@ void showChangeLanguageDialog({
       } else {
         // 🔴 ANDROID SECTION (UPDATED)
         final languageList = [
-          LanguageModel(language: "English", locale: Locale("en")),
-          LanguageModel(language: "Arabic", locale: Locale("ar")),
-          LanguageModel(language: "Turkish", locale: Locale("tr")),
+          LanguageModel(language: l10n.english, locale: Locale("en")),
+          LanguageModel(language: l10n.arabic, locale: Locale("ar")),
+          LanguageModel(language: l10n.turkish, locale: Locale("tr")),
         ];
 
         return Padding(
@@ -96,15 +100,15 @@ void showChangeLanguageDialog({
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       children: [
-                        Icon(Icons.language, size: 28),
-                        SizedBox(width: 10),
+                        const Icon(Icons.language, size: 28),
+                        const SizedBox(width: 10),
                         Text(
-                          'Change Language',
-                          style: TextStyle(
+                          l10n.changeLanguage,
+                          style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],

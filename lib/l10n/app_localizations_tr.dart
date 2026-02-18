@@ -226,7 +226,7 @@ class AppLocalizationsTr extends AppLocalizations {
       'Telefon numarası yalnızca rakam içermelidir';
 
   @override
-  String myAccountSupportValidationPhoneLength(Object country, Object length) {
+  String myAccountSupportValidationPhoneLength(Object length, Object country) {
     return 'Telefon numarası $country için $length haneli olmalıdır';
   }
 
@@ -1082,7 +1082,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get favoritesTitle => 'Favoriler';
 
   @override
-  String get clearAll => 'Tümünü Temizle';
+  String get clearAll => 'Tüm iletişim kurulan ilanları temizle?';
 
   @override
   String get clearAllFavoritesTitle => 'Tüm Favorileri Temizle?';
@@ -1105,8 +1105,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get favoritesClearedSuccess => 'Tüm favoriler başarıyla temizlendi';
 
   @override
-  String failedToClearFavorites(int statusCode) {
-    return 'Favoriler temizlenemedi: $statusCode';
+  String failedToClearFavorites(Object statusCode) {
+    return 'Failed to clear favorites: $statusCode';
   }
 
   @override
@@ -1204,7 +1204,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get profileUpdatedSuccess => 'Profil başarıyla güncellendi';
 
   @override
-  String get networkError => 'Ağ hatası. Lütfen tekrar deneyin.';
+  String get networkError => 'Ağ hatası. Bağlantınızı kontrol edin.';
 
   @override
   String get updateFailed => 'Güncelleme başarısız oldu';
@@ -1236,6 +1236,76 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get somethingWentWrong =>
       'Bir şeyler ters gitti. Lütfen tekrar deneyin.';
+
+  @override
+  String get changeLanguage => 'Dil Değiştir';
+
+  @override
+  String get changeLanguageInstruction =>
+      'Akarat uygulamasının dilini değiştirmek için aşağıdaki adımları izleyin:';
+
+  @override
+  String get stepOpenSettings => '1. Ayarları açın.';
+
+  @override
+  String get stepSelectLanguage => '2. Dil seçeneğine dokunarak seçim yapın.';
+
+  @override
+  String get openSettings => 'Ayarları Aç';
+
+  @override
+  String get english => 'İngilizce';
+
+  @override
+  String get arabic => 'Arapça';
+
+  @override
+  String get turkish => 'Türkçe';
+
+  @override
+  String get createAlertTitle => 'Uyarı Oluştur';
+
+  @override
+  String get editAlertTitle => 'Uyarıyı Düzenle';
+
+  @override
+  String get alertNameLabel => 'Uyarı Adı';
+
+  @override
+  String get alertNameHint => 'Uyarı Adı';
+
+  @override
+  String get alertNameRequired => 'Lütfen bir isim girin';
+
+  @override
+  String get timePeriodLabel => 'Uyarı Periyodu';
+
+  @override
+  String get purposeLabel => 'Amaç';
+
+  @override
+  String get propertyTypeLabel => 'Emlak Türü';
+
+  @override
+  String get propertyTypeAny => 'Herhangi';
+
+  @override
+  String get saveAlert => 'Uyarıyı Kaydet';
+
+  @override
+  String get updateAlert => 'Uyarıyı Güncelle';
+
+  @override
+  String get savingAlert => 'Kaydediliyor…';
+
+  @override
+  String get alertSaved => 'Uyarı başarıyla kaydedildi';
+
+  @override
+  String get alertUpdated => 'Uyarı başarıyla güncellendi';
+
+  @override
+  String get alertSaveFailed => 'Uyarı kaydedilemedi. Lütfen tekrar deneyin.';
 
   @override
   String savedAlertsCount(Object count) {
@@ -1336,14 +1406,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get howToRemoveSavedAlerts => 'How to remove saved alerts';
 
   @override
-  String get howToRemoveTitle => 'How to Remove saved alerts?';
+  String get howToRemoveTitle => 'Nasıl Kaldırılır';
 
   @override
   String get howToRemoveMessage =>
-      'Swipe left on any alert to remove it from your saved list';
+      'Bir ilanı iletişim listesinden kaldırmak için sola kaydırın';
 
   @override
-  String get gotIt => 'Got it';
+  String get gotIt => 'Anladım';
 
   @override
   String pageCurrentOfTotal(Object current, Object total) {
@@ -1364,20 +1434,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get ok => 'OK';
 
   @override
-  String get hourly => 'Hourly';
+  String get hourly => 'Saatlik';
 
   @override
-  String get daily => 'Daily';
+  String get daily => 'Günlük';
 
   @override
-  String get weekly => 'Weekly';
+  String get weekly => 'Haftalık';
 
   @override
-  String get monthly => 'Monthly';
+  String get monthly => 'Aylık';
 
   @override
-  String get unnamedAlert => 'Unnamed Alert';
+  String get unnamedAlert => 'İsimsiz Uyarı';
 
+  @override
+  String get purposeRent => 'Kiralık';
+
+  @override
+  String get purposeBuy => 'Satılık';
+
+  @override
+  String get alertPropertyType => 'Emlak Türü';
 
   @override
   String get aboutUs_hero_title => 'Akarat Hakkında';
@@ -1638,4 +1716,56 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get aboutUs_hero_brand_name => 'Akarat';
+
+  @override
+  String get contactedPropertiesTitle => 'İletişime Geçilen İlanlar';
+
+  @override
+  String get noPropertiesYet =>
+      'Henüz iletişime geçilen ilan yok.\nEmlakçılarla iletişime geçmeye başla!';
+
+  @override
+  String get pleaseLoginAgain => 'Lütfen tekrar giriş yapın.';
+
+  @override
+  String failedToLoad(Object statusCode) {
+    return 'Yükleme başarısız ($statusCode)';
+  }
+
+  @override
+  String get removing => 'Kaldırılıyor...';
+
+  @override
+  String get propertyRemoved => 'İlan iletişim listesinden kaldırıldı';
+
+  @override
+  String get failedToRemove => 'İlan kaldırılamadı';
+
+  @override
+  String get cannotBeUndone => 'Bu işlem geri alınamaz.';
+
+  @override
+  String get deleteAll => 'Tümünü Sil';
+
+  @override
+  String get allCleared => 'Tüm iletişim kurulan ilanlar temizlendi';
+
+  @override
+  String get failedToClearAll => 'Tüm ilanlar temizlenemedi';
+
+  @override
+  String get removeProperty => 'İlanı Kaldır?';
+
+  @override
+  String removePropertyConfirm(Object propertyTitle, Object propertyName) {
+    return '\"$propertyName\" iletişim listesinden kaldırılsın mı?';
+  }
+
+  @override
+  String get remove => 'Kaldır';
+
+  @override
+  String priceAed(Object price) {
+    return '$price AED';
+  }
 }

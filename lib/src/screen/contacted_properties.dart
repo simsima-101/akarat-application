@@ -5,6 +5,7 @@ import 'package:Akarat/src/core/utils/session_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../core/services/api_service.dart';
 import '../core/utils/secure_storage.dart';
 import '../features/property/data/models/project_model.dart' as contacted;
@@ -18,7 +19,12 @@ class ContactedProperties extends StatefulWidget {
 }
 
 class _ContactedPropertiesState extends State<ContactedProperties> {
+
+
+
+
   List<contacted.ProjectData> contactedProperties = [];
+
 
   bool isLoading = true;
   String? error;
@@ -27,10 +33,25 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   @override
   void initState() {
     super.initState();
-    fetchContactedProperties();
+
+  }
+
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Fetch only once when widget becomes ready
+    if (contactedProperties.isEmpty && isLoading) {
+      fetchContactedProperties();
+    }
   }
 
   Future<void> fetchContactedProperties() async {
+
+
+
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       isLoading = true;
       error = null;
@@ -42,7 +63,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
 
       if (token == null || token.isEmpty) {
         setState(() {
-          error = "Please login again.";
+          error = l10n.pleaseLoginAgain;
           isLoading = false;
         });
         return;
@@ -85,7 +106,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
         });
       } else if (response.statusCode == 401) {
         setState(() {
-          error = "Session expired. Please login again.";
+          error = l10n.sessionExpired;
           isLoading = false;
         });
       } else {
@@ -96,7 +117,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
       }
     } catch (e) {
       setState(() {
-        error = "Network error. Please check your connection.";
+        error = l10n.networkError;
         isLoading = false;
       });
     }
@@ -131,6 +152,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   }
 
   Future<bool> _deleteAllContactedProperties() async {
+
     try {
       await SessionManager().restore();
       String? token = SessionManager().token ?? await SecureStorage.getToken();
@@ -160,6 +182,8 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   }
 
   void _removeProperty(int index) async {
+
+    final l10n = AppLocalizations.of(context)!;
     final property = contactedProperties[index];
     final originalList = List<contacted.ProjectData>.from(contactedProperties);
 
@@ -170,9 +194,10 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
 
     // Show removing feedback
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Removing..."),
-        duration: Duration(seconds: 4),
+
+      SnackBar(
+        content: Text(l10n.removing),
+        duration: const Duration(seconds: 4),
       ),
     );
 
@@ -186,7 +211,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
         contactedProperties = originalList;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to remove property")),
+        SnackBar(content: Text(l10n.propertyRemoved)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -196,23 +221,24 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
   }
 
   void _clearAllProperties() async {
+    final l10n = AppLocalizations.of(context)!;
     if (contactedProperties.isEmpty) return;
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: const Text("Clear All Contacted Properties?"),
-        content: const Text("This action cannot be undone."),
+        title: Text(l10n.clearAll),
+        content: Text(l10n.cannotBeUndone),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text("Delete All"),
+            child: Text(l10n.deleteAll),
           ),
         ],
       ),
@@ -231,25 +257,26 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
     if (success) {
       setState(() => contactedProperties.clear());
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("All contacted properties cleared")),
+        SnackBar(content: Text(l10n.allCleared)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to clear all properties")),
+        SnackBar(content: Text(l10n.failedToClearAll)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.white,
       // ... [all your existing imports and code remain the same until AppBar]
 
       appBar: AppBar(
-        title: const Text(
-          "Contacted Properties",
-          style: TextStyle(fontSize: 19),
+        title: Text(
+          l10n.contactedPropertiesTitle,
+          style: const TextStyle(fontSize: 19),
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -281,14 +308,14 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                 context: context,
                 builder: (ctx) => AlertDialog(
                   backgroundColor: Colors.white,
-                  title: const Text("How to Remove"),
-                  content: const Text(
-                    "Swipe left on any property to remove it from your contacted list",
+                  title: Text(l10n.howToRemoveTitle),
+                  content: Text(
+                    l10n.howToRemoveMessage,
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Got it"),
+                      child: Text(l10n.gotIt),
                     ),
                   ],
                 ),
@@ -301,7 +328,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
             IconButton(
               icon: const Icon(Icons.delete_sweep),
               onPressed: isDeleting ? null : _clearAllProperties,
-              tooltip: "Clear All",
+              tooltip: l10n.clearAll,
             ),
         ],
       ),
@@ -322,20 +349,20 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: fetchContactedProperties,
-                          child: const Text("Retry"),
+                          child: Text(l10n.retry),
                         ),
                       ],
                     ),
                   ),
                 )
               : contactedProperties.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Padding(
-                        padding: EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
                         child: Text(
-                          "No properties contacted yet.\nStart contacting agents!",
+                          l10n.noPropertiesYet,
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     )
@@ -362,7 +389,7 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                                     context: context,
                                     builder: (ctx) => AlertDialog(
                                       backgroundColor: Colors.white,
-                                      title: const Text("Remove Property?"),
+                                      title: Text(l10n.removeProperty),
                                       content: Text(
                                         "Remove \"${property.title ?? 'this property'}\" from contacted list?",
                                       ),
@@ -370,14 +397,14 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(ctx, false),
-                                          child: const Text("Cancel"),
+                                          child: Text(l10n.cancel),
                                         ),
                                         TextButton(
                                           onPressed: () =>
                                               Navigator.pop(ctx, true),
                                           style: TextButton.styleFrom(
                                               foregroundColor: Colors.red),
-                                          child: const Text("Remove"),
+                                          child: Text(l10n.remove),
                                         ),
                                       ],
                                     ),
@@ -406,15 +433,40 @@ class _ContactedPropertiesState extends State<ContactedProperties> {
                                       : const Icon(Icons.image, size: 40),
                                 ),
                                 title: Text(
-                                  property.title ?? "No Title",
+                                  property.title ?? l10n.noTitle,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("${property.price} AED"),
-                                    Text(property.location ?? ""),
+                                    // Price - localized with proper formatting
+                                    Text(
+                                      property.price != null && property.price!.trim().isNotEmpty
+                                          ? l10n.priceAed(property.price!.trim())
+                                          : l10n.priceOnRequest,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+
+                                    // Location - only show when it actually has content
+                                    if (property.location?.trim().isNotEmpty ?? false)
+                                      Text(
+                                        property.location!.trim(),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    // Optional: show fallback only if you want it visible when location is missing
+                                    // else
+                                    //   Text(
+                                    //     l10n.locationNotAvailable,
+                                    //     style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                                    //   ),
                                   ],
                                 ),
                                 onTap: () {

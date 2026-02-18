@@ -1152,11 +1152,15 @@
   "favoritesClearedSuccess": "Tüm favoriler başarıyla temizlendi",
   "@favoritesClearedSuccess": { "description": "Success message after clearing" },
 
-  "failedToClearFavorites": "Favoriler temizlenemedi: {statusCode}",
-  "@failedToClearFavorites": {
-    "description": "Error message with status code",
-    "placeholders": { "statusCode": { "type": "int" } }
-  },
+"removePropertyConfirm": "\"{propertyName}\" iletişim listesinden kaldırılsın mı?",
+"@removePropertyConfirm": {
+  "description": "Confirmation dialog message when removing a contacted property",
+  "placeholders": {
+    "propertyName": {
+      "type": "Object"
+    }
+  }
+},
 
   "errorClearingFavorites": "Favoriler temizlenirken hata oluştu. Bağlantınızı kontrol edin.",
   "@errorClearingFavorites": { "description": "Generic error when clearing fails" },
@@ -1387,6 +1391,134 @@
       "login": "Giriş Yap",
       "@login": {},
 
+      "purposeRent": "Kiralık",
+      "@purposeRent": {},
+
+      "purposeBuy": "Satılık",
+      "@purposeBuy": {},
+
+      "alertPropertyType": "Emlak Türü",
+      "@alertPropertyType": {
+        "description": "Emlak türü açılır menü/filtre etiketi"
+      },
+
+      "propertyTypeAny": "Herhangi",
+      "@propertyTypeAny": {
+        "description": "'Herhangi bir emlak türü' anlamına gelen seçenek"
+      },
+
+   "@_create_alert_section": "================= CREATE ALERT SCREEN =================",
+
+   "createAlertTitle": "Uyarı Oluştur",
+   "@createAlertTitle": {
+     "description": "Yeni uyarı oluşturulurken ekran başlığı"
+   },
+
+   "editAlertTitle": "Uyarıyı Düzenle",
+   "@editAlertTitle": {
+     "description": "Mevcut kaydedilmiş uyarı düzenlenirken ekran başlığı"
+   },
+
+   "alertNameLabel": "Uyarı Adı",
+   "@alertNameLabel": {
+     "description": "Uyarı adı giriş alanının üstündeki etiket"
+   },
+
+   "alertNameHint": "Uyarı Adı",
+   "@alertNameHint": {
+     "description": "Uyarı adı giriş alanının içindeki placeholder / ipucu metni"
+   },
+
+   "alertNameRequired": "Lütfen bir isim girin",
+   "@alertNameRequired": {
+     "description": "Uyarı adı boş bırakıldığında gösterilen doğrulama hata mesajı"
+   },
+
+   "timePeriodLabel": "Uyarı Periyodu",
+   "@timePeriodLabel": {
+     "description": "Zaman aralığı (sıklık) açılır menüsünün üstündeki etiket"
+   },
+
+   "purposeLabel": "Amaç",
+   "@purposeLabel": {
+     "description": "Amaç alanının (Kiralık / Satılık) üstündeki etiket"
+   },
+
+   "propertyTypeLabel": "Emlak Türü",
+   "@propertyTypeLabel": {
+     "description": "Emlak türü açılır menüsü / seçicinin üstündeki etiket"
+   },
+
+   "propertyTypeAny": "Herhangi",
+   "@propertyTypeAny": {
+     "description": "Herhangi bir emlak türünü ifade eden varsayılan / placeholder seçenek"
+   },
+
+   "saveAlert": "Uyarıyı Kaydet",
+   "@saveAlert": {
+     "description": "Yeni uyarı oluşturulurken kullanılan buton metni"
+   },
+
+   "updateAlert": "Uyarıyı Güncelle",
+   "@updateAlert": {
+     "description": "Mevcut uyarı düzenlenirken / güncellenirken kullanılan buton metni"
+   },
+
+   "savingAlert": "Kaydediliyor…",
+   "@savingAlert": {
+     "description": "Kaydetme/güncelleme işlemi devam ederken gösterilen buton metni"
+   },
+
+   "cancel": "İptal",
+   "@cancel": {
+     "description": "Değişiklikleri iptal edip ekranı kapatma butonu metni"
+   },
+
+   "alertSaved": "Uyarı başarıyla kaydedildi",
+   "@alertSaved": {
+     "description": "Yeni uyarı oluşturulduktan sonra gösterilen başarı mesajı"
+   },
+
+   "alertUpdated": "Uyarı başarıyla güncellendi",
+   "@alertUpdated": {
+     "description": "Mevcut uyarı güncellendikten sonra gösterilen başarı mesajı"
+   },
+
+   "alertSaveFailed": "Uyarı kaydedilemedi. Lütfen tekrar deneyin.",
+   "@alertSaveFailed": {
+     "description": "Kaydetme/güncelleme başarısız olduğunda gösterilen genel hata mesajı (örneğin sunucu hatası)"
+   },
+
+   "networkError": "Ağ hatası. Lütfen bağlantınızı kontrol edin.",
+   "@networkError": {
+     "description": "Ağ ile ilgili bir hata meydana geldiğinde gösterilen mesaj"
+   },
+
+   "hourly": "Saatlik",
+   "@hourly": {
+     "description": "Uyarı sıklığı seçeneği - her saat başı"
+   },
+
+   "daily": "Günlük",
+   "@daily": {
+     "description": "Uyarı sıklığı seçeneği - her gün"
+   },
+
+   "weekly": "Haftalık",
+   "@weekly": {
+     "description": "Uyarı sıklığı seçeneği - her hafta"
+   },
+
+   "monthly": "Aylık",
+   "@monthly": {
+     "description": "Uyarı sıklığı seçeneği - her ay"
+   },
+
+   "unnamedAlert": "İsimsiz Uyarı",
+   "@unnamedAlert": {
+     "description": "Uyarıya isim verilmediğinde gösterilecek yedek metin"
+   },
+
 
    "@_login_screen_section": "================= LOGIN SCREEN =================",
 
@@ -1477,8 +1609,45 @@
     "@failedToGetFirebaseToken": {},
 
     "nonJsonFromGoogleLogin": "/login-google'dan JSON olmayan yanıt (HTML). API_BASE_URL'yi (QA vs PROD) ve rotayı kontrol edin.",
-    "@nonJsonFromGoogleLogin": {}
+    "@nonJsonFromGoogleLogin": {},
 
+  "@_change_Language_section": "================= CHANGE LANGUAGE =================",
+
+  "changeLanguage": "Dil Değiştir",
+  "@changeLanguage": {
+    "description": "Dil değiştirme penceresinin başlığı"
+  },
+
+  "changeLanguageInstruction": "Akarat uygulamasının dilini değiştirmek için aşağıdaki adımları izleyin:",
+  "@changeLanguageInstruction": {
+    "description": "iOS'ta dil değiştirilirken gösterilen talimat metni"
+  },
+
+  "stepOpenSettings": "1. Ayarları açın.",
+  "@stepOpenSettings": {},
+
+  "stepSelectLanguage": "2. Dil seçeneğine dokunarak seçim yapın.",
+  "@stepSelectLanguage": {},
+
+  "openSettings": "Ayarları Aç",
+  "@openSettings": {
+    "description": "Cihaz ayarlarını açma butonu metni (iOS)"
+  },
+
+  "english": "İngilizce",
+  "@english": {
+    "description": "İngilizce dil seçeneği etiketi"
+  },
+
+  "arabic": "Arapça",
+  "@arabic": {
+    "description": "Arapça dil seçeneği etiketi"
+  },
+
+  "turkish": "Türkçe",
+  "@turkish": {
+    "description": "Türkçe dil seçeneği etiketi"
+  },
 
      "@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
 
@@ -1814,9 +1983,68 @@
                 "aboutUs_hero_brand_name": "Akarat",
                 "@aboutUs_hero_brand_name": {
                   "description": "Brand name 'Akarat' displayed in the rich text hero heading of About Us screen (colored red)"
-                }
+                },
 
+      "@_contacted_properties_section": "================= CONTACTED PROPERTIES SCREEN =================",
 
+      "contactedPropertiesTitle": "İletişime Geçilen İlanlar",
+        "@contactedPropertiesTitle": {
+          "description": "Title of the contacted properties screen"
+        },
 
+        "noPropertiesYet": "Henüz iletişime geçilen ilan yok.\nEmlakçılarla iletişime geçmeye başla!",
+        "@noPropertiesYet": {},
+
+        "sessionExpired": "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
+        "pleaseLoginAgain": "Lütfen tekrar giriş yapın.",
+        "failedToLoad": "Yükleme başarısız ({statusCode})",
+        "@failedToLoad": {
+          "placeholders": {
+            "statusCode": {
+              "type": "Object"
+            }
+          }
+        },
+        "networkError": "Ağ hatası. Bağlantınızı kontrol edin.",
+
+        "removing": "Kaldırılıyor...",
+        "propertyRemoved": "İlan iletişim listesinden kaldırıldı",
+        "failedToRemove": "İlan kaldırılamadı",
+
+        "clearAll": "Tüm iletişim kurulan ilanları temizle?",
+        "cannotBeUndone": "Bu işlem geri alınamaz.",
+        "cancel": "İptal",
+        "deleteAll": "Tümünü Sil",
+        "allCleared": "Tüm iletişim kurulan ilanlar temizlendi",
+        "failedToClearAll": "Tüm ilanlar temizlenemedi",
+
+        "removeProperty": "İlanı Kaldır?",
+
+"removePropertyConfirm": "\"{propertyName}\" iletişim listesinden kaldırılsın mı?",
+"@removePropertyConfirm": {
+  "description": "Confirmation dialog message when removing a contacted property from list",
+  "placeholders": {
+    "propertyName": {
+      "type": "Object"
+    }
   }
+},
+        "remove": "Kaldır",
+
+        "howToRemoveTitle": "Nasıl Kaldırılır",
+        "howToRemoveMessage": "Bir ilanı iletişim listesinden kaldırmak için sola kaydırın",
+        "gotIt": "Anladım",
+
+        "retry": "Tekrar Dene",
+
+   "priceAed": "{price} AED",
+   "@priceAed": {
+     "placeholders": {
+       "price": {
+         "type": "Object"
+       }
+     }
+   }
+ }
+
 

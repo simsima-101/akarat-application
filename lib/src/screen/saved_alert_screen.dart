@@ -657,8 +657,8 @@ class _SavedAlertsView extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (_) => CreateAlertScreen(
-          initialPurpose: "Rent",
-          initialPropertyType: 'Any',
+          initialPurpose: l10n.purposeRent,
+          initialPropertyType: l10n.propertyTypeAny,
           isFromSavedAlerts: true,
         ),
       ),
@@ -741,7 +741,7 @@ class _SavedAlertsView extends StatelessWidget {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+                        child: Text(l10n.cancel, style: const TextStyle(color: Colors.red)),
                       ),
                       TextButton(
                         onPressed: () {
@@ -762,7 +762,7 @@ class _SavedAlertsView extends StatelessWidget {
             icon: const Icon(Icons.favorite_border_outlined, color: Colors.red, size: 30),
           ),
           IconButton(
-            tooltip: "Email",
+            tooltip: l10n.emailHint,
             icon: const Icon(Icons.email_outlined, color: Colors.red, size: 28),
             onPressed: () async {
               final Uri emailUri = Uri.parse(
@@ -808,33 +808,59 @@ class _SavedAlertsView extends StatelessWidget {
     );
   }
 }
+String _formatFrequency(String? raw, AppLocalizations l10n) {
+  if (raw == null || raw.isEmpty) return l10n.daily;
 
+  final lower = raw.trim().toLowerCase();
+  switch (lower) {
+    case 'hourly':
+      return l10n.hourly;
+    case 'daily':
+      return l10n.daily;
+    case 'weekly':
+      return l10n.weekly;
+    case 'monthly':
+      return l10n.monthly;
+    default:
+      return raw; // fallback – shows whatever the backend sent
+  }
+}
 // ──────────────────────────────────────────────────────────────
 //  SUPPORTING WIDGETS (unchanged)
 // ──────────────────────────────────────────────────────────────
 
 class SavedAlertCard extends StatelessWidget {
   final String title;
-  final String frequency;
+  final String? frequency;           // ← make it nullable to match model
   final String created;
 
   const SavedAlertCard({
     super.key,
     required this.title,
-    required this.frequency,
+    this.frequency,                   // ← can be null
     required this.created,
   });
 
   @override
   Widget build(BuildContext context) {
-
     final l10n = AppLocalizations.of(context)!;
+
+    // ← HERE: format the raw frequency using your helper
+    final displayFrequency = _formatFrequency(frequency, l10n);
+
+
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         boxShadow: [
-          BoxShadow(offset: const Offset(0, 0), color: Colors.grey.shade300, blurRadius: 3, spreadRadius: 3),
+          BoxShadow(
+            offset: const Offset(0, 0),
+            color: Colors.grey.shade300,
+            blurRadius: 3,
+            spreadRadius: 3,
+          ),
         ],
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -846,10 +872,17 @@ class SavedAlertCard extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 14),
-          Text(l10n.receiveUpdates, style: const TextStyle(color: Colors.black87, fontSize: 14)),
+          Text(
+            l10n.receiveUpdates,
+            style: const TextStyle(color: Colors.black87, fontSize: 14),
+          ),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -860,12 +893,19 @@ class SavedAlertCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(frequency, style: const TextStyle(color: Colors.black87, fontSize: 16)),
+                // ← Use the localized version here
+                Text(
+                  displayFrequency,
+                  style: const TextStyle(color: Colors.black87, fontSize: 16),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          Text(created, style: const TextStyle(color: Colors.black87, fontSize: 13)),
+          Text(
+            created,
+            style: const TextStyle(color: Colors.black87, fontSize: 13),
+          ),
         ],
       ),
     );

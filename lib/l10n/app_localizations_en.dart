@@ -222,7 +222,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Phone number must contain digits only';
 
   @override
-  String myAccountSupportValidationPhoneLength(Object country, Object length) {
+  String myAccountSupportValidationPhoneLength(Object length, Object country) {
     return 'Phone number must be $length digits for $country';
   }
 
@@ -1077,7 +1077,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoritesTitle => 'Favorites';
 
   @override
-  String get clearAll => 'Clear All';
+  String get clearAll => 'Clear All Contacted Properties?';
 
   @override
   String get clearAllFavoritesTitle => 'Clear All Favorites?';
@@ -1099,7 +1099,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favoritesClearedSuccess => 'All favorites cleared successfully';
 
   @override
-  String failedToClearFavorites(int statusCode) {
+  String failedToClearFavorites(Object statusCode) {
     return 'Failed to clear favorites: $statusCode';
   }
 
@@ -1197,7 +1197,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileUpdatedSuccess => 'Profile updated successfully';
 
   @override
-  String get networkError => 'Network error. Please try again.';
+  String get networkError => 'Network error. Please check your connection.';
 
   @override
   String get updateFailed => 'Update failed';
@@ -1226,6 +1226,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get somethingWentWrong => 'Something went wrong. Please try again.';
+
+  @override
+  String get changeLanguage => 'Change Language';
+
+  @override
+  String get changeLanguageInstruction =>
+      'To change your Akarat app language, follow the steps below:';
+
+  @override
+  String get stepOpenSettings => '1. Open Settings.';
+
+  @override
+  String get stepSelectLanguage => '2. Tap Language to make a selection.';
+
+  @override
+  String get openSettings => 'Open Settings';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get arabic => 'Arabic';
+
+  @override
+  String get turkish => 'Turkish';
+
+  @override
+  String get createAlertTitle => 'Create Alert';
+
+  @override
+  String get editAlertTitle => 'Edit Alert';
+
+  @override
+  String get alertNameLabel => 'Alert Name';
+
+  @override
+  String get alertNameHint => 'Alert Name';
+
+  @override
+  String get alertNameRequired => 'Please enter a name';
+
+  @override
+  String get timePeriodLabel => 'Time Period';
+
+  @override
+  String get purposeLabel => 'Purpose';
+
+  @override
+  String get propertyTypeLabel => 'Property Type';
+
+  @override
+  String get propertyTypeAny => 'Any';
+
+  @override
+  String get saveAlert => 'Save Alert';
+
+  @override
+  String get updateAlert => 'Update Alert';
+
+  @override
+  String get savingAlert => 'Saving…';
+
+  @override
+  String get alertSaved => 'Alert saved successfully';
+
+  @override
+  String get alertUpdated => 'Alert updated successfully';
+
+  @override
+  String get alertSaveFailed => 'Failed to save alert. Please try again.';
 
   @override
   String savedAlertsCount(Object count) {
@@ -1323,11 +1393,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howToRemoveSavedAlerts => 'How to remove saved alerts';
 
   @override
-  String get howToRemoveTitle => 'How to Remove saved alerts?';
+  String get howToRemoveTitle => 'How to Remove';
 
   @override
   String get howToRemoveMessage =>
-      'Swipe left on any alert to remove it from your saved list';
+      'Swipe left on any property to remove it from your contacted list';
 
   @override
   String get gotIt => 'Got it';
@@ -1364,6 +1434,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unnamedAlert => 'Unnamed Alert';
+
+  @override
+  String get purposeRent => 'Rent';
+
+  @override
+  String get purposeBuy => 'Buy';
+
+  @override
+  String get alertPropertyType => 'Property Type';
 
   @override
   String get aboutUs_hero_title => 'About Akarat';
@@ -1620,4 +1699,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutUs_hero_brand_name => 'Akarat';
+
+  @override
+  String get contactedPropertiesTitle => 'Contacted Properties';
+
+  @override
+  String get noPropertiesYet =>
+      'No properties contacted yet.\nStart contacting agents!';
+
+  @override
+  String get pleaseLoginAgain => 'Please login again.';
+
+  @override
+  String failedToLoad(Object statusCode) {
+    return 'Failed to load ($statusCode)';
+  }
+
+  @override
+  String get removing => 'Removing...';
+
+  @override
+  String get propertyRemoved => 'Property removed from contacted list';
+
+  @override
+  String get failedToRemove => 'Failed to remove property';
+
+  @override
+  String get cannotBeUndone => 'This action cannot be undone.';
+
+  @override
+  String get deleteAll => 'Delete All';
+
+  @override
+  String get allCleared => 'All contacted properties cleared';
+
+  @override
+  String get failedToClearAll => 'Failed to clear all properties';
+
+  @override
+  String get removeProperty => 'Remove Property?';
+
+  @override
+  String removePropertyConfirm(Object propertyTitle, Object propertyName) {
+    return 'Remove \"$propertyTitle\" from contacted list?';
+  }
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String priceAed(Object price) {
+    return '$price AED';
+  }
 }

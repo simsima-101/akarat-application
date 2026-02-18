@@ -222,7 +222,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'يجب أن يحتوي رقم الهاتف على أرقام فقط';
 
   @override
-  String myAccountSupportValidationPhoneLength(Object country, Object length) {
+  String myAccountSupportValidationPhoneLength(Object length, Object country) {
     return 'يجب أن يكون رقم الهاتف $length أرقام لدولة $country';
   }
 
@@ -1070,7 +1070,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get favoritesTitle => 'المفضلة';
 
   @override
-  String get clearAll => 'مسح الكل';
+  String get clearAll => 'مسح جميع العقارات التي تم التواصل بشأنها؟';
 
   @override
   String get clearAllFavoritesTitle => 'مسح جميع المفضلات؟';
@@ -1092,7 +1092,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get favoritesClearedSuccess => 'تم مسح جميع المفضلات بنجاح';
 
   @override
-  String failedToClearFavorites(int statusCode) {
+  String failedToClearFavorites(Object statusCode) {
     return 'فشل في مسح المفضلات: $statusCode';
   }
 
@@ -1183,14 +1183,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get deleteConfirm => 'حذف';
 
   @override
-  String get sessionExpired =>
-      'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.';
+  String get sessionExpired => 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.';
 
   @override
   String get profileUpdatedSuccess => 'تم تحديث الملف الشخصي بنجاح';
 
   @override
-  String get networkError => 'خطأ في الشبكة. يرجى المحاولة مرة أخرى.';
+  String get networkError => 'خطأ في الشبكة. يرجى التحقق من اتصالك.';
 
   @override
   String get updateFailed => 'فشل التحديث';
@@ -1221,6 +1220,76 @@ class AppLocalizationsAr extends AppLocalizations {
   String get somethingWentWrong => 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
 
   @override
+  String get changeLanguage => 'تغيير اللغة';
+
+  @override
+  String get changeLanguageInstruction =>
+      'لتغيير لغة تطبيق أكارات، اتبع الخطوات التالية:';
+
+  @override
+  String get stepOpenSettings => '1. افتح الإعدادات.';
+
+  @override
+  String get stepSelectLanguage => '2. اضغط على اللغة لإجراء الاختيار.';
+
+  @override
+  String get openSettings => 'فتح الإعدادات';
+
+  @override
+  String get english => 'الإنجليزية';
+
+  @override
+  String get arabic => 'العربية';
+
+  @override
+  String get turkish => 'التركية';
+
+  @override
+  String get createAlertTitle => 'إنشاء تنبيه';
+
+  @override
+  String get editAlertTitle => 'تعديل التنبيه';
+
+  @override
+  String get alertNameLabel => 'اسم التنبيه';
+
+  @override
+  String get alertNameHint => 'اسم التنبيه';
+
+  @override
+  String get alertNameRequired => 'يرجى إدخال اسم';
+
+  @override
+  String get timePeriodLabel => 'الفترة الزمنية';
+
+  @override
+  String get purposeLabel => 'الغرض';
+
+  @override
+  String get propertyTypeLabel => 'نوع العقار';
+
+  @override
+  String get propertyTypeAny => 'أي نوع';
+
+  @override
+  String get saveAlert => 'حفظ التنبيه';
+
+  @override
+  String get updateAlert => 'تحديث التنبيه';
+
+  @override
+  String get savingAlert => 'جاري الحفظ…';
+
+  @override
+  String get alertSaved => 'تم حفظ التنبيه بنجاح';
+
+  @override
+  String get alertUpdated => 'تم تحديث التنبيه بنجاح';
+
+  @override
+  String get alertSaveFailed => 'فشل حفظ التنبيه. يرجى المحاولة مرة أخرى.';
+
+  @override
   String savedAlertsCount(Object count) {
     return '($count)';
   }
@@ -1249,9 +1318,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String createdTimeAgo(Object time) {
     return 'تم إنشاؤه $time';
-
-
-
   }
 
   @override
@@ -1329,11 +1395,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get howToRemoveSavedAlerts => 'كيفية إزالة التنبيهات المحفوظة';
 
   @override
-  String get howToRemoveTitle => 'كيفية إزالة التنبيهات المحفوظة؟';
+  String get howToRemoveTitle => 'كيفية الإزالة';
 
   @override
   String get howToRemoveMessage =>
-      'اسحب يسارًا على أي تنبيه لحذفه من القائمة المحفوظة';
+      'اسحب لليسار على أي عقار لإزالته من قائمة التواصل';
 
   @override
   String get gotIt => 'حسنًا';
@@ -1357,20 +1423,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ok => 'موافق';
 
   @override
-  String get hourly => 'Saatlik';
+  String get hourly => 'كل ساعة';
 
   @override
-  String get daily => 'Günlük';
+  String get daily => 'يومي';
 
   @override
-  String get weekly => 'Haftalık';
+  String get weekly => 'أسبوعي';
 
   @override
-  String get monthly => 'Aylık';
+  String get monthly => 'شهري';
 
   @override
-  String get unnamedAlert => 'İsimsiz Uyarı';
+  String get unnamedAlert => 'تنبيه بدون اسم';
 
+  @override
+  String get purposeRent => 'إيجار';
+
+  @override
+  String get purposeBuy => 'شراء';
+
+  @override
+  String get alertPropertyType => 'نوع العقار';
 
   @override
   String get aboutUs_hero_title => 'عن أكارت';
@@ -1626,4 +1700,56 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get aboutUs_hero_brand_name => 'أكارت';
+
+  @override
+  String get contactedPropertiesTitle => 'العقارات التي تم التواصل بشأنها';
+
+  @override
+  String get noPropertiesYet =>
+      'لم يتم التواصل مع أي عقارات بعد.\nابدأ بالتواصل مع الوكلاء!';
+
+  @override
+  String get pleaseLoginAgain => 'يرجى تسجيل الدخول مرة أخرى.';
+
+  @override
+  String failedToLoad(Object statusCode) {
+    return 'فشل التحميل ($statusCode)';
+  }
+
+  @override
+  String get removing => 'جاري الإزالة...';
+
+  @override
+  String get propertyRemoved => 'تم إزالة العقار من قائمة التواصل';
+
+  @override
+  String get failedToRemove => 'فشل إزالة العقار';
+
+  @override
+  String get cannotBeUndone => 'لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get deleteAll => 'حذف الكل';
+
+  @override
+  String get allCleared => 'تم مسح جميع العقارات التي تم التواصل بشأنها';
+
+  @override
+  String get failedToClearAll => 'فشل مسح جميع العقارات';
+
+  @override
+  String get removeProperty => 'إزالة العقار؟';
+
+  @override
+  String removePropertyConfirm(Object propertyTitle, Object propertyName) {
+    return 'إزالة \"$propertyName\" من قائمة التواصل؟';
+  }
+
+  @override
+  String get remove => 'إزالة';
+
+  @override
+  String priceAed(Object price) {
+    return '$price درهم ';
+  }
 }
