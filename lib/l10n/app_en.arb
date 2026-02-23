@@ -1834,6 +1834,168 @@
   "description": "Option meaning 'any property type'"
 },
 
+ "@_email_agent_section": "================= EMAIL AGENT =================",
+
+  "emailAgent": "Email agent",
+   "@emailAgent": {
+     "description": "Title of the contact/agent email dialog"
+   },
+
+   "weWillGetBackSoon": "We will get back to you as soon as possible",
+   "@weWillGetBackSoon": {
+     "description": "Default subtitle shown in the contact form dialog"
+   },
+
+   "name": "Name",
+   "@name": {
+     "description": "Label for the name input field"
+   },
+
+   "email": "Email",
+   "@email": {
+     "description": "Label for the email input field"
+   },
+
+       "phone": "Phone",
+   "@phone": {
+     "description": "Label for the phone number input field"
+   },
+
+   "writeYourMessageHere": "Write your message here...",
+   "@writeYourMessageHere": {
+     "description": "Hint text inside the message textarea"
+   },
+
+   "messageRequired": "Message is required",
+   "@messageRequired": {
+     "description": "Validation error when message field is empty"
+   },
+
+   "sendEmail": "Send Email",
+   "@sendEmail": {
+     "description": "Text on the main submit button"
+   },
+
+   "thankYouMessageSent": "Thank you! Your message was sent successfully!",
+   "@thankYouMessageSent": {
+     "description": "Success message shown in SnackBar after sending"
+   },
+
+   "failedToSend": "Failed to send message. Please try again.",
+   "@failedToSend": {
+     "description": "Error message shown in SnackBar when sending fails"
+   },
+
+   "noEmailApp": "No Email App",
+   "@noEmailApp": {
+     "description": "Title of alert dialog when no email client is installed"
+   },
+
+   "installEmailApp": "Please install Gmail or Outlook to send emails.",
+   "@installEmailApp": {
+     "description": "Body text of alert when email app cannot be launched"
+   },
+
+   "couldNotOpenEmail": "Could not open email app",
+   "@couldNotOpenEmail": {
+     "description": "SnackBar message when launchUrl fails for mailto:"
+   },
+
+   "requiredField": "Required",
+   "@requiredField": {
+     "description": "Generic validation message for empty required fields (name, etc.)"
+   },
+
+   "invalidEmail": "Invalid email",
+   "@invalidEmail": {
+     "description": "Validation error for incorrectly formatted email"
+   },
+
+   "phoneDigitsOnly": "7–15 digits only",
+   "@phoneDigitsOnly": {
+     "description": "Generic phone number format error (when length regex fails)"
+   },
+
+   "phoneLengthError": "Phone number must be {count} digits for {country}",
+   "@phoneLengthError": {
+     "description": "Phone length validation error – uses placeholders",
+     "placeholders": {
+       "count": {},
+       "country": {}
+     }
+   },
+
+  "@_property_details_section": "================= PROPERTY DETAILS SCREEN =================",
+
+  "unableToLoadProperty": "Unable to load property",
+    "@unableToLoadProperty": { "description": "Error screen title" },
+
+    "pleaseCheckConnection": "Please check your connection and try again.",
+    "@pleaseCheckConnection": { "description": "Error screen subtitle" },
+
+    "retry": "Retry",
+
+    "addressPrefix": "📍",
+    "priceAed": "AED",
+    "per": "/{period}",
+
+    "descriptionTitle": "Description",
+    "propertyDetailsTitle": "Property Details",
+    "buildingInformationTitle": "Building Information",
+    "projectInformationTitle": "Project Information",
+    "locationAndNearbyTitle": "Location & nearby",
+    "viewOnMap": "View on map",
+    "amenitiesTitle": "Amenities",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "providedBy": "Provided by",
+    "seeAgentDetails": "See Agent Details",
+    "regulatoryInformationTitle": "Regulatory Information",
+    "dldVerified": "DLD Verified",
+    "reraQrCode": "RERA QR Code",
+
+    "propertyIdLabel": "Property ID",
+    "propertyTypeLabel": "Property Type",
+    "sizeLabel": "Size",
+    "listedOnLabel": "Listed On",
+    "categoryLabel": "Category",
+    "priceLabel": "Price",
+    "addressLabel": "Address",
+
+    "buildingNameLabel": "Building Name",
+    "totalParkingLabel": "Total Parking Space",
+    "buildingAreaLabel": "Building Area",
+    "yearOfCompletionLabel": "Year of Completion",
+    "elevatorsLabel": "Elevators",
+    "totalFloorsLabel": "Total Floors",
+    "swimmingPoolsLabel": "Swimming Pools",
+    "retailCentersLabel": "Retail Centers",
+
+    "completionLabel": "Completion",
+    "governmentFeeLabel": "Government Fee",
+    "deliveryYearLabel": "Delivery Year",
+    "paymentPeriodLabel": "Payment Period",
+    "projectAnnouncementLabel": "Project Announcement",
+    "constructionStartedLabel": "Construction Started",
+    "expectedCompletionLabel": "Expected Completion",
+    "salesStartedLabel": "Sales Started",
+
+    "paymentPlanTitle": "Payment Plan",
+    "downPayment": "Down Payment",
+    "duringConstruction": "During Construction",
+    "onHandover": "On Handover",
+
+    "recommendedPropertiesTitle": "Recommended Properties",
+
+    "beds": "{count} bed{count, plural, one {} other {s}}",
+    "@beds": { "placeholders": { "count": { "type": "int" } } },
+
+    "baths": "{count} bath{count, plural, one {} other {s}}",
+    "@baths": { "placeholders": { "count": { "type": "int" } } },
+
+
+
+
   "@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
 
   "aboutUs_hero_title": "About Akarat",

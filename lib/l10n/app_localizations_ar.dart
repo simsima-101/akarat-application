@@ -1017,7 +1017,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get createNewAccount => 'إنشاء حساب جديد';
 
   @override
-  String get invalidEmail => 'Invalid email address';
+  String get invalidEmail => 'بريد إلكتروني غير صالح';
 
   @override
   String pleaseEnterField(Object field) {
@@ -1447,6 +1447,205 @@ class AppLocalizationsAr extends AppLocalizations {
   String get alertPropertyType => 'نوع العقار';
 
   @override
+  String get emailAgent => 'التواصل مع الوكيل';
+
+  @override
+  String get weWillGetBackSoon => 'سنعود إليك في أقرب وقت ممكن';
+
+  @override
+  String get name => 'الاسم';
+
+  @override
+  String get phone => 'رقم الهاتف';
+
+  @override
+  String get writeYourMessageHere => 'اكتب رسالتك هنا...';
+
+  @override
+  String get messageRequired => 'الرسالة مطلوبة';
+
+  @override
+  String get sendEmail => 'إرسال البريد';
+
+  @override
+  String get thankYouMessageSent => 'شكراً لك! تم إرسال رسالتك بنجاح';
+
+  @override
+  String get failedToSend => 'فشل إرسال الرسالة. حاول مرة أخرى.';
+
+  @override
+  String get noEmailApp => 'لا يوجد تطبيق بريد';
+
+  @override
+  String get installEmailApp => 'يرجى تثبيت Gmail أو Outlook لإرسال الرسائل.';
+
+  @override
+  String get couldNotOpenEmail => 'تعذر فتح تطبيق البريد';
+
+  @override
+  String get requiredField => 'مطلوب';
+
+  @override
+  String get phoneDigitsOnly => 'أرقام فقط من 7 إلى 15 رقم';
+
+  @override
+  String phoneLengthError(Object count, Object country) {
+    return 'يجب أن يكون رقم الهاتف $count أرقام لدولة $country';
+  }
+
+  @override
+  String get unableToLoadProperty => 'تعذر تحميل العقار';
+
+  @override
+  String get pleaseCheckConnection => 'يرجى التحقق من الاتصال وحاول مرة أخرى.';
+
+  @override
+  String get addressPrefix => '📍';
+
+  @override
+  String priceAed(Object price) {
+    return '$price درهم ';
+  }
+
+  @override
+  String per(Object period) {
+    return '/$period';
+  }
+
+  @override
+  String get descriptionTitle => 'الوصف';
+
+  @override
+  String get propertyDetailsTitle => 'تفاصيل العقار';
+
+  @override
+  String get buildingInformationTitle => 'معلومات المبنى';
+
+  @override
+  String get projectInformationTitle => 'معلومات المشروع';
+
+  @override
+  String get locationAndNearbyTitle => 'الموقع والمناطق القريبة';
+
+  @override
+  String get viewOnMap => 'عرض على الخريطة';
+
+  @override
+  String get amenitiesTitle => 'المرافق';
+
+  @override
+  String get showMore => 'إظهار المزيد';
+
+  @override
+  String get showLess => 'إظهار أقل';
+
+  @override
+  String get providedBy => 'مقدم من';
+
+  @override
+  String get seeAgentDetails => 'عرض تفاصيل الوكيل';
+
+  @override
+  String get regulatoryInformationTitle => 'المعلومات التنظيمية';
+
+  @override
+  String get dldVerified => 'موثق من دائرة الأراضي والأملاك';
+
+  @override
+  String get reraQrCode => 'رمز QR الخاص بريرا';
+
+  @override
+  String get propertyIdLabel => 'رقم العقار';
+
+  @override
+  String get sizeLabel => 'الحجم';
+
+  @override
+  String get listedOnLabel => 'تم الإدراج في';
+
+  @override
+  String get categoryLabel => 'الفئة';
+
+  @override
+  String get priceLabel => 'السعر';
+
+  @override
+  String get addressLabel => 'العنوان';
+
+  @override
+  String get buildingNameLabel => 'اسم المبنى';
+
+  @override
+  String get totalParkingLabel => 'إجمالي مواقف السيارات';
+
+  @override
+  String get buildingAreaLabel => 'مساحة المبنى';
+
+  @override
+  String get yearOfCompletionLabel => 'سنة الإنجاز';
+
+  @override
+  String get elevatorsLabel => 'المصاعد';
+
+  @override
+  String get totalFloorsLabel => 'إجمالي الطوابق';
+
+  @override
+  String get swimmingPoolsLabel => 'المسابح';
+
+  @override
+  String get retailCentersLabel => 'مراكز التجزئة';
+
+  @override
+  String get completionLabel => 'Completion';
+
+  @override
+  String get governmentFeeLabel => 'Government Fee';
+
+  @override
+  String get deliveryYearLabel => 'Delivery Year';
+
+  @override
+  String get paymentPeriodLabel => 'Payment Period';
+
+  @override
+  String get projectAnnouncementLabel => 'Project Announcement';
+
+  @override
+  String get constructionStartedLabel => 'Construction Started';
+
+  @override
+  String get expectedCompletionLabel => 'Expected Completion';
+
+  @override
+  String get salesStartedLabel => 'Sales Started';
+
+  @override
+  String get paymentPlanTitle => 'Payment Plan';
+
+  @override
+  String get downPayment => 'Down Payment';
+
+  @override
+  String get duringConstruction => 'During Construction';
+
+  @override
+  String get onHandover => 'On Handover';
+
+  @override
+  String get recommendedPropertiesTitle => 'عقارات موصى بها';
+
+  @override
+  String beds(int count) {
+    return '$count سرير';
+  }
+
+  @override
+  String baths(int count) {
+    return '$count حمام';
+  }
+
+  @override
   String get aboutUs_hero_title => 'عن أكارت';
 
   @override
@@ -1747,9 +1946,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get remove => 'إزالة';
-
-  @override
-  String priceAed(Object price) {
-    return '$price درهم ';
-  }
 }

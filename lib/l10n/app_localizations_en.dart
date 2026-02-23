@@ -1025,7 +1025,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createNewAccount => 'Create new account';
 
   @override
-  String get invalidEmail => 'Invalid email address';
+  String get invalidEmail => 'Invalid email';
 
   @override
   String pleaseEnterField(Object field) {
@@ -1445,6 +1445,220 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alertPropertyType => 'Property Type';
 
   @override
+  String get emailAgent => 'Email agent';
+
+  @override
+  String get weWillGetBackSoon => 'We will get back to you as soon as possible';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get writeYourMessageHere => 'Write your message here...';
+
+  @override
+  String get messageRequired => 'Message is required';
+
+  @override
+  String get sendEmail => 'Send Email';
+
+  @override
+  String get thankYouMessageSent =>
+      'Thank you! Your message was sent successfully!';
+
+  @override
+  String get failedToSend => 'Failed to send message. Please try again.';
+
+  @override
+  String get noEmailApp => 'No Email App';
+
+  @override
+  String get installEmailApp =>
+      'Please install Gmail or Outlook to send emails.';
+
+  @override
+  String get couldNotOpenEmail => 'Could not open email app';
+
+  @override
+  String get requiredField => 'Required';
+
+  @override
+  String get phoneDigitsOnly => '7–15 digits only';
+
+  @override
+  String phoneLengthError(Object count, Object country) {
+    return 'Phone number must be $count digits for $country';
+  }
+
+  @override
+  String get unableToLoadProperty => 'Unable to load property';
+
+  @override
+  String get pleaseCheckConnection =>
+      'Please check your connection and try again.';
+
+  @override
+  String get addressPrefix => '📍';
+
+  @override
+  String priceAed(Object price) {
+    return '$price AED';
+  }
+
+  @override
+  String per(Object period) {
+    return '/$period';
+  }
+
+  @override
+  String get descriptionTitle => 'Description';
+
+  @override
+  String get propertyDetailsTitle => 'Property Details';
+
+  @override
+  String get buildingInformationTitle => 'Building Information';
+
+  @override
+  String get projectInformationTitle => 'Project Information';
+
+  @override
+  String get locationAndNearbyTitle => 'Location & nearby';
+
+  @override
+  String get viewOnMap => 'View on map';
+
+  @override
+  String get amenitiesTitle => 'Amenities';
+
+  @override
+  String get showMore => 'Show more';
+
+  @override
+  String get showLess => 'Show less';
+
+  @override
+  String get providedBy => 'Provided by';
+
+  @override
+  String get seeAgentDetails => 'See Agent Details';
+
+  @override
+  String get regulatoryInformationTitle => 'Regulatory Information';
+
+  @override
+  String get dldVerified => 'DLD Verified';
+
+  @override
+  String get reraQrCode => 'RERA QR Code';
+
+  @override
+  String get propertyIdLabel => 'Property ID';
+
+  @override
+  String get sizeLabel => 'Size';
+
+  @override
+  String get listedOnLabel => 'Listed On';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get priceLabel => 'Price';
+
+  @override
+  String get addressLabel => 'Address';
+
+  @override
+  String get buildingNameLabel => 'Building Name';
+
+  @override
+  String get totalParkingLabel => 'Total Parking Space';
+
+  @override
+  String get buildingAreaLabel => 'Building Area';
+
+  @override
+  String get yearOfCompletionLabel => 'Year of Completion';
+
+  @override
+  String get elevatorsLabel => 'Elevators';
+
+  @override
+  String get totalFloorsLabel => 'Total Floors';
+
+  @override
+  String get swimmingPoolsLabel => 'Swimming Pools';
+
+  @override
+  String get retailCentersLabel => 'Retail Centers';
+
+  @override
+  String get completionLabel => 'Completion';
+
+  @override
+  String get governmentFeeLabel => 'Government Fee';
+
+  @override
+  String get deliveryYearLabel => 'Delivery Year';
+
+  @override
+  String get paymentPeriodLabel => 'Payment Period';
+
+  @override
+  String get projectAnnouncementLabel => 'Project Announcement';
+
+  @override
+  String get constructionStartedLabel => 'Construction Started';
+
+  @override
+  String get expectedCompletionLabel => 'Expected Completion';
+
+  @override
+  String get salesStartedLabel => 'Sales Started';
+
+  @override
+  String get paymentPlanTitle => 'Payment Plan';
+
+  @override
+  String get downPayment => 'Down Payment';
+
+  @override
+  String get duringConstruction => 'During Construction';
+
+  @override
+  String get onHandover => 'On Handover';
+
+  @override
+  String get recommendedPropertiesTitle => 'Recommended Properties';
+
+  @override
+  String beds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 's',
+      one: '',
+    );
+    return '$count bed$_temp0';
+  }
+
+  @override
+  String baths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 's',
+      one: '',
+    );
+    return '$count bath$_temp0';
+  }
+
+  @override
   String get aboutUs_hero_title => 'About Akarat';
 
   @override
@@ -1746,9 +1960,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get remove => 'Remove';
-
-  @override
-  String priceAed(Object price) {
-    return '$price AED';
-  }
 }

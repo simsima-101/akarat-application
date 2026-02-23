@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:intl_country_data/intl_country_data.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../core/services/api_service.dart';
 
 typedef EmailAgentSubmitCallback = Future<void> Function({
@@ -40,12 +41,13 @@ Future<void> showEmailAgentDialog(
 
 /// HOME CONTACT FORM – Sends to your real API (WORKS 100%)
 Future<void> showHomeContactDialog(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
   final bool? success = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
     builder: (_) => const _EmailAgentDialog(),
     routeSettings: RouteSettings(arguments: {
-      'subtitle': 'We will get back to you as soon as possible',
+      'subtitle': l10n.weWillGetBackSoon,
       'onSubmit': ({
         required String name,
         required String email,
@@ -101,14 +103,14 @@ Future<void> showHomeContactDialog(BuildContext context) async {
   // Show result AFTER dialog closes
   if (success == true) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text("Thank you! Your message was sent successfully!"),
+      SnackBar(
+          content: Text(l10n.thankYouMessageSent),
           backgroundColor: Colors.green),
     );
   } else if (success == false) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text("Failed to send message. Please try again."),
+      SnackBar(
+          content: Text(l10n.failedToSend),
           backgroundColor: Colors.red),
     );
   }
@@ -127,6 +129,7 @@ class _EmailAgentDialog extends StatefulWidget {
 }
 
 class _EmailAgentDialogState extends State<_EmailAgentDialog> {
+
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -142,6 +145,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
 
   @override
   void didChangeDependencies() {
+
     super.didChangeDependencies();
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
@@ -150,6 +154,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
     _subtitle = args['subtitle'] as String? ?? '';
     final initialMsg = args['initialMessage'] as String?;
     final initialPhone = args['initialPhone'] as String?;
+
     _externalSubmit = args['onSubmit'] as EmailAgentSubmitCallback?;
     _onSuccess = args['onSuccess'] as VoidCallback?;
 
@@ -160,6 +165,8 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
 
   @override
   void dispose() {
+
+
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
@@ -167,36 +174,49 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
     super.dispose();
   }
 
-  String? _req(String? v) =>
-      (v == null || v.trim().isEmpty) ? 'Required' : null;
+
+
+  String? _req(String? v) {
+    final l10n = AppLocalizations.of(context)!;
+    return (v == null || v.trim().isEmpty) ? l10n.requiredField : null;
+  }
+
   String? _email(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Required';
-    return RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(v.trim())
+    final l10n = AppLocalizations.of(context)!;
+    if (v == null || v.trim().isEmpty) return l10n.requiredField;
+
+    final trimmed = v.trim();
+    return RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(trimmed)
         ? null
-        : 'Invalid email';
+        : l10n.invalidEmail;
   }
 
   String? _phone(String? v) {
+    final l10n = AppLocalizations.of(context)!;
     final input = v?.trim() ?? '';
 
-    if (v == null || input.isEmpty) return 'Required';
+    if (v == null || input.isEmpty) return l10n.requiredField;
 
     // Check length based on selected country
     if (input.length != _maxPhoneLength) {
       return 'Phone number must be $_maxPhoneLength digits for ${selectedCountryCode}';
     }
 
-    return RegExp(r'^\d{7,15}$').hasMatch(input) ? null : '7–15 digits only';
+    return RegExp(r'^\d{7,15}$').hasMatch(input) ? null : l10n.phoneDigitsOnly;
   }
 
+  /// MAIN SEND METHOD – NOW 100% WORKING
   /// MAIN SEND METHOD – NOW 100% WORKING
   Future<void> _send() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // IMPORTANT: get l10n FIRST - before any usage
+    final l10n = AppLocalizations.of(context)!;
+
     final name = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final localPhone = _phoneCtrl.text.trim();
-    final fullPhone = '$selectedCountryCode $localPhone';
+    final fullPhone = '$selectedCountryCode$localPhone'; // usually better without space
     final msg = _msgCtrl.text.trim();
 
     // 1. Custom backend (Home contact form)
@@ -210,54 +230,59 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
         );
         if (!mounted) return;
         Navigator.of(context).pop(true); // Success
+        return;
       } catch (e) {
         if (!mounted) return;
         Navigator.of(context).pop(false); // Failure
+        return;
       }
-      return;
     }
 
-    // 2. Open email app – NO BLACK SCREEN + WORKS PERFECTLY
+    // 2. Fallback - open email client
     final uri = Uri(
       scheme: 'mailto',
       path: 'info@akarat.com',
       queryParameters: {
         'subject': 'Inquiry from $name',
-        'body':
-            'Name: $name\nEmail: $email\nPhone: $fullPhone\n\nMessage:\n$msg',
+        'body': 'Name: $name\nEmail: $email\nPhone: $fullPhone\n\nMessage:\n$msg',
       },
     );
 
     try {
-      final launched =
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
       if (!launched) {
         if (!mounted) return;
+
         await showDialog(
           context: context,
-          builder: (_) => AlertDialog(
-            title: const Text("No Email App"),
-            content:
-                const Text("Please install Gmail or Outlook to send emails."),
+          builder: (context) => AlertDialog(
+            title: Text(l10n.noEmailApp),
+            content: Text(l10n.installEmailApp),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("OK"))
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.ok ?? 'OK'), // fallback if neot translated
+              ),
             ],
           ),
         );
         return;
       }
 
-      // Fix black screen on Android
-      await Future.delayed(const Duration(milliseconds: 1000));
+      // Small delay helps prevent black screen on some Android versions
+      await Future.delayed(const Duration(milliseconds: 800));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Could not open email app"),
-              backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(l10n.couldNotOpenEmail),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -289,6 +314,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
       );
 
   Widget _uaePrefixChip() => Container(
+
         height: 48, // 56 → 48
         decoration: BoxDecoration(
           color: Colors.white,
@@ -340,11 +366,18 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
         ),
       );
 
-  Widget _phoneField() => Row(
+  Widget _phoneField() {
+    final l10n = AppLocalizations.of(context)!;   // ← add this line
+
+    return Row(
+
+
         crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
           _uaePrefixChip(),
           Expanded(
+
             child: TextFormField(
               controller: _phoneCtrl,
               validator: _phone,
@@ -353,9 +386,9 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
               maxLength: _maxPhoneLength ??
                   9, // Fallback default if no country selected
 
-              decoration: _input('Phone').copyWith(
-                counterText: '',
-                border: const OutlineInputBorder(
+                decoration: _input(l10n.phone).copyWith(
+                  counterText: '',
+                  border: const OutlineInputBorder(
                   borderRadius:
                       BorderRadius.horizontal(right: Radius.circular(14)),
                   borderSide: BorderSide(color: Color(0xFFE6E6E6)),
@@ -375,9 +408,11 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
           ),
         ],
       );
+    }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       // More padding from the screen edges (dialog looks smaller)
       insetPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
@@ -407,10 +442,10 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                 // Header
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Email agent',
-                        style: TextStyle(
+                        l10n.emailAgent,
+                        style: const TextStyle(
                           fontSize: 20, // 24 → 20
                           fontWeight: FontWeight.w700,
                         ),
@@ -441,7 +476,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                 TextFormField(
                   controller: _nameCtrl,
                   validator: _req,
-                  decoration: _input('Name'),
+                  decoration: _input(l10n.name),
                 ),
                 const SizedBox(height: 10),
 
@@ -450,7 +485,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                   controller: _emailCtrl,
                   validator: _email,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: _input('Email'),
+                  decoration: _input(l10n.email),
                 ),
                 const SizedBox(height: 10),
 
@@ -462,10 +497,10 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                 TextFormField(
                   controller: _msgCtrl,
                   validator: (v) =>
-                      v?.trim().isEmpty ?? true ? 'Message is required' : null,
+                      v?.trim().isEmpty ?? true ? l10n.messageRequired : null,
                   minLines: 3, // 5 → 3 (shorter)
                   maxLines: 6, // 8 → 6
-                  decoration: _input('Write your message here...').copyWith(
+                  decoration: _input(l10n.writeYourMessageHere).copyWith(
                     hintStyle: TextStyle(
                       color: Colors.grey.shade500,
                       fontStyle: FontStyle.italic,
@@ -477,6 +512,7 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
 
                 // Send button – solid red
                 SizedBox(
+
                   height: 48,
                   width: double.infinity,
                   child: ElevatedButton(
@@ -489,9 +525,10 @@ class _EmailAgentDialogState extends State<_EmailAgentDialog> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Send Email',
-                      style: TextStyle(
+                    child: Text(
+
+                      l10n.sendEmail,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,

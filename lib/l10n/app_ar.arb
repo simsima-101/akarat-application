@@ -1764,9 +1764,110 @@
   "description": "الرسالة التي تظهر عند حدوث خطأ متعلق بالشبكة"
 },
 
+"@_email_agent_section": "================= EMAIL AGENT =================",
 
+"emailAgent": "التواصل مع الوكيل",
+"@emailAgent": { "description": "عنوان نافذة التواصل مع الوكيل" },
 
-            "@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
+"weWillGetBackSoon": "سنعود إليك في أقرب وقت ممكن",
+"@weWillGetBackSoon": { "description": "النص الفرعي الافتراضي في نموذج التواصل" },
+
+"name": "الاسم",
+"@name": { "description": "تسمية حقل الاسم" },
+
+"email": "البريد الإلكتروني",
+"@email": { "description": "تسمية حقل البريد الإلكتروني" },
+
+"phone": "رقم الهاتف",
+"@phone": { "description": "تسمية حقل رقم الهاتف" },
+
+"writeYourMessageHere": "اكتب رسالتك هنا...",
+"@writeYourMessageHere": { "description": "نص توجيهي داخل مربع الرسالة" },
+
+"messageRequired": "الرسالة مطلوبة",
+"@messageRequired": { "description": "رسالة خطأ عند ترك حقل الرسالة فارغاً" },
+
+"sendEmail": "إرسال البريد",
+"@sendEmail": { "description": "نص زر الإرسال الرئيسي" },
+
+"thankYouMessageSent": "شكراً لك! تم إرسال رسالتك بنجاح",
+"@thankYouMessageSent": { "description": "رسالة نجاح في SnackBar" },
+
+"failedToSend": "فشل إرسال الرسالة. حاول مرة أخرى.",
+"@failedToSend": { "description": "رسالة خطأ في SnackBar عند الفشل" },
+
+"noEmailApp": "لا يوجد تطبيق بريد",
+"@noEmailApp": { "description": "عنوان تنبيه عند عدم وجود تطبيق بريد" },
+
+"installEmailApp": "يرجى تثبيت Gmail أو Outlook لإرسال الرسائل.",
+"@installEmailApp": { "description": "نص التنبيه عند فشل فتح تطبيق البريد" },
+
+"couldNotOpenEmail": "تعذر فتح تطبيق البريد",
+"@couldNotOpenEmail": { "description": "رسالة SnackBar عند فشل أمر mailto" },
+
+"requiredField": "مطلوب",
+"@requiredField": { "description": "رسالة خطأ عامة لحقول مطلوبة فارغة" },
+
+"invalidEmail": "بريد إلكتروني غير صالح",
+"@invalidEmail": { "description": "رسالة خطأ تنسيق البريد الإلكتروني" },
+
+"phoneDigitsOnly": "أرقام فقط من 7 إلى 15 رقم",
+"@phoneDigitsOnly": { "description": "خطأ تنسيق عام لرقم الهاتف" },
+
+"phoneLengthError": "يجب أن يكون رقم الهاتف {count} أرقام لدولة {country}",
+"@phoneLengthError": {
+  "description": "رسالة خطأ طول رقم الهاتف – يستخدم متغيرات",
+  "placeholders": { "count": {}, "country": {} }
+},
+
+"@_property_details_section": "================= PROPERTY DETAILS SCREEN =================",
+
+"unableToLoadProperty": "تعذر تحميل العقار",
+"pleaseCheckConnection": "يرجى التحقق من الاتصال وحاول مرة أخرى.",
+"retry": "إعادة المحاولة",
+
+"addressPrefix": "📍",
+"priceAed": "درهم إماراتي",
+"per": "/{period}",
+
+"descriptionTitle": "الوصف",
+"propertyDetailsTitle": "تفاصيل العقار",
+"buildingInformationTitle": "معلومات المبنى",
+"projectInformationTitle": "معلومات المشروع",
+"locationAndNearbyTitle": "الموقع والمناطق القريبة",
+"viewOnMap": "عرض على الخريطة",
+"amenitiesTitle": "المرافق",
+"showMore": "إظهار المزيد",
+"showLess": "إظهار أقل",
+"providedBy": "مقدم من",
+"seeAgentDetails": "عرض تفاصيل الوكيل",
+"regulatoryInformationTitle": "المعلومات التنظيمية",
+"dldVerified": "موثق من دائرة الأراضي والأملاك",
+"reraQrCode": "رمز QR الخاص بريرا",
+
+"propertyIdLabel": "رقم العقار",
+"propertyTypeLabel": "نوع العقار",
+"sizeLabel": "الحجم",
+"listedOnLabel": "تم الإدراج في",
+"categoryLabel": "الفئة",
+"priceLabel": "السعر",
+"addressLabel": "العنوان",
+
+"buildingNameLabel": "اسم المبنى",
+"totalParkingLabel": "إجمالي مواقف السيارات",
+"buildingAreaLabel": "مساحة المبنى",
+"yearOfCompletionLabel": "سنة الإنجاز",
+"elevatorsLabel": "المصاعد",
+"totalFloorsLabel": "إجمالي الطوابق",
+"swimmingPoolsLabel": "المسابح",
+"retailCentersLabel": "مراكز التجزئة",
+
+"recommendedPropertiesTitle": "عقارات موصى بها",
+
+"beds": "{count} سرير",
+"baths": "{count} حمام",
+
+"@_my_account_about_us_section": "================= MY ACCOUNT → ABOUT US SCREEN =================",
 
 
               "aboutUs_appBar_title": "من نحن",

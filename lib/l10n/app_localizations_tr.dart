@@ -1458,6 +1458,208 @@ class AppLocalizationsTr extends AppLocalizations {
   String get alertPropertyType => 'Emlak Türü';
 
   @override
+  String get emailAgent => 'Emlakçıya E-posta';
+
+  @override
+  String get weWillGetBackSoon => 'En kısa sürede size dönüş yapacağız';
+
+  @override
+  String get name => 'Adınız Soyadınız';
+
+  @override
+  String get phone => 'Telefon';
+
+  @override
+  String get writeYourMessageHere => 'Mesajınızı buraya yazın...';
+
+  @override
+  String get messageRequired => 'Mesaj zorunludur';
+
+  @override
+  String get sendEmail => 'E-posta Gönder';
+
+  @override
+  String get thankYouMessageSent =>
+      'Teşekkür ederiz! Mesajınız başarıyla gönderildi.';
+
+  @override
+  String get failedToSend => 'Mesaj gönderilemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get noEmailApp => 'E-posta Uygulaması Yok';
+
+  @override
+  String get installEmailApp =>
+      'E-posta göndermek için lütfen Gmail veya Outlook yükleyin.';
+
+  @override
+  String get couldNotOpenEmail => 'E-posta uygulaması açılamadı';
+
+  @override
+  String get requiredField => 'Zorunlu alan';
+
+  @override
+  String get phoneDigitsOnly => 'Sadece 7-15 rakam';
+
+  @override
+  String phoneLengthError(Object count, Object country) {
+    return '$country için telefon numarası $count rakam olmalıdır';
+  }
+
+  @override
+  String get unableToLoadProperty => 'Özellik yüklenemiyor';
+
+  @override
+  String get pleaseCheckConnection =>
+      'Bağlantınızı kontrol edin ve tekrar deneyin.';
+
+  @override
+  String get addressPrefix => '📍';
+
+  @override
+  String priceAed(Object price) {
+    return '$price AED';
+  }
+
+  @override
+  String per(Object period) {
+    return '/$period';
+  }
+
+  @override
+  String get descriptionTitle => 'Açıklama';
+
+  @override
+  String get propertyDetailsTitle => 'Özellik Detayları';
+
+  @override
+  String get buildingInformationTitle => 'Bina Bilgileri';
+
+  @override
+  String get projectInformationTitle => 'Proje Bilgileri';
+
+  @override
+  String get locationAndNearbyTitle => 'Konum ve Yakın Çevre';
+
+  @override
+  String get viewOnMap => 'Haritada Görüntüle';
+
+  @override
+  String get amenitiesTitle => 'Olanaklar';
+
+  @override
+  String get showMore => 'Daha Fazla Göster';
+
+  @override
+  String get showLess => 'Daha Az Göster';
+
+  @override
+  String get providedBy => 'Sağlayan';
+
+  @override
+  String get seeAgentDetails => 'Emlak Danışmanı Detaylarını Gör';
+
+  @override
+  String get regulatoryInformationTitle => 'Düzenleyici Bilgiler';
+
+  @override
+  String get dldVerified => 'DLD Doğrulanmış';
+
+  @override
+  String get reraQrCode => 'RERA QR Kodu';
+
+  @override
+  String get propertyIdLabel => 'Özellik ID';
+
+  @override
+  String get sizeLabel => 'Boyut';
+
+  @override
+  String get listedOnLabel => 'Listelendiği Tarih';
+
+  @override
+  String get categoryLabel => 'Kategori';
+
+  @override
+  String get priceLabel => 'Fiyat';
+
+  @override
+  String get addressLabel => 'Adres';
+
+  @override
+  String get buildingNameLabel => 'Bina Adı';
+
+  @override
+  String get totalParkingLabel => 'Toplam Park Yeri';
+
+  @override
+  String get buildingAreaLabel => 'Bina Alanı';
+
+  @override
+  String get yearOfCompletionLabel => 'Tamamlanma Yılı';
+
+  @override
+  String get elevatorsLabel => 'Asansör Sayısı';
+
+  @override
+  String get totalFloorsLabel => 'Toplam Kat Sayısı';
+
+  @override
+  String get swimmingPoolsLabel => 'Havuz Sayısı';
+
+  @override
+  String get retailCentersLabel => 'Perakende Merkezleri';
+
+  @override
+  String get completionLabel => 'Tamamlanma';
+
+  @override
+  String get governmentFeeLabel => 'Devlet Ücreti';
+
+  @override
+  String get deliveryYearLabel => 'Teslim Yılı';
+
+  @override
+  String get paymentPeriodLabel => 'Ödeme Dönemi';
+
+  @override
+  String get projectAnnouncementLabel => 'Proje Duyurusu';
+
+  @override
+  String get constructionStartedLabel => 'İnşaat Başlangıcı';
+
+  @override
+  String get expectedCompletionLabel => 'Beklenen Tamamlanma';
+
+  @override
+  String get salesStartedLabel => 'Satış Başlangıcı';
+
+  @override
+  String get paymentPlanTitle => 'Ödeme Planı';
+
+  @override
+  String get downPayment => 'Peşinat';
+
+  @override
+  String get duringConstruction => 'İnşaat Süresince';
+
+  @override
+  String get onHandover => 'Teslimde';
+
+  @override
+  String get recommendedPropertiesTitle => 'Önerilen Özellikler';
+
+  @override
+  String beds(int count) {
+    return '$count yatak odası';
+  }
+
+  @override
+  String baths(int count) {
+    return '$count banyo';
+  }
+
+  @override
   String get aboutUs_hero_title => 'Akarat Hakkında';
 
   @override
@@ -1763,9 +1965,4 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get remove => 'Kaldır';
-
-  @override
-  String priceAed(Object price) {
-    return '$price AED';
-  }
 }

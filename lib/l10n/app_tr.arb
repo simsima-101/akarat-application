@@ -1407,6 +1407,165 @@
         "description": "'Herhangi bir emlak türü' anlamına gelen seçenek"
       },
 
+      "@_property_details_section": "================= PROPERTY DETAILS SCREEN =================",
+
+       "unableToLoadProperty": "Özellik yüklenemiyor",
+        "@unableToLoadProperty": { "description": "Error screen title" },
+
+        "pleaseCheckConnection": "Bağlantınızı kontrol edin ve tekrar deneyin.",
+        "@pleaseCheckConnection": { "description": "Error screen subtitle" },
+
+        "retry": "Tekrar Dene",
+
+        "addressPrefix": "📍",
+        "priceAed": "AED",
+        "per": "/{period}",
+
+        "descriptionTitle": "Açıklama",
+        "propertyDetailsTitle": "Özellik Detayları",
+        "buildingInformationTitle": "Bina Bilgileri",
+        "projectInformationTitle": "Proje Bilgileri",
+        "locationAndNearbyTitle": "Konum ve Yakın Çevre",
+        "viewOnMap": "Haritada Görüntüle",
+        "amenitiesTitle": "Olanaklar",
+        "showMore": "Daha Fazla Göster",
+        "showLess": "Daha Az Göster",
+        "providedBy": "Sağlayan",
+        "seeAgentDetails": "Emlak Danışmanı Detaylarını Gör",
+        "regulatoryInformationTitle": "Düzenleyici Bilgiler",
+        "dldVerified": "DLD Doğrulanmış",
+        "reraQrCode": "RERA QR Kodu",
+
+        "propertyIdLabel": "Özellik ID",
+        "propertyTypeLabel": "Özellik Türü",
+        "sizeLabel": "Boyut",
+        "listedOnLabel": "Listelendiği Tarih",
+        "categoryLabel": "Kategori",
+        "priceLabel": "Fiyat",
+        "addressLabel": "Adres",
+
+        "buildingNameLabel": "Bina Adı",
+        "totalParkingLabel": "Toplam Park Yeri",
+        "buildingAreaLabel": "Bina Alanı",
+        "yearOfCompletionLabel": "Tamamlanma Yılı",
+        "elevatorsLabel": "Asansör Sayısı",
+        "totalFloorsLabel": "Toplam Kat Sayısı",
+        "swimmingPoolsLabel": "Havuz Sayısı",
+        "retailCentersLabel": "Perakende Merkezleri",
+
+        "completionLabel": "Tamamlanma",
+        "governmentFeeLabel": "Devlet Ücreti",
+        "deliveryYearLabel": "Teslim Yılı",
+        "paymentPeriodLabel": "Ödeme Dönemi",
+        "projectAnnouncementLabel": "Proje Duyurusu",
+        "constructionStartedLabel": "İnşaat Başlangıcı",
+        "expectedCompletionLabel": "Beklenen Tamamlanma",
+        "salesStartedLabel": "Satış Başlangıcı",
+
+        "paymentPlanTitle": "Ödeme Planı",
+        "downPayment": "Peşinat",
+        "duringConstruction": "İnşaat Süresince",
+        "onHandover": "Teslimde",
+
+        "recommendedPropertiesTitle": "Önerilen Özellikler",
+
+        "beds": "{count} yatak odası",
+        "@beds": { "placeholders": { "count": { "type": "int" } } },
+
+        "baths": "{count} banyo",
+        "@baths": { "placeholders": { "count": { "type": "int" } } },
+
+       "@_email_agent_section": "================= EMAIL AGENT =================",
+
+         "emailAgent": "Emlakçıya E-posta",
+         "@emailAgent": {
+           "description": "Title of the contact/agent email dialog"
+         },
+
+         "weWillGetBackSoon": "En kısa sürede size dönüş yapacağız",
+         "@weWillGetBackSoon": {
+           "description": "Default subtitle shown in the contact form dialog"
+         },
+
+         "name": "Adınız Soyadınız",
+         "@name": {
+           "description": "Label for the name input field"
+         },
+
+         "email": "E-posta Adresi",
+         "@email": {
+           "description": "Label for the email input field"
+         },
+
+         "phone": "Telefon",
+         "@phone": {
+           "description": "Label for the phone number input field"
+         },
+
+         "writeYourMessageHere": "Mesajınızı buraya yazın...",
+         "@writeYourMessageHere": {
+           "description": "Hint text inside the message textarea"
+         },
+
+         "messageRequired": "Mesaj zorunludur",
+         "@messageRequired": {
+           "description": "Validation error when message field is empty"
+         },
+
+         "sendEmail": "E-posta Gönder",
+         "@sendEmail": {
+           "description": "Text on the main submit button"
+         },
+
+         "thankYouMessageSent": "Teşekkür ederiz! Mesajınız başarıyla gönderildi.",
+         "@thankYouMessageSent": {
+           "description": "Success message shown in SnackBar after sending"
+         },
+
+         "failedToSend": "Mesaj gönderilemedi. Lütfen tekrar deneyin.",
+         "@failedToSend": {
+           "description": "Error message shown in SnackBar when sending fails"
+         },
+
+         "noEmailApp": "E-posta Uygulaması Yok",
+         "@noEmailApp": {
+           "description": "Title of alert dialog when no email client is installed"
+         },
+
+         "installEmailApp": "E-posta göndermek için lütfen Gmail veya Outlook yükleyin.",
+         "@installEmailApp": {
+           "description": "Body text of alert when email app cannot be launched"
+         },
+
+         "couldNotOpenEmail": "E-posta uygulaması açılamadı",
+         "@couldNotOpenEmail": {
+           "description": "SnackBar message when launchUrl fails for mailto:"
+         },
+
+         "requiredField": "Zorunlu alan",
+         "@requiredField": {
+           "description": "Generic validation message for empty required fields (name, etc.)"
+         },
+
+         "invalidEmail": "Geçersiz e-posta",
+         "@invalidEmail": {
+           "description": "Validation error for incorrectly formatted email"
+         },
+
+         "phoneDigitsOnly": "Sadece 7-15 rakam",
+         "@phoneDigitsOnly": {
+           "description": "Generic phone number format error (when length regex fails)"
+         },
+
+         "phoneLengthError": "{country} için telefon numarası {count} rakam olmalıdır",
+         "@phoneLengthError": {
+           "description": "Phone length validation error – uses placeholders",
+           "placeholders": {
+             "count": {},
+             "country": {}
+           }
+         },
+
    "@_create_alert_section": "================= CREATE ALERT SCREEN =================",
 
    "createAlertTitle": "Uyarı Oluştur",

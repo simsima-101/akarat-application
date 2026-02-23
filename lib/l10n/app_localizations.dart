@@ -1828,7 +1828,7 @@ abstract class AppLocalizations {
   /// **'Welcome to Akarat!'**
   String get welcomeToAkarat;
 
-  /// Email field hint
+  /// Label for the email input field
   ///
   /// In en, this message translates to:
   /// **'Email'**
@@ -1858,10 +1858,10 @@ abstract class AppLocalizations {
   /// **'Create new account'**
   String get createNewAccount;
 
-  /// No description provided for @invalidEmail.
+  /// Validation error for incorrectly formatted email
   ///
   /// In en, this message translates to:
-  /// **'Invalid email address'**
+  /// **'Invalid email'**
   String get invalidEmail;
 
   /// Generic 'please enter' validation message
@@ -2596,6 +2596,384 @@ abstract class AppLocalizations {
   /// **'Property Type'**
   String get alertPropertyType;
 
+  /// Title of the contact/agent email dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Email agent'**
+  String get emailAgent;
+
+  /// Default subtitle shown in the contact form dialog
+  ///
+  /// In en, this message translates to:
+  /// **'We will get back to you as soon as possible'**
+  String get weWillGetBackSoon;
+
+  /// Label for the name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// Label for the phone number input field
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phone;
+
+  /// Hint text inside the message textarea
+  ///
+  /// In en, this message translates to:
+  /// **'Write your message here...'**
+  String get writeYourMessageHere;
+
+  /// Validation error when message field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Message is required'**
+  String get messageRequired;
+
+  /// Text on the main submit button
+  ///
+  /// In en, this message translates to:
+  /// **'Send Email'**
+  String get sendEmail;
+
+  /// Success message shown in SnackBar after sending
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you! Your message was sent successfully!'**
+  String get thankYouMessageSent;
+
+  /// Error message shown in SnackBar when sending fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send message. Please try again.'**
+  String get failedToSend;
+
+  /// Title of alert dialog when no email client is installed
+  ///
+  /// In en, this message translates to:
+  /// **'No Email App'**
+  String get noEmailApp;
+
+  /// Body text of alert when email app cannot be launched
+  ///
+  /// In en, this message translates to:
+  /// **'Please install Gmail or Outlook to send emails.'**
+  String get installEmailApp;
+
+  /// SnackBar message when launchUrl fails for mailto:
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open email app'**
+  String get couldNotOpenEmail;
+
+  /// Generic validation message for empty required fields (name, etc.)
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get requiredField;
+
+  /// Generic phone number format error (when length regex fails)
+  ///
+  /// In en, this message translates to:
+  /// **'7–15 digits only'**
+  String get phoneDigitsOnly;
+
+  /// Phone length validation error – uses placeholders
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must be {count} digits for {country}'**
+  String phoneLengthError(Object count, Object country);
+
+  /// Error screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load property'**
+  String get unableToLoadProperty;
+
+  /// Error screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your connection and try again.'**
+  String get pleaseCheckConnection;
+
+  /// No description provided for @addressPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'📍'**
+  String get addressPrefix;
+
+  /// Price format with AED currency
+  ///
+  /// In en, this message translates to:
+  /// **'{price} AED'**
+  String priceAed(Object price);
+
+  /// No description provided for @per.
+  ///
+  /// In en, this message translates to:
+  /// **'/{period}'**
+  String per(Object period);
+
+  /// No description provided for @descriptionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get descriptionTitle;
+
+  /// No description provided for @propertyDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Property Details'**
+  String get propertyDetailsTitle;
+
+  /// No description provided for @buildingInformationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Building Information'**
+  String get buildingInformationTitle;
+
+  /// No description provided for @projectInformationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Information'**
+  String get projectInformationTitle;
+
+  /// No description provided for @locationAndNearbyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location & nearby'**
+  String get locationAndNearbyTitle;
+
+  /// No description provided for @viewOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'View on map'**
+  String get viewOnMap;
+
+  /// No description provided for @amenitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Amenities'**
+  String get amenitiesTitle;
+
+  /// No description provided for @showMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more'**
+  String get showMore;
+
+  /// No description provided for @showLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get showLess;
+
+  /// No description provided for @providedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Provided by'**
+  String get providedBy;
+
+  /// No description provided for @seeAgentDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'See Agent Details'**
+  String get seeAgentDetails;
+
+  /// No description provided for @regulatoryInformationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Regulatory Information'**
+  String get regulatoryInformationTitle;
+
+  /// No description provided for @dldVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'DLD Verified'**
+  String get dldVerified;
+
+  /// No description provided for @reraQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'RERA QR Code'**
+  String get reraQrCode;
+
+  /// No description provided for @propertyIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Property ID'**
+  String get propertyIdLabel;
+
+  /// No description provided for @sizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get sizeLabel;
+
+  /// No description provided for @listedOnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Listed On'**
+  String get listedOnLabel;
+
+  /// No description provided for @categoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// No description provided for @priceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get priceLabel;
+
+  /// No description provided for @addressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get addressLabel;
+
+  /// No description provided for @buildingNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Building Name'**
+  String get buildingNameLabel;
+
+  /// No description provided for @totalParkingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Parking Space'**
+  String get totalParkingLabel;
+
+  /// No description provided for @buildingAreaLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Building Area'**
+  String get buildingAreaLabel;
+
+  /// No description provided for @yearOfCompletionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Year of Completion'**
+  String get yearOfCompletionLabel;
+
+  /// No description provided for @elevatorsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Elevators'**
+  String get elevatorsLabel;
+
+  /// No description provided for @totalFloorsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Floors'**
+  String get totalFloorsLabel;
+
+  /// No description provided for @swimmingPoolsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Swimming Pools'**
+  String get swimmingPoolsLabel;
+
+  /// No description provided for @retailCentersLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Retail Centers'**
+  String get retailCentersLabel;
+
+  /// No description provided for @completionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get completionLabel;
+
+  /// No description provided for @governmentFeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Government Fee'**
+  String get governmentFeeLabel;
+
+  /// No description provided for @deliveryYearLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Year'**
+  String get deliveryYearLabel;
+
+  /// No description provided for @paymentPeriodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Period'**
+  String get paymentPeriodLabel;
+
+  /// No description provided for @projectAnnouncementLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Announcement'**
+  String get projectAnnouncementLabel;
+
+  /// No description provided for @constructionStartedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Construction Started'**
+  String get constructionStartedLabel;
+
+  /// No description provided for @expectedCompletionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Completion'**
+  String get expectedCompletionLabel;
+
+  /// No description provided for @salesStartedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales Started'**
+  String get salesStartedLabel;
+
+  /// No description provided for @paymentPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Plan'**
+  String get paymentPlanTitle;
+
+  /// No description provided for @downPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Down Payment'**
+  String get downPayment;
+
+  /// No description provided for @duringConstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'During Construction'**
+  String get duringConstruction;
+
+  /// No description provided for @onHandover.
+  ///
+  /// In en, this message translates to:
+  /// **'On Handover'**
+  String get onHandover;
+
+  /// No description provided for @recommendedPropertiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Properties'**
+  String get recommendedPropertiesTitle;
+
+  /// No description provided for @beds.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bed{count, plural, one {} other {s}}'**
+  String beds(int count);
+
+  /// No description provided for @baths.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bath{count, plural, one {} other {s}}'**
+  String baths(int count);
+
   /// Main large heading at the top of the page
   ///
   /// In en, this message translates to:
@@ -3129,12 +3507,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get remove;
-
-  /// Price format with AED currency
-  ///
-  /// In en, this message translates to:
-  /// **'{price} AED'**
-  String priceAed(Object price);
 }
 
 class _AppLocalizationsDelegate

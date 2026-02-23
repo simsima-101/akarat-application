@@ -304,7 +304,7 @@ class _My_AccountState extends State<My_Account> {
                                   await _loadUserData();
                                 }
                               },
-                              child: CircleAvatar(
+                                child: CircleAvatar(
                                 radius: 30,
                                 backgroundColor: Colors.grey[200],
                                 child: ClipOval(
